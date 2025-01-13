@@ -1,0 +1,30 @@
+{
+  "name": "ecommercesp",
+  "version": "1.0.0",
+  "description": "First module of Social Pilot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobby1506/EcommerceSP.git"
+  },
+  "author": "Bobby, Surya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bobby1506/EcommerceSP/issues"
+  },
+  "homepage": "https://github.com/bobby1506/EcommerceSP#readme",
+  "dependencies": {
+    "@koa/router": "^13.1.0",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "koa": "^2.15.3",
+    "koa-body": "^6.0.1",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^13.0.1",
+    "mongodb": "^6.12.0"
+  }
+}
