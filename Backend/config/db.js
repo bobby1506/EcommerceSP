@@ -6,6 +6,7 @@ let dbInstance;
 const client = new MongoClient(process.env.URI, {});
 
 const connectDB = async () => {
+  //har baar connect db naa karna pade, how to do that?
   if (dbInstance) return dbInstance;
 
   try {
@@ -19,5 +20,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+
+//another way
 
 module.exports = connectDB;
