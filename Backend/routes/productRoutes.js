@@ -4,15 +4,19 @@ const {
   getProductsDetails,
   getProductsOfStore,
   getstoreProductAdmin,
+  updatedProductOwner,
+  deleteProductOwner,
 } = require("../controllers/productController");
 
-const { sellerAuth, verifyToken } = require("../utils/jwtUtils");
+const { sellerAuth, verifyToken } = require("../middlewares/tokenMiddleware");
 
 const router = new Router();
 
 router.post("/createProduct", sellerAuth, createProduct);
-router.get("/getstoreproductAdmin/:ownerId", sellerAuth, getstoreProductAdmin);
+router.get("/getstoreproductAdmin", sellerAuth, getstoreProductAdmin);
 router.get("/getProductsOfStore/:storeId", verifyToken, getProductsOfStore);
 router.get("/productDetails/:productId", verifyToken, getProductsDetails);
+router.patch("/productUpdate/:productId", sellerAuth, updatedProductOwner);
+router.delete("/deleteProduct/:productId", sellerAuth, deleteProductOwner);
 
 module.exports = router;

@@ -1,29 +1,41 @@
-const connectDB = require("../config/db");
-const error = require("../middlewares/error");
 const { ObjectId } = require("mongodb");
+const cloudinary = require("cloudinary");
 // const { getData, setData, close, deleteCache } = require("../utils/redisUtils");
 
 //create store for users
 const createStore = async (ctx) => {
   try {
-    // const myCloud = await cloudinary.v2.uploader.upload(ctx.request.body.logo, {
-    //   folder: "EcommerceSP",
-    //   width: 150,
-    //   crop: "scale",
-    // });
-
+    console.log(ctx.request.body);
+    // console.log(ctx.request.files);
+    console.log("first");
+    console.log(ctx.request.files.logo);
+    const myCloud = await cloudinary.v2.uploader.upload(
+      ctx.request.files.logo.filepath,
+      {
+        folder: "EcommerceSP",
+        width: 150,
+        crop: "scale",
+      }
+    );
+    console.log("second");
     const {
       storeName,
       ownerName,
       address,
       description,
       category,
-      timmings,
+      openTime,
+      closeTime,
       mediaLinks,
       gstNumber,
       isBranch,
       upiId,
+
+      // credits,
     } = ctx.request.body;
+    console.log("third");
+
+    //validations rahe gaye
 
     //one way
     // const db = await connectDB();
@@ -35,6 +47,7 @@ const createStore = async (ctx) => {
     const storeExisting = await collectionStore.findOne({
       gstNumber,
     });
+    console.log("fourth");
 
     if (storeExisting) {
       if (isBranch) {
@@ -61,22 +74,27 @@ const createStore = async (ctx) => {
       }
     }
 
+    console.log("fifth");
+
     const newStore = {
       storeName,
       ownerName,
       address,
       description,
-      // logo: {
-      //   public_id: myCloud.public_id,
-      //   url: myCloud.secure_url,
-      // },
+      logo: {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      },
       mediaLinks,
       category,
-      timmings,
+      openTime,
+      closeTime,
       gstNumber,
       upiId,
       isBranch: isBranch || false,
       createdAt: new Date(),
+      Balance: 0,
+      Credits: 0,
     };
 
     console.log("Hello userid se phele");
@@ -111,11 +129,11 @@ const createStore = async (ctx) => {
     ctx.body = {
       success: true,
       message: "Store created successfully",
-      data: { ...newStore, _id: result.insertedId },
+      store: { ...newStore, _id: result.insertedId },
     };
   } catch (err) {
     console.log("Registration Failed", err.message);
-    error(ctx, 500, "Internal server error");
+    // error(ctx, 500, "Internal server error");
   }
 };
 
@@ -150,6 +168,11 @@ const storeList = async (ctx) => {
     };
   } catch (err) {
     console.log(500, "Internal server error");
+    (ctx.status = 500),
+      (ctx.body = {
+        success: false,
+        message: err,
+      });
   }
 };
 
@@ -185,7 +208,7 @@ const ownerDashboardDetail = async (ctx) => {
     console.log(store);
 
     if (!store) {
-      console.log(error);
+      console.log("store not found");
       // error(ctx, 404, "Store not found");
     }
     // await setData(redisKey, store, 3600);
@@ -201,4 +224,64 @@ const ownerDashboardDetail = async (ctx) => {
   }
 };
 
-module.exports = { createStore, storeList, ownerDashboardDetail };
+//store delete
+const deleteStoreOwner = async (ctx) => {
+  try {
+    const { storeId } = ctx.params;
+    const userId = ctx.state.user?.id;
+    const userCollection = ctx.db.collection("users");
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return;
+    }
+
+    const OwnerstoreId = user.storeId;
+
+    if (OwnerstoreId != storeId) {
+      console.log("You are a hacker");
+      return;
+    }
+
+    if (!storeId) {
+      console.log("Store id required");
+      (ctx.status = 404),
+        (ctx.body = {
+          message: "Store id required",
+          success: false,
+        });
+      return;
+    }
+
+    const storeCollection = ctx.db.collection("stores");
+    const deletedStore = await storeCollection.deleteOne({ _id: storeId });
+
+    if (deletedStore.deletedCount == 0) {
+      (ctx.status = 403),
+        (ctx.body = {
+          message: "Store not found",
+          success: false,
+        });
+      return;
+    }
+
+    ctx.status = 200;
+    ctx.body = {
+      message: "Store deleted successfully",
+      success: true,
+    };
+  } catch (err) {
+    console.log(err);
+    ctx.status = 500;
+    ctx.body = {
+      message: "Internal error",
+      success: false,
+    };
+  }
+};
+
+module.exports = {
+  createStore,
+  storeList,
+  ownerDashboardDetail,
+  deleteStoreOwner,
+};

@@ -1,63 +1,27 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/jwtUtils");
-const { error } = require("../middlewares/error");
+const { ObjectId } = require("mongodb");
+const { createUser, findUser } = require("../queries/userQueries");
+const { resHandler } = require("../middlewares/errorHandler");
+
 // const { close, getData, setData, deleteCache } = require("../utils/redisUtils");
 
-// const cloudinary = require("cloudinary");
-//create the seperate validator for each
-//throw all error simultaneously to the frontend
 //Registration API
 const registerUser = async (ctx) => {
   try {
     console.log("Hello");
-    const { username, email, password } = ctx.request.body;
+    const { username, email, password } = ctx.state.shared;
 
-    if (!username || !email || !password) {
-      error(ctx, 400, "username, email and password are required");
-      return;
-    }
-
-    if (username.length < 3) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Username must be at least 3 characters long",
-      };
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      ctx.status = 400;
-      ctx.body = { success: false, message: "Invalid email format" };
-      return;
-    }
-
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message:
-          "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character",
-      };
-      return;
-    }
-
-    //one way
-    // const db = await connectdb();
-    // const collectionUser = dbInstance.collection("users");
-
-    //two way
-    const collectionUser = ctx.db.collection("users");
-
-    //third way
-    // const collectionUser = db.collection("users");
-
-    const user = await collectionUser.findOne({ email });
-    if (user) {
-      error(ctx, 400, "User already exist");
+    const userExist = await findUser(ctx.db, { email });
+    if (userExist) {
+      resHandler(
+        ctx,
+        false,
+        "User already exists",
+        400,
+        null,
+        "Duplicate user in register."
+      );
       return;
     }
 
@@ -72,34 +36,36 @@ const registerUser = async (ctx) => {
       password: hashed,
       createdAt: new Date(),
     };
+    const user = await createUser(ctx.db, newUser);
 
-    const result = await collectionUser.insertOne(newUser);
+    console.log("User", user);
 
-    const token = generateToken(result);
+    const userNew = await findUser(ctx.db, { email });
+
+    const token = generateToken(userNew);
 
     ctx.cookies.set("authToken", token, {
       httpOnly: true, // Makes it inaccessible to client-side JavaScript
-      secure: process.env.NODE_ENV === "production", // Ensures it's sent over HTTPS in production
-      sameSite: "strict", // Protects against CSRF attacks
+      // eslint-disable-next-line no-undef
+      // secure: process.env.NODE_ENV === "production", // Ensures it's sent over HTTPS in production
+      secure: false,
+      sameSite: "none", // Protects against CSRF attacks
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     });
 
-    ctx.status = 201;
-    ctx.body = {
-      success: true,
-      message: "User Registration Successfull",
+    resHandler(ctx, true, "User retrieved successfully", 200, {
       token,
       user: {
-        id: result.insertedId,
-        username: newUser.username,
-        email: newUser.email,
-        isSeller: newUser.isSeller,
+        id: userNew._id,
+        username: userNew.username,
+        email: userNew.email,
+        isSeller: userNew.isSeller,
         storeId: newUser.storeId,
       },
-    };
+    });
   } catch (err) {
     console.log("Registration Failed", err.message);
-    // error(ctx, 500, "Internal server error");
+    resHandler(ctx, false, "Internal server error", 500, null, err.message);
   }
 };
 
@@ -107,34 +73,23 @@ const registerUser = async (ctx) => {
 const login = async (ctx) => {
   try {
     console.log(ctx.request.body);
-    const { email, password } = ctx.request.body;
+    const { email, password } = ctx.state.shared;
 
     console.log("Hello2");
 
-    if (!email || !password) {
-      error(ctx, 400, "Email & Password are required");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      ctx.status = 400;
-      ctx.body = { success: false, message: "Invalid email format" };
-      return;
-    }
-
-    //one way
-    // const db = await connectdb();
-    // const userCollection = await db.collection("users");
-
-    const userCollection = ctx.db.collection("users");
-
-    const user = await userCollection.findOne({ email });
-
+    const user = await findUser(ctx.db, { email });
     if (!user) {
-      error(ctx, 401, "Invalid user details");
+      resHandler(
+        ctx,
+        false,
+        "User not found",
+        404,
+        null,
+        "User not found in login."
+      );
       return;
     }
+
     console.log("Hello3");
 
     const ismatchPassword = await bcrypt.compare(password, user.password);
@@ -142,37 +97,41 @@ const login = async (ctx) => {
     console.log("Hello4");
 
     if (!ismatchPassword) {
-      error(ctx, 401, "User details are not correct");
+      resHandler(
+        ctx,
+        false,
+        "Incorrect password",
+        401,
+        null,
+        "Password mismatch in login."
+      );
       return;
     }
 
     const token = generateToken(user);
 
     ctx.cookies.set("authToken", token, {
-      httpOnly: true, // Makes it inaccessible to client-side JavaScript
-      secure: process.env.NODE_ENV === "production", // Send only over HTTPS in production
-      sameSite: "strict", // Protects against CSRF attacks
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      httpOnly: true,
+      // eslint-disable-next-line no-undef
+      // secure: process.env.NODE_ENV === "production",
+      secure: false,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "User logged in successfully",
-      user,
+    resHandler(ctx, true, "Login successfully", 200, {
       token,
-      user: {
+      data: {
         id: user._id,
         username: user.username,
         email: user.email,
         isSeller: user.isSeller,
         storeId: user.storeId,
       },
-    };
+    });
   } catch (err) {
-    console.error("Login failed:", err.message);
-    ctx.status = 500;
-    ctx.body = { success: false, message: "Internal server error" };
+    console.error("Login error:", err.message);
+    resHandler(ctx, false, "Internal server error", 500, null, err.message);
   }
 };
 
@@ -185,4 +144,38 @@ const logout = async (ctx) => {
   };
 };
 
-module.exports = { registerUser, login, logout };
+//getUser
+
+const getUser = async (ctx) => {
+  try {
+    console.log("Hello");
+
+    const { userId } = ctx.state.shared;
+
+    const user = await findUser(ctx.db, { _id: new ObjectId(userId) });
+    if (!user) {
+      resHandler(
+        ctx,
+        false,
+        "User not found",
+        404,
+        null,
+        "User not found in getUser."
+      );
+      return;
+    }
+
+    resHandler(ctx, true, "User fetched", 200, {
+      user: {
+        username: user.username,
+        email: user.email,
+        isSeller: user.isSeller,
+      },
+    });
+  } catch (err) {
+    console.log("User fetched error", err);
+    resHandler(ctx, false, "Internal server error", 500, null, err.message);
+  }
+};
+
+module.exports = { registerUser, login, logout, getUser };

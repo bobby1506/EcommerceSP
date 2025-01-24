@@ -1,64 +1,64 @@
-// // const redis = require("redis");
+// // // const redis = require("redis");
 
-// // //create client and connect
-// // const client = redis.createClient({
-// //   host: "localhost",
-// //   db: 0,
-// //   port: 6379,
-// // });
+// // // //create client and connect
+// // // const client = redis.createClient({
+// // //   host: "localhost",
+// // //   db: 0,
+// // //   port: 6379,
+// // // });
 
-// // client.on("connect", () => {
-// //   console.log("Connection successfull to redis");
-// // });
+// // // client.on("connect", () => {
+// // //   console.log("Connection successfull to redis");
+// // // });
 
-// // client.on("error", () => {
-// //   console.log("Connection failed - Redis");
-// // });
+// // // client.on("error", () => {
+// // //   console.log("Connection failed - Redis");
+// // // });
 
-// // //set data in redis cache
-// // const setData = (key, value, expiryInSeconds = 3600) => {
-// //   client.setex(key, expiryInSeconds, JSON.stringify(value), (err, reply) => {
-// //     if (err) {
-// //       console.log("Data not set to cache memory", err);
-// //     } else {
-// //       console.log("Data set successfully", reply);
-// //     }
-// //   });
-// // };
+// // // //set data in redis cache
+// // // const setData = (key, value, expiryInSeconds = 3600) => {
+// // //   client.setex(key, expiryInSeconds, JSON.stringify(value), (err, reply) => {
+// // //     if (err) {
+// // //       console.log("Data not set to cache memory", err);
+// // //     } else {
+// // //       console.log("Data set successfully", reply);
+// // //     }
+// // //   });
+// // // };
 
-// // //get data from cache
-// // const getData = (key, callback) => {
-// //   client.get(key, (err, val) => {
-// //     if (err) {
-// //       console.log("Error in getting cache", err);
-// //       callback(err, null);
-// //     } else {
-// //       if (reply) {
-// //         callback(nullJSON.parse(reply));
-// //       } else {
-// //         callback(null, null);
-// //       }
-// //     }
-// //   });
-// // };
+// // // //get data from cache
+// // // const getData = (key, callback) => {
+// // //   client.get(key, (err, val) => {
+// // //     if (err) {
+// // //       console.log("Error in getting cache", err);
+// // //       callback(err, null);
+// // //     } else {
+// // //       if (reply) {
+// // //         callback(nullJSON.parse(reply));
+// // //       } else {
+// // //         callback(null, null);
+// // //       }
+// // //     }
+// // //   });
+// // // };
 
-// // //delete data from reddis
-// // const deleteCache = (key) => {
-// //   client.del(key, (err, reply) => {
-// //     if (err) {
-// //       console.log("Data not deleted", err);
-// //     } else {
-// //       console.log("Cache deleted", reply);
-// //     }
-// //   });
-// // };
+// // // //delete data from reddis
+// // // const deleteCache = (key) => {
+// // //   client.del(key, (err, reply) => {
+// // //     if (err) {
+// // //       console.log("Data not deleted", err);
+// // //     } else {
+// // //       console.log("Cache deleted", reply);
+// // //     }
+// // //   });
+// // // };
 
-// // //close the connection
-// // const close = () => {
-// //   client.quit();
-// // };
+// // // //close the connection
+// // // const close = () => {
+// // //   client.quit();
+// // // };
 
-// // module.exports = { close, getData, setData, deleteCache };
+// // // module.exports = { close, getData, setData, deleteCache };
 // const redis = require("redis");
 
 // // Create client and connect

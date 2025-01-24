@@ -1,17 +1,26 @@
 const { ObjectId } = require("mongodb");
-const error = require("../middlewares/error");
-
+const cloudinary = require("cloudinary");
+//for admin
 const createProduct = async (ctx) => {
   try {
     console.log("Enter");
     const { productName, category, description, price, stocks } =
       ctx.request.body;
 
+    const myCloud = await cloudinary.v2.uploader.upload(
+      ctx.request.files.logo.filepath,
+      {
+        folder: "EcommerceSP",
+        width: 150,
+        crop: "scale",
+      }
+    );
+
     if (
       !productName ||
       !category ||
       !description ||
-      price == null ||
+      price == 0 ||
       stocks == null
     ) {
       ctx.status = 400;
@@ -75,6 +84,10 @@ const createProduct = async (ctx) => {
       price,
       stocks,
       storeId,
+      logo: {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -105,7 +118,12 @@ const getProductsOfStore = async (ctx) => {
     console.log("storeId", storeId);
 
     if (!storeId) {
-      error(ctx, 404, "Invalid store id");
+      // error(ctx, 404, "Invalid store id");
+      (ctx.status = 404),
+        (ctx.body = {
+          success: false,
+          message: "Invalid store id",
+        });
       return;
     }
 
@@ -123,6 +141,11 @@ const getProductsOfStore = async (ctx) => {
       products,
     };
   } catch (err) {
+    (ctx.status = 403),
+      (ctx.body = {
+        success: false,
+        message: err,
+      });
     console.log("Error in getting products");
   }
 };
@@ -135,12 +158,10 @@ const getProductsDetails = async (ctx) => {
     console.log(productId);
 
     if (!productId) {
-      error(ctx, 400, "Product ID is required");
       return;
     }
 
     if (!ObjectId.isValid(productId)) {
-      error(ctx, 400, "Invalid product id");
       return;
     }
 
@@ -150,7 +171,6 @@ const getProductsDetails = async (ctx) => {
     });
 
     if (!productDetails) {
-      error(ctx, 400, "Product not found");
       return;
     }
 
@@ -160,14 +180,20 @@ const getProductsDetails = async (ctx) => {
       productDetails,
     };
   } catch (err) {
-    console.log("Error");
+    console.log(err);
+    ctx.status = 403;
+    ctx.body = {
+      message: "Product detail fetched failed for user",
+      success: false,
+    };
   }
 };
 
 //get store product for admin
 const getstoreProductAdmin = async (ctx) => {
   try {
-    const { ownerId } = ctx.params;
+    // const { ownerId } = ctx.params;
+    const ownerId = ctx.state.user?.id;
 
     console.log("userId  hello", ownerId);
 
@@ -178,7 +204,6 @@ const getstoreProductAdmin = async (ctx) => {
     console.log("storeId", storeId);
 
     if (!storeId) {
-      error(ctx, 404, "Invalid store id");
       return;
     }
 
@@ -193,7 +218,123 @@ const getstoreProductAdmin = async (ctx) => {
       products,
     };
   } catch (err) {
-    console.log("Error in getting owner products");
+    console.log("Error in getting owner products", err);
+  }
+};
+
+//delete product
+const deleteProductOwner = async (ctx) => {
+  try {
+    const userId = ctx.state.user?.id;
+    const userCollection = ctx.db.collection("users");
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return;
+    }
+    const storeId = user.storeId;
+    const { productId } = ctx.params;
+    const productCollection = ctx.db.collection("products");
+    const product = await productCollection.findOne({ _id: productId });
+    if (!product) {
+      return;
+    }
+
+    const storeOwnerId = product.storeId;
+
+    if (storeId != storeOwnerId) {
+      console.log("You are a hacker");
+      return;
+    }
+
+    console.log(productId, "productId");
+
+    const deletedProduct = await productCollection.deleteOne({
+      _id: new ObjectId(productId),
+    });
+    if (deletedProduct.deletedCount === 0) {
+      console.log("Product not found");
+      (ctx.status = 404),
+        (ctx.body = {
+          message: "Product not valid",
+          success: false,
+        });
+      return;
+    }
+
+    console.log("deletedProduct", deletedProduct);
+
+    ctx.status = 200;
+    ctx.body = {
+      message: "Product deleted successfully",
+      success: true,
+    };
+  } catch (err) {
+    console.log("Error in deleting the product", err);
+    (ctx.status = 403),
+      (ctx.body = {
+        message: "Error in deleting the product",
+        success: false,
+      });
+  }
+};
+//update product details
+const updatedProductOwner = async (ctx) => {
+  try {
+    const { productId } = ctx.params;
+    console.log(productId, "productId");
+    const userId = ctx.state.user?.id;
+    const userCollection = ctx.db.collection("users");
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return;
+    }
+    const storeId = user.storeId;
+    const productCollection = ctx.db.collection("products");
+    const product = await productCollection.findOne({ _id: productId });
+    if (!product) {
+      return;
+    }
+
+    const storeOwnerId = product.storeId;
+
+    if (storeId != storeOwnerId) {
+      console.log("You are a hacker");
+      return;
+    }
+
+    const updatedData = ctx.request.body;
+    console.log(updatedData, "updatedData");
+
+    const products = await productCollection.updateOne(
+      { _id: new ObjectId(productId) },
+      { $set: updatedData }
+    );
+
+    console.log(products);
+
+    if (products.matchedCount == 0) {
+      (ctx.status = 404),
+        (ctx.body = {
+          message: "Product not found",
+          success: false,
+        });
+      return;
+    }
+
+    console.log(products);
+
+    (ctx.status = 200),
+      (ctx.body = {
+        message: "Product updated",
+        success: true,
+      });
+  } catch (err) {
+    console.log(err);
+    //  ((ctx.status = 500)),
+    ctx.body = {
+      message: "Update product failed",
+      success: false,
+    };
   }
 };
 
@@ -202,4 +343,6 @@ module.exports = {
   getProductsDetails,
   getProductsOfStore,
   getstoreProductAdmin,
+  deleteProductOwner,
+  updatedProductOwner,
 };

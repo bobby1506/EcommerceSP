@@ -1,10 +1,40 @@
-const Router = require('koa-router')
-const {registerUser, login, logout } = require("../controllers/authController")
+const Router = require("koa-router");
+const {
+  registerUser,
+  login,
+  logout,
+  getUser,
+} = require("../controllers/authController");
 
-const router = new Router()
+const { validateAll } = require("../middlewares/ValidatorsAll");
+const {
+  usernameValidator,
+  emailValidator,
+  passwordValidator,
+  getUserValidator,
+} = require("../validators/authValidators");
+const { userAuth } = require("../middlewares/tokenMiddleware");
 
-router.post('/register', registerUser)
-router.post('/login', login)
-router.post('/logout', logout)
+const { verifyToken } = require("../middlewares/tokenMiddleware");
 
-module.exports = router
+const router = new Router();
+
+router.post(
+  "/register",
+  validateAll([emailValidator, usernameValidator, passwordValidator]),
+  registerUser
+);
+
+router.post("/login", validateAll([emailValidator, passwordValidator]), login);
+
+router.post("logout", logout);
+
+router.get(
+  "/getuser",
+  verifyToken,
+  userAuth,
+  validateAll([getUserValidator]),
+  getUser
+);
+
+module.exports = router;

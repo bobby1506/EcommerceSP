@@ -4,7 +4,7 @@ const {
   storeList,
   ownerDashboardDetail,
 } = require("../controllers/storeController");
-const { sellerAuth, verifyToken } = require("../utils/jwtUtils");
+const { sellerAuth, verifyToken } = require("../middlewares/tokenMiddleware");
 
 const router = new Router();
 
