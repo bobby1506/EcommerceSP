@@ -3,6 +3,7 @@ const initialState = {
   message: "",
   flag: false,
   isLoading: false,
+  isCreated:false,
   storesArray: [],
   storeData: {
     storeName: "",
@@ -12,8 +13,8 @@ const initialState = {
   },
 };
 
-export const createStoreReducer = (state = initialState, action) => {
-  let data=action.payload;
+export const storeReducer = (state = initialState, action) => {
+  let response=action.payload;
   switch (action.type) {
     case "CREATESTORE_PENDING":
       return { ...state, isLoading: true };
@@ -21,16 +22,17 @@ export const createStoreReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        flag: !flag,
-        message: action.payload.message,
+        flag: !state.flag,
+        isCreated:true,
+        storesArray:[...state.storesArray,response.data.store],
+        message: response.data.message,
       };
     case "CREATESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        flag: !flag,
-        // error: action.payload.error,
-        message: action.payload.message,
+        flag: !state.flag,
+        message: response.data.message,
       };
     case "GETSTORES_PENDING":
       return { ...state, isLoading: true };
@@ -38,61 +40,59 @@ export const createStoreReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        storesArray: data.storeArray, //check
-        flag: !flag,
-        message: data.message,
+        storesArray: [...response.data.store],
+        flag: !state.flag,
       };
     case "GETSTORES_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message: data.message,
-        flag: !flag,
+        flag: !state.flag,
       };
     case "DELETESTORE_PENDING":
       return { ...state, isLoading: true };
     case "DELETESTORE_FULFILLED":
       let deletedStores = (state.storesArray.filter = (store) => {
-        if (store.id != data.id) return store;
+        if (store.id != response.data.id) return store;
       });
       return {
         ...state,
         isLoading: false,
         storeData: {},
         storesArray: deletedStores,
-        flag: !flag,
-        message: data.message,
+        flag: !state.flag,
+        message: response.data.message,
       };
     case "DELETESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message: data.message,
-        flag: !flag,
+        message: response.data.message,
+        flag: !state.flag,
       };
       case "UPDATESTORE_PENDING":
       return { ...state, isLoading: true };
     case "UPDATESTORE_FULFILLED":
       const updatedStores = (state.storesArray.map = (store, index) => {
-        if (store.id == data.id) {
-          storesArray[index] = data.store; //check
+        if (store.id == response.data.id) {
+          state.storesArray[index] = response.data.store; //check
         }
         return store;
       });
       return {
         ...state,
         isLoading: false,
-        storeData: data.store, //check
+        storeData: response.data.store, //check
         storesArray: updatedStores,
-        flag: !flag,
-        message: data.message,
+        flag: !state.flag,
+        message: response.data.message,
       };
     case "UPDATESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message: data.message,
-        flag: !flag,
+        message: response.data.message,
+        flag: !state.flag,
       };
     default:
       return state;

@@ -8,23 +8,24 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
+    isSeller:false
   });
+
   const navigate=useNavigate();
   const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const { message, rFlag,isLoading,isAuthenticated,user} = useSelector((state) => state.user);
+  const { message, flag,isLoading,isAuthenticated} = useSelector((state) => state.user);
   useEffect(() => {
-    if (rFlag) {
+    if (flag) {
       if(message){
-        alert(message)
+        alert(isAuthenticated)
       }
       if(isAuthenticated){
 
          navigate('/')
       }
-     
     }
-  }, [rFlag]);
+  }, [flag]);
   
 
   const handleOnChange = (e) => {
@@ -138,6 +139,17 @@ const SignUp = () => {
               onChange={handleOnChange}
             />
             <p className="text-danger fs-9">{error.password}</p>
+          </div>
+          <div className="mb-3">
+            <div>isSeller</div>
+            <label className="me-3">
+              <input type="radio" name="isSeller" value={true}  onChange={handleOnChange} />
+               yes
+            </label>
+            <label >
+              <input type="radio" name="isSeller" value={false}  onChange={handleOnChange} />
+              no
+            </label>
           </div>
           <button className="btn btn-primary" type="submit">
             SignUp

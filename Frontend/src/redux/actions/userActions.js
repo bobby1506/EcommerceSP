@@ -5,10 +5,10 @@ export const userRegister = (userData) => {
   return async (dispatch) => {
     try {
       dispatch({ type: "REGISTER_REQUEST" });
-      const response = await axios.post(url + "register", userData, {
+      console.log(userData)
+      const response = await axios.post(`${url + "register"}`, userData, {
         headers: { "Content-Type": "application/json" },
       });
-      console.log(response);
       dispatch({ type: "REGISTER_SUCCESS", payload: response });
       return response;
     } catch (error) {
@@ -32,4 +32,15 @@ export const userLogin = (userData) => {
       dispatch({ type: "LOGIN_FAIL", payload: error });
     }
   };
+
 };
+
+export const getUserStatus=()=>{
+  return async (dispatch)=>{
+   dispatch({
+    type: "GETUSER", 
+    payload: axios.get(`${url + "getuser"}`,{headers:{"Content-Type":"application/json"},withCredentials:true}),
+  });
+
+  }
+}

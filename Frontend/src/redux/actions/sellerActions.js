@@ -3,20 +3,32 @@ import { url } from "../../apiConfig";
 
 
 
-export const getAdminOrders = () => {
+// export const getAdminOrders = () => {
+//   return async (dispatch) => {
+//     dispatch({
+//       type: "GETPRODUCTS",
+//       payload: axios.get(`${url + "getAdminOrders"}`),
+//     });
+//   };
+// };
+export const addSellerProduct = (productData) => {
   return async (dispatch) => {
     dispatch({
-      type: "GETPRODUCTS",
-      payload: axios.get(`${url + "getAdminOrders"}`),
+      type: "ADDSELLERPRODUCT",
+      payload: axios.post(`${url + "createProduct"}`, productData, {
+        headers: { "Content-Type": "application/json" }, withCredentials:true,
+      }),
     });
   };
 };
 
-export const getAdminProducts = () => {
+export const getSellerProducts = () => {
+  console.log("first seller")
   return async (dispatch) => {
+    // console.log("secons step")
     dispatch({
-      type: "GETADMINPRODUCTS",
-      payload: axios.get(`${url + "getAdminProducts"}`),
+      type: "GETSELLERPRODUCTS",
+      payload: axios.get(`${url + "getstoreproductAdmin"}`, {withCredentials: true}),
     });
   };
 };

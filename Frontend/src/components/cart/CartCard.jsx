@@ -1,28 +1,67 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const CartCard = () => {
+const CartCard = ({removeFromCart,product,getCart,quantity,updateCart,emptyMsg}) => {
+  const {_id,productName,price}=product;
+  const [count,setCount]=useState(0)
+
+  // const navigate=useNavigate()
+
+useEffect(()=>{
+   setCount(quantity)
+},[])
+  if (!product) return null;
+  const handleOnInc=()=>{
+    setCount(count+1);
+    updateCart(_id,count+1,1)
+  }
+  const handleOnDec=()=>{
+    if(count==1){
+      return
+    }
+    setCount(count-1)
+    updateCart(_id,count-1,-1)
+  }
+ 
   return (
     <>
-      <div className="card" style={{ width: "90%" }}>
-        <img
-          src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          className="card-img-top"
-          alt="Product"
-        />
-        <div className="card-body">
-          <h5 className="card-title">Product Title</h5>
-          <p className="card-text">Short product description here.</p>
-          <div className="d-flex justify-content-between align-items-center">
-            <span className="font-weight-bold">$29.99</span>
-            <div>
-              <button className="btn btn-primary btn-sm mx-1">+</button>
-              <span className="mx-1">1</span>
-              <button className="btn btn-primary btn-sm mx-1">-</button>
-            </div>
+ <div className="card mb-3 shadow-sm rounded-lg p-3">
+  <div className="row g-0">
+    {/* Product Image */}
+    <div className="col-md-4">
+      <img
+        src="https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ"
+        className="img-fluid rounded-start"
+        alt="Product"
+        style={{ objectFit: 'cover', height: '150px' }}
+      />
+    </div>
+
+    <div className="col-md-8">
+      <div className="card-body d-flex align-items-center position-relative">
+        {/* Product Info */}
+        <div>
+          <h5 className="card-title fw-bold text-dark">{productName}</h5>
+          <p className="card-text text-muted">$ {price}</p>
+
+          <div className="d-flex align-items-center mb-3">
+            <button className="btn btn-outline-secondary me-2" style={{ width: '30px', height: '30px' }} onClick={handleOnDec}>-</button>
+            <span className="mx-2">{count}</span>
+            <button className="btn btn-outline-secondary ms-2" style={{ width: '30px', height: '30px' }} onClick={handleOnInc}>+</button>
           </div>
-          <button className="btn btn-danger mt-3">Remove</button>
         </div>
+
+        {/* Remove Button */}
+        <button className="btn btn-danger position-absolute end-0 top-50 translate-middle-y" onClick={()=>{removeFromCart(_id);emptyMsg();}}>
+          Remove
+        </button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+
     </>
   );
 };

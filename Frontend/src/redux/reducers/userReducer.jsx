@@ -10,38 +10,39 @@ import {
 const initialState = {
   flag: false,
   isLoading: false,
-  message: null,
-  isAuthenticated:false,
+  message: "",
+  isAuthenticated: false,
   userData: {},
+  isSeller: false,
+  token: "",
 };
 
-export const userReducer = (state =  initialState, action) => {
+export const userReducer = (state = initialState, action) => {
+  console.log("initial-state",state)
   switch (action.type) {
     case REGISTER_REQUEST:
-
       return {
         ...state,
-        user: { ...state, isLoading: true },
+        isLoading: true,
       };
     case REGISTER_SUCCESS:
+      console.log("success", action.payload.data)
       return {
         ...state,
-        user: {
-          ...state.user,
-          message: action.payload.data.message,
-          rFlag: !state.rFlag,
-          isLoading: false,
-        },
+        message: action.payload.data.message,
+        flag: !state.flag,
+        isAuthenticated: true,
+        token: action.payload.data.token,
+        isLoading: false,
+        userData: { ...action.payload.data.user },
       };
     case REGISTER_FAIL:
+      console.log("state",state)
       return {
         ...state,
-        user: {
-          ...state.user,
-          message: action.payload.data.message,
-          rFlag: !state.rFlag,
-          isLoading: false,
-        },
+        message: action.payload.data?.message,
+        flag: !state.flag,
+        isLoading: false,
       };
     case LOGIN_REQUEST:
       return {
@@ -52,23 +53,31 @@ export const userReducer = (state =  initialState, action) => {
         },
       };
     case LOGIN_SUCCESS:
-    console.log(state,state.flag)
+      console.log("actopm", action.payload.data);
       return {
         ...state,
-          message: action.payload.data.message,
-          flag: !state.flag,
-          isAuthenticated:true,
-          token: action.payload.data.token,
-          isLoading: false,
-          userData: { ...action.payload.data.user},
-        }
+        message: action.payload.data.message,
+        flag: !state.flag,
+        isAuthenticated: true,
+        token: action.payload.data.token,
+        isLoading: false,
+        userData: { ...action.payload.data.user },
+        isSeller: action.payload.data.user.isSeller,
+      };
     case LOGIN_FAIL:
       return {
-          ...state.user,
-          message: action.payload.message,
-          flag: !state.flag,
-          isLoading: false,
-        }
+        ...state,
+        message: action.payload.message,
+        flag: !state.flag,
+        isLoading: false,
+      };
+
+     case 'GETUSER_FULFILLED':
+      return{
+        ...state,
+        isSeller:action.payload.data.data.isSeller,
+        userData:{...action.payload.data}
+      } 
 
     default:
       return state;

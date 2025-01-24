@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { userLogin } from "../../redux/actions/userActions";
+import { ToastContainer, toast } from 'react-toastify';
+
+
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -22,12 +25,22 @@ const Login = () => {
   const { message,flag,isLoading,isAuthenticated } = useSelector((state) => state.user);
   console.log(flag)
   useEffect(() => {
+    
     if (message) {
-      alert(message);
+      if(isAuthenticated){
+        toast.success(message)
+      }
+      else{
+        toast.error(message)
+      }
+ 
     }
-    if(isAuthenticated){
-      navigate("/")
-    }
+    setTimeout(() => {
+      if(isAuthenticated){
+        navigate("/")
+      }
+    }, 2000);
+  
   }, [flag]);
   const handleOnSubmit = (e) => {
     e.preventDefault();
@@ -40,6 +53,7 @@ const Login = () => {
   }
   return (
     <>
+    <ToastContainer/>
       <div
         className="container mt-3 shadow p-5 rounded"
         style={{ maxWidth: "400px" }}

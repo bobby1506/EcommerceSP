@@ -1,8 +1,21 @@
 import { connect } from "react-redux";
-import StoreForm from "../components/store/StoreForm";
 import { getProducts } from "../redux/actions/productActions";
+import Products from "../pages/Products";
+import { getUserStatus } from "../redux/actions/userActions";
 
-const mapStateToProps = (state) => ({});
-const mapDispatchToProps = (dispatch) => ({});
+const mapStateToProps = (state) => {
+    
+  return {
+    productsList:state.product.productsArray,
+    isLoadings:state.product.isLoading
+  }
+};
+const mapDispatchToProps = (dispatch) => {
+    return{
+        getProduct:(storeId)=>dispatch(getProducts(storeId)),
+       
+    }
+   
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(StoreForm);
+export default connect(mapStateToProps, mapDispatchToProps)(Products);

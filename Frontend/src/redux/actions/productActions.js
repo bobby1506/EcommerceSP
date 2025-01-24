@@ -1,40 +1,31 @@
 import axios from "axios";
 import { url } from "../../apiConfig";
 
-export const addProduct = (productData) => {
-  return async (dispatch) => {
-    dispatch({
-      type: "ADDPRODUCT",
-      payload: axios.post(`${url + "addProduct"}`, productData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      }),
-    });
-  };
-};
 
-export const getProducts = () => {
+
+export const getProducts = (storeId) => {
   return async (dispatch) => {
     dispatch({
       type: "GETPRODUCTS",
-      payload: axios.get(`${url + "getProducts"}`),
+      payload: axios.get(`${url + "getProductsOfStore/"+storeId}`,{withCredentials: true}),
     });
   };
 };
 
-export const getAdminProducts = () => {
-  return async (dispatch) => {
-    dispatch({
-      type: "GETADMINPRODUCTS",
-      payload: axios.get(`${url + "getAdminProducts"}`),
-    });
-  };
-};
+// export const getSellerProducts = () => {
+//   return async (dispatch) => {
+//     dispatch({
+//       type: "GETSELLERPRODUCTS",
+//       payload: axios.get(`${url + "getAdminProducts"}`, {withCredentials: true}),
+//     });
+//   };
+// };
 
-export const getProduct = (storeId) => {
+export const getProduct = (productId) => {
     return async (dispatch) => {
       dispatch({
         type: "GETPRODUCT",
-        payload: axios.get(`${url + "getProduct",{headers:{ "Content-Type": "multipart/form-data","storeId":`${storeId}`}}}`),
+        payload: axios.get(`${url + `productDetails/${productId}`}`,{headers:{ "Content-Type": "application/json"},withCredentials:true}),
       });
     };
   };

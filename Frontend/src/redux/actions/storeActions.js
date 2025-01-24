@@ -2,21 +2,23 @@ import axios from "axios";
 import { url } from "../../apiConfig";
 
 export const createStore = (storeData) => {
+  console.log("first",storeData)
   return async (dispatch) => {
     dispatch({
       type: "CREATESTORE",
-      payload: axios.post(`${url + "createStore"}`, storeData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      payload: axios.post(`${url+"createStore"}`, storeData, {
+        headers: { "Content-Type": "application/json" },withCredentials: true,
       }),
     });
   };
+
 };
 
 export const getStores = () => {
   return async (dispatch) => {
     dispatch({
       type: "GETSTORES",
-      payload: axios.get(`${url + "createStore"}`),
+      payload: axios.get(`${url + "listStore"}`),
     });
   };
 };

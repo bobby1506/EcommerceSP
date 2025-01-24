@@ -2,7 +2,17 @@ import { connect } from "react-redux";
 import StoreForm from "../components/store/StoreForm";
 import { createStore } from "../redux/actions/storeActions";
 
-const mapStateToProps = (state) => ({});
-const mapDispatchToProps = (dispatch) => ({});
+const mapStateToProps = (state) => {
+    return {
+       smessage:state.store.message,
+       sisLoading:state.store.isLoading,
+       sisCreated:state.store.isCreated 
+    }
+};
+const mapDispatchToProps = (dispatch) => {
+    return {
+        screateStore:(storeData)=>dispatch(createStore(storeData)),
+    }
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(StoreForm);
