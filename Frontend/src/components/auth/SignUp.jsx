@@ -1,14 +1,32 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { userRegister } from "../../redux/actions/userActions";
+import { useSelector, useDispatch } from "react-redux";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    isSeller:false
   });
 
+  const navigate=useNavigate();
   const [error, setError] = useState({});
+  const dispatch = useDispatch();
+  const { message, flag,isLoading,isAuthenticated} = useSelector((state) => state.user);
+  useEffect(() => {
+    if (flag) {
+      if(message){
+        alert(isAuthenticated)
+      }
+      if(isAuthenticated){
+
+         navigate('/')
+      }
+    }
+  }, [flag]);
+  
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
@@ -58,19 +76,30 @@ const SignUp = () => {
     return error;
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit = async(e) => {
     e.preventDefault();
     const validateError = handleValidation(formData);
     setError(validateError);
     if (Object.keys(validateError).length === 0) {
-      console.log("form submit sucessfully");
+      try{
+        dispatch(userRegister(formData));
+      }catch(error){
+
+      }
+      
     } else {
       console.log(error);
     }
   };
+  if(isLoading){
+    return <h1>Loading......</h1>
+  }
   return (
     <>
-      <div className="container mt-3 shadow p-5 rounded" style={{ maxWidth: "400px" }}>
+      <div
+        className="container mt-3 shadow p-5 rounded"
+        style={{ maxWidth: "400px" }}
+      >
         <form onSubmit={handleOnSubmit}>
           <div className="mb-3">
             <label htmlFor="name" className="form-label">
@@ -111,15 +140,34 @@ const SignUp = () => {
             />
             <p className="text-danger fs-9">{error.password}</p>
           </div>
+          <div className="mb-3">
+            <div>isSeller</div>
+            <label className="me-3">
+              <input type="radio" name="isSeller" value={true}  onChange={handleOnChange} />
+               yes
+            </label>
+            <label >
+              <input type="radio" name="isSeller" value={false}  onChange={handleOnChange} />
+              no
+            </label>
+          </div>
           <button className="btn btn-primary" type="submit">
             SignUp
           </button>
         </form>
 
-        <p className="mt-5">Already have a account?  <Link to={"/login"} className="text-primary">Login</Link></p>
+        <p className="mt-5">
+          Already have a account?{" "}
+          <Link to={"/login"} className="text-primary">
+            Login
+          </Link>
+        </p>
       </div>
     </>
   );
 };
+
+
+
 
 export default SignUp;
