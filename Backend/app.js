@@ -47,7 +47,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3001",
     credentials: true,
   })
 );
@@ -79,9 +79,11 @@ const startServer = async () => {
 
     // cronScheduler();
 
-    app.listen(process.env.PORT, () => {
+    const server = app.listen(process.env.PORT, () => {
       console.log(`Server running on http://localhost:${process.env.PORT}`);
     });
+
+    socketSetup(server);
   } catch (error) {
     console.error("Failed to start the server:", error);
   }

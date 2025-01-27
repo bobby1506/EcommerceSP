@@ -41,7 +41,7 @@ const sellerAuth = async (ctx, next) => {
     console.log("userId", userId);
 
     const user = await findUser(
-      ctx.db,
+      ctx,
       { _id: new ObjectId(userId) },
       { isSeller: true }
     );
@@ -70,7 +70,7 @@ const userAuth = async (ctx, next) => {
     const verifiedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = verifiedToken.id;
 
-    const user = await findUser(ctx.db, { _id: new ObjectId(userId) });
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
 
     if (!user || user.isSeller) {
       return resHandler(ctx, false, "you are a seller not a user", 403);

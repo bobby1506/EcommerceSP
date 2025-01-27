@@ -1,16 +1,20 @@
-const findUser = async (db, filter) => {
-  const userCollection = db.collection("users");
+const { ObjectId } = require("mongodb");
+const { resHandler } = require("../middlewares/errorHandler");
+
+const findUser = async (ctx, filter) => {
+  const userCollection = ctx.db.collection("users");
 
   const user = await userCollection.findOne(filter);
 
-  if (!user) return null;
+  if (!user) return resHandler(ctx, false, "User exist", 401);
 
-  const { password, ...safeUser } = user;
+  // const { password, ...safeUser } = user;
 
-  return {
-    ...safeUser,
-    password,
-  };
+  // return {
+  //   ...safeUser,
+  //   password,
+  // };
+  return user;
 };
 
 // Create a new user

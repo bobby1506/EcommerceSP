@@ -12,18 +12,7 @@ const registerUser = async (ctx) => {
     console.log("Hello");
     const { username, email, password } = ctx.state.shared;
 
-    const userExist = await findUser(ctx.db, { email });
-    if (userExist) {
-      resHandler(
-        ctx,
-        false,
-        "User already exists",
-        400,
-        null,
-        "Duplicate user in register."
-      );
-      return;
-    }
+    const userExist = await findUser(ctx, { email }); //validator
 
     const salt = 10;
     const hashed = await bcrypt.hash(password, salt);
@@ -40,7 +29,7 @@ const registerUser = async (ctx) => {
 
     console.log("User", user);
 
-    const userNew = await findUser(ctx.db, { email });
+    const userNew = await findUser(ctx, { email });
 
     const token = generateToken(userNew);
 
@@ -73,40 +62,13 @@ const registerUser = async (ctx) => {
 const login = async (ctx) => {
   try {
     console.log(ctx.request.body);
-    const { email, password } = ctx.state.shared;
+    const { email } = ctx.state.shared;
 
     console.log("Hello2");
 
-    const user = await findUser(ctx.db, { email });
-    if (!user) {
-      resHandler(
-        ctx,
-        false,
-        "User not found",
-        404,
-        null,
-        "User not found in login."
-      );
-      return;
-    }
+    const user = await findUser(ctx, { email });
 
     console.log("Hello3");
-
-    const ismatchPassword = await bcrypt.compare(password, user.password);
-
-    console.log("Hello4");
-
-    if (!ismatchPassword) {
-      resHandler(
-        ctx,
-        false,
-        "Incorrect password",
-        401,
-        null,
-        "Password mismatch in login."
-      );
-      return;
-    }
 
     const token = generateToken(user);
 
@@ -150,20 +112,9 @@ const getUser = async (ctx) => {
   try {
     console.log("Hello");
 
-    const { userId } = ctx.state.shared;
-
-    const user = await findUser(ctx.db, { _id: new ObjectId(userId) });
-    if (!user) {
-      resHandler(
-        ctx,
-        false,
-        "User not found",
-        404,
-        null,
-        "User not found in getUser."
-      );
-      return;
-    }
+    const { user } = ctx.state.shared;
+    console.log(user);
+    // const user = await findUser(ctx.db, { _id: new ObjectId(userId) });
 
     resHandler(ctx, true, "User fetched", 200, {
       user: {

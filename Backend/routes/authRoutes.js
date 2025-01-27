@@ -12,6 +12,7 @@ const {
   emailValidator,
   passwordValidator,
   getUserValidator,
+  passwordValidators,
 } = require("../validators/authValidators");
 const { userAuth } = require("../middlewares/tokenMiddleware");
 
@@ -21,7 +22,7 @@ const router = new Router();
 
 router.post(
   "/register",
-  validateAll([emailValidator, usernameValidator, passwordValidator]),
+  validateAll([emailValidator, usernameValidator, passwordValidators]),
   registerUser
 );
 

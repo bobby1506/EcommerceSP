@@ -1,162 +1,195 @@
 const { ObjectId } = require("mongodb");
+const {
+  insertOrder,
+  deleteCart,
+  updateStoreBalance,
+  calculateStoreBalance,
+  findOrdersByUserId,
+  findOrdersByStoreId,
+  updateOrderDeliveryStatus,
+} = require("../queries/orderQueries");
+
+const {
+  findProductById,
+  updateProductStock,
+} = require("../queries/productQueries");
+
+const { findUserById } = require("../queries/userQueries");
+
+const { resHandler } = require("../middlewares/errorHandler");
 
 const createOrder = async (ctx) => {
   try {
-    const {
-      shippingInformation,
-      orderedItems,
-      shippingPrice,
-      paidAt,
-      paymentStatus,
-      isCart,
-    } = ctx.request.body;
+    const { orderedItems } = ctx.state.shared;
 
-    if (
-      !shippingInformation ||
-      orderedItems.length === 0 ||
-      !shippingPrice || // Fixed spelling here
-      !paymentStatus
-    ) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Invalid input data",
-      };
-      return;
-    }
     const userId = ctx.state.user?.id;
-    const productCollection = ctx.db.collection("products");
-    console.log("Step1");
 
-    //check if the stock is avaivlable or not
-    for (const item of orderedItems) {
-      console.log(item.productId);
-      const product = await productCollection.findOne({
-        _id: new ObjectId(item.productId),
-      });
+    // const productCollection = ctx.db.collection("products");
+    // console.log("Step1");
 
-      if (!product) {
-        ctx.status = 404;
-        ctx.body = {
-          success: false,
-          message: `Product with ID ${item.productId} not found`,
-        };
-        return;
-      }
+    // //check if the stock is avaivlable or not
+    // for (const item of orderedItems) {
+    //   console.log(item.productId);
+    //   const product = await productCollection.findOne({
+    //     _id: new ObjectId(item.productId),
+    //   });
 
-      if (product.stocks < item.quantity) {
-        ctx.status = 400;
-        ctx.body = {
-          success: false,
-          message: "Not enough stock",
-        };
-        return;
-      }
+    //   if (!product) {
+    //     ctx.status = 404;
+    //     ctx.body = {
+    //       success: false,
+    //       message: `Product with ID ${item.productId} not found`,
+    //     };
+    //     return;
+    //   }
 
-      //decrease stock
-      for (const item of orderedItems) {
-        const product = await productCollection.updateOne(
-          {
-            _id: new ObjectId(item.productId),
-          },
-          { $inc: { stocks: -item.quantity } }
-        );
-      }
-    }
+    //   if (product.stocks < item.quantity) {
+    //     ctx.status = 400;
+    //     ctx.body = {
+    //       success: false,
+    //       message: "Not enough stock",
+    //     };
+    //     return;
+    //   }
 
-    const newOrder = {
-      shippingInformation,
-      orderedItems,
-      userId,
-      shippingPrice: shippingPrice || 50,
-      paidAt,
-      paymentStatus: paymentStatus || "Pending",
-    };
-
-    const orderCollection = ctx.db.collection("orders");
-
-    const Order = await orderCollection.insertOne(newOrder);
-    console.log("Step 2");
-
-    const storeCollection = ctx.db.collection("store");
-
-    const newBalance = await orderCollection
-      .aggregate([
-        {
-          $match: { _id: Order.insertedId },
-        },
-
-        {
-          $unwind: "$orderedItems",
-        },
-        {
-          $group: {
-            _id: "$orderedItems.storeId",
-            totalAmount: {
-              $sum: {
-                $multiply: ["$orderedItems.price", "$orderedItems.quantity"],
-              },
-            },
-          },
-        },
-      ])
-      .toArray();
-
-    console.log("newBalance", newBalance);
-
-    console.log("Step-3");
-
-    const balanceUpdate = newBalance.map((data) => ({
-      updateOne: {
-        filter: {
-          _id: new ObjectId(data._id),
-        },
-        update: {
-          $inc: {
-            Credits: data.totalAmount,
-          },
-        },
-      },
-    }));
-    console.log(balanceUpdate);
-
-    console.log("Step-4");
-
-    const bulkResult = await storeCollection.bulkWrite(balanceUpdate);
-    console.log(bulkResult);
-    console.log("Step-5");
-
-    // if (bulkResult.modifiedCount === 0) {
+    //   //decrease stock
+    //   for (const item of orderedItems) {
+    //     const product = await productCollection.updateOne(
+    //       {
+    //         _id: new ObjectId(item.productId),
+    //       },
+    //       { $inc: { stocks: -item.quantity } }
+    //     );
+    //   }
     // }
 
-    if (Order.insertedCount === 0) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Error in order creation",
-      };
+    // const newOrder = {
+    //   shippingInformation,
+    //   orderedItems,
+    //   userId,
+    //   shippingPrice: shippingPrice || 50,
+    //   paidAt,
+    //   paymentStatus: paymentStatus || "Pending",
+    // };
+
+    // const orderCollection = ctx.db.collection("orders");
+
+    // const Order = await orderCollection.insertOne(newOrder);
+    // console.log("Step 2");
+
+    // const storeCollection = ctx.db.collection("store");
+
+    // const newBalance = await orderCollection
+    //   .aggregate([
+    //     {
+    //       $match: { _id: Order.insertedId },
+    //     },
+
+    //     {
+    //       $unwind: "$orderedItems",
+    //     },
+    //     {
+    //       $group: {
+    //         _id: "$orderedItems.storeId",
+    //         totalAmount: {
+    //           $sum: {
+    //             $multiply: ["$orderedItems.price", "$orderedItems.quantity"],
+    //           },
+    //         },
+    //       },
+    //     },
+    //   ])
+    //   .toArray();
+
+    // console.log("newBalance", newBalance);
+
+    // console.log("Step-3");
+
+    // const balanceUpdate = newBalance.map((data) => ({
+    //   updateOne: {
+    //     filter: {
+    //       _id: new ObjectId(data._id),
+    //     },
+    //     update: {
+    //       $inc: {
+    //         Credits: data.totalAmount,
+    //       },
+    //     },
+    //   },
+    // }));
+    // console.log(balanceUpdate);
+
+    // console.log("Step-4");
+
+    // const bulkResult = await storeCollection.bulkWrite(balanceUpdate);
+    // console.log(bulkResult);
+    // console.log("Step-5");
+
+    // // if (bulkResult.modifiedCount === 0) {
+    // // }
+
+    // if (Order.insertedCount === 0) {
+    //   ctx.status = 400;
+    //   ctx.body = {
+    //     success: false,
+    //     message: "Error in order creation",
+    //   };
+    //   return;
+    // }
+
+    // //cart delete karni hai
+    // const cartCollection = ctx.db.collection("carts");
+    // if (isCart) {
+    //   const cart = await cartCollection.deleteOne({ userId: userId });
+    //   console.log("cart", cart);
+    // }
+
+    // ctx.status = 200;
+    // ctx.body = {
+    //   success: true,
+    //   message: "Order created Successfully",
+    // };
+
+    for (const item of orderedItems) {
+      const product = await findProductById(ctx, item.productId);
+
+      if (product.stocks < item.quantity) {
+        resHandler(ctx, false, "Not enough stock", 400);
+        return;
+      }
+
+      await updateProductStock(ctx.db, item.productId, item.quantity);
+    }
+
+    const newOrder = { ...orderedItems, userId: userId };
+
+    const insertedOrder = await insertOrder(ctx, newOrder);
+    if (insertedOrder.insertedCount === 0) {
+      resHandler(ctx, false, "Error in order creation", 400);
       return;
     }
 
-    //cart delete karni hai
-    const cartCollection = ctx.db.collection("carts");
-    if (isCart) {
-      const cart = await cartCollection.deleteOne({ userId: userId });
-      console.log("cart", cart);
+    const newBalance = await calculateStoreBalance(
+      ctx.db,
+      insertedOrder.insertedId
+    );
+    const balanceUpdate = newBalance.map((data) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(data._id) },
+        update: { $inc: { Credits: data.totalAmount } },
+      },
+    }));
+
+    await updateStoreBalance(ctx, balanceUpdate);
+
+    if (orderedItems.isCart) {
+      await deleteCart(ctx.db, userId);
     }
 
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Order created Successfully",
-    };
+    resHandler(ctx, true, "Order created successfully", 200);
   } catch (err) {
     console.log("Order creation failed", err);
-    (ctx.status = 500),
-      (ctx.body = {
-        success: false,
-        message: "Order creation failed",
-      });
+    resHandler(ctx, false, "Order creation denied", 401);
   }
 };
 
@@ -164,72 +197,39 @@ const createOrder = async (ctx) => {
 const orderDetails = async (ctx) => {
   try {
     const userId = ctx.state.user?.id;
-    console.log("userId", userId);
 
-    if (!userId) {
-      console.log("User id not fetched from token");
-    }
-
-    const orderCollection = ctx.db.collection("orders");
     // console.log(orderCollection);
-    const orders = await orderCollection
-      .find({
-        userId,
-      })
-      .toArray();
+    const orders = await findOrdersByUserId(ctx, userId);
 
     console.log("orders", orders);
-    (ctx.status = 200),
-      (ctx.body = {
-        success: true,
-        message: "Order fetched",
-        orders,
-      });
+    resHandler(ctx, true, "Order fetched successfully", 200, orders);
   } catch (err) {
     console.log("Orderdetail not fetched", err);
-    (ctx.status = 404), (ctx.message = "Orderdetails not fetched");
+    resHandler(ctx, false, "Orders not fetched", 500);
   }
 };
 
 //orders fetched for owner
 const orderDetailOwner = async (ctx) => {
   try {
-    const ownerId = ctx.state.user?.id;
+    // const ownerId = ctx.state.user?.id;
 
-    console.log(ownerId);
+    // console.log(ownerId);
+    // const userCollection = ctx.db.collection("users");
+    // const user = await userCollection.findOne({ _id: new ObjectId(ownerId) });
+    // console.log(user, "user");
 
-    if (!ownerId) {
-      (ctx.status = 404),
-        (ctx.body = {
-          success: false,
-          message: "Sellerid is invalid",
-        });
-    }
+    // const user = await findUserById(ctx, ownerId);
+    const { user } = ctx.state.shared;
 
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(ownerId) });
-    console.log(user, "user");
     const storeId = user.storeId.toString();
     console.log("storeId", storeId);
 
     const orderCollection = ctx.db.collection("orders");
     // console.log("orderCollection", orderCollection);
-    const orders = await orderCollection
-      .find({
-        "orderedItems.storeId": storeId,
-      })
-      .toArray();
+    const orders = await findOrdersByStoreId(orderCollection, user.storeId);
 
     // console.log("orders", orders);
-
-    if (!orders.length) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "No orders found for your store.",
-      };
-      return;
-    }
 
     const filteredItems = orders.map((order) => {
       console.log("order", order);
@@ -250,19 +250,10 @@ const orderDetailOwner = async (ctx) => {
     });
 
     // console.log("orderedItems", orderedItems);
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Orders fetched successfully",
-      filteredItems,
-    };
+    resHandler(ctx, true, "Order fetch successfully", 200, filteredItems);
   } catch (err) {
     console.log("Order fetch error of owner", err);
-    ctx.status = 403;
-    ctx.body = {
-      success: false,
-      message: "Order not fetched successfully",
-    };
+    resHandler(ctx, false, "Order not fetched", 403);
   }
 };
 
@@ -270,92 +261,76 @@ const orderDetailOwner = async (ctx) => {
 const orderStatusChange = async (ctx) => {
   try {
     console.log("Hello owner");
-    const { orderId, productId, deliveryStatus } = ctx.request.body;
+    const { orderId, productId, deliveryStatus } = ctx.state.shared;
 
-    if (!orderId || !deliveryStatus || !productId) {
-      console.log("Invalid input");
-      ctx.status = 400;
-      ctx.body = {
-        message: "Invalid input",
-        success: false,
-      };
-    }
+    const { user } = ctx.state.shared;
 
-    const userId = ctx.state.user?.id;
-
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    // const user = await findUser(ctx, userId);
 
     const storeId = user.storeId.toString();
-    const productCollection = ctx.db.collection("products");
-    const product = await productCollection.findOne({
-      _id: new Object(productId),
-    });
-    if (!product) {
+    // const product = await productCollection.findOne({
+    //   _id: new Object(productId),
+    // });
+    const product = await findProductById(ctx, productId);
+
+    if (!product || product.storeId !== storeId) {
+      resHandler(ctx, false, "Unauthorized access", 403);
       return;
     }
-    const storeOwner = product.storeId;
 
-    if (storeOwner != storeId) {
-      console.log("You are a hacker");
-      return;
-    }
-    console.log("storeId", storeId);
+    // const storeOwner = product.storeId;
 
-    const orderCollection = ctx.db.collection("orders");
+    // if (storeOwner != storeId) {
+    //   console.log("You are a hacker");
+    //   return;
+    // }
+    // console.log("storeId", storeId);
 
-    const order = await orderCollection.updateOne(
-      {
-        _id: new ObjectId(orderId),
-        "orderedItems.storeId": storeId,
-        "orderedItems.productId": productId.toString(),
-      },
-      {
-        $set: {
-          "orderedItems.$[elem].deliveryStatus": deliveryStatus,
-        },
-      },
-      {
-        arrayFilters: [
-          {
-            "elem.storeId": storeId,
-            "elem.productId": productId.toString(),
-          },
-        ],
-      }
+    // const orderCollection = ctx.db.collection("orders");
+
+    // const order = await orderCollection.updateOne(
+    //   {
+    //     _id: new ObjectId(orderId),
+    //     "orderedItems.storeId": storeId,
+    //     "orderedItems.productId": productId.toString(),
+    //   },
+    //   {
+    //     $set: {
+    //       "orderedItems.$[elem].deliveryStatus": deliveryStatus,
+    //     },
+    //   },
+    //   {
+    //     arrayFilters: [
+    //       {
+    //         "elem.storeId": storeId,
+    //         "elem.productId": productId.toString(),
+    //       },
+    //     ],
+    //   }
+    // );
+    // console.log("order", order);
+
+    const result = await updateOrderDeliveryStatus(
+      ctx.db,
+      orderId,
+      user.storeId,
+      productId,
+      deliveryStatus
     );
-    console.log("order", order);
 
-    if (!order) {
-      console.log("Order not found");
-      ctx.status = 404;
-      ctx.body = {
-        success: true,
-        message: "Order not found",
-      };
-    }
+    // if (!order) {
+    //   console.log("Order not found");
+    //   ctx.status = 404;
+    //   ctx.body = {
+    //     success: true,
+    //     message: "Order not found",
+    //   };
+    // }
 
-    if (order.modifiedCount === 0) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Order or product not found for the given storeId.",
-      };
-      return;
-    }
-
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Order delivery status updated successfully",
-    };
+    resHandler(ctx, true, "Order deliever status updated successfully", 200);
   } catch (err) {
     console.log(err);
-    ctx.status = 500;
-    ctx.body = {
-      success: false,
-      message: err,
-    };
+    resHandler(ctx, false, "Internal server error", 500);
   }
 };
 

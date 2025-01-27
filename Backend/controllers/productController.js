@@ -277,6 +277,7 @@ const deleteProductOwner = async (ctx) => {
       });
   }
 };
+
 //update product details
 const updatedProductOwner = async (ctx) => {
   try {
@@ -290,14 +291,16 @@ const updatedProductOwner = async (ctx) => {
     }
     const storeId = user.storeId;
     const productCollection = ctx.db.collection("products");
-    const product = await productCollection.findOne({ _id: productId });
+    const product = await productCollection.findOne({
+      _id: new ObjectId(productId),
+    });
     if (!product) {
       return;
     }
 
     const storeOwnerId = product.storeId;
 
-    if (storeId != storeOwnerId) {
+    if (storeId.toString() != storeOwnerId.toString()) {
       console.log("You are a hacker");
       return;
     }

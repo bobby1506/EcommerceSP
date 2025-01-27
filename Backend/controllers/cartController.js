@@ -14,15 +14,13 @@ const addToCart = async (ctx) => {
 
     // const productCollection = ctx.db.collection("products");
     // const cartCollection = ctx.db.collection("carts");
-    const product = await findProductById(ctx.db, productId);
-    if (!product) return resHandler(ctx, false, "Product not found", 404);
+    const product = await findProductById(ctx, productId);
 
     // Find product details
     // const product = await productCollection.findOne({
     //   _id: new ObjectId(productId),
     // });
-    const result = await updateCart(ctx.db, ctx.state.user.id, product);
-    return resHandler(ctx, true, "Product added to cart", 200, result);
+    const result = await updateCart(ctx, ctx.state.user.id, product);
 
     // console.log(product);
     // if (!product) {
@@ -89,14 +87,11 @@ const removeFromCart = async (ctx) => {
     // }
 
     const result = await removeProductFromCart(
-      ctx.db,
+      ctx,
       ctx.state.user.id,
       productId
     );
 
-    if (result.modifiedCount === 0) {
-      return resHandler(ctx, false, "Product not found in cart", 500);
-    }
     return resHandler(ctx, true, "Product removed from cart", 200);
 
     // ctx.status = 200;
@@ -162,9 +157,6 @@ const updateCarts = async (ctx) => {
       productId,
       updatedFields
     );
-    if (result.modifiedCount === 0) {
-      return resHandler(ctx, false, "Product update failed", 404);
-    }
 
     return resHandler(ctx, true, "Cart updated successfully", 200);
 

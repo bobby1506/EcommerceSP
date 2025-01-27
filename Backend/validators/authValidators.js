@@ -1,3 +1,8 @@
+const { resHandler } = require("../middlewares/errorHandler");
+const { findUser } = require("../queries/userQueries");
+const { ObjectId } = require("mongodb");
+const bcrypt = require("bcrypt");
+
 const {
   isEmpty,
   isValidEmail,
@@ -28,9 +33,34 @@ const emailValidator = (ctx) => {
   return null;
 };
 
-//password validators
-const passwordValidator = (ctx) => {
+const passwordValidators = (ctx) => {
   let { password } = ctx.request.body;
+
+  const emptyError = isEmpty(password, "password");
+  if (emptyError) return emptyError;
+
+  password = password.trim();
+
+  if (!isValidPassword(password)) {
+    return {
+      field: "password",
+      message:
+        "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.",
+    };
+  }
+
+  ctx.state.shared = {
+    ...(ctx.state.shared || {}),
+    password,
+  };
+
+  return null;
+};
+
+//password validators
+const passwordValidator = async (ctx) => {
+  let { password, email } = ctx.request.body;
+  console.log(ctx.request.body);
 
   const emptyError = isEmpty(password, "password");
   if (emptyError) return emptyError;
@@ -43,6 +73,25 @@ const passwordValidator = (ctx) => {
       message:
         "Password must be at least 8 characters long, include a number, an uppercase, and a lowercase letter",
     };
+  }
+
+  const user = await findUser(ctx, { email });
+  console.log(user, "user");
+
+  const ismatchPassword = await bcrypt.compare(password, user.password);
+
+  console.log("Hello4");
+
+  if (!ismatchPassword) {
+    resHandler(
+      ctx,
+      false,
+      "Incorrect password",
+      401,
+      null,
+      "Password mismatch in login."
+    );
+    return;
   }
 
   // Storing valid password in shared state for further processing
@@ -70,10 +119,9 @@ const usernameValidator = (ctx) => {
 };
 
 //userId validator
-const getUserValidator = (ctx) => {
+const getUserValidator = async (ctx) => {
   const userId = ctx.state.user?.id;
 
-  // Validate if userId exists
   if (isEmpty(userId, "userId")) {
     return {
       field: "userId",
@@ -81,10 +129,19 @@ const getUserValidator = (ctx) => {
     };
   }
 
-  // If all validations pass, store userId in shared state
+  const userCollection = ctx.db.collection("users");
+  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+  if (!user) {
+    return {
+      field: "user",
+      message: "User not found",
+    };
+  }
+
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
-    userId,
+    user,
   };
 
   return null;
@@ -95,4 +152,5 @@ module.exports = {
   passwordValidator,
   usernameValidator,
   getUserValidator,
+  passwordValidators,
 };
