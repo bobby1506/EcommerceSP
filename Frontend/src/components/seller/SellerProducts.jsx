@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import SellerProductCard from "./components/SellerProductsCard";
 import { useNavigate } from "react-router-dom";
 
-const SellerProducts = ({ productsList, getProduct,sisLoading }) => {
+const SellerProducts = ({ productsList, getProduct,sisLoading,deleteProduct }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,8 +27,8 @@ const SellerProducts = ({ productsList, getProduct,sisLoading }) => {
 
   const filteredProducts = currentProducts.filter((product) => {
     const matchesSearch =
-      product.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      product?.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product?.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory
       ? product.category === selectedCategory
       : true;
@@ -93,7 +93,7 @@ const SellerProducts = ({ productsList, getProduct,sisLoading }) => {
       ) : (
         filteredProducts.map((product) => (
           <div key={product._id}>
-            <SellerProductCard product={product} />
+            <SellerProductCard product={product}  />
           </div>
         ))
       )}

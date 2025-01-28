@@ -35,15 +35,16 @@ useEffect(() => {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link active" to="#">
+                <Link className="nav-link active" to="/aboutus">
                   About us
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link active" to="#">
+                <Link className="nav-link active" to="/contactus">
                   Contact us
                 </Link>
               </li>
+    
               <li className="nav-item">
                 <Link className="nav-link active" to="/orders">
                   Orders

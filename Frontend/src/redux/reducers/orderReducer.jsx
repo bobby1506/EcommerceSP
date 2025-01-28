@@ -79,7 +79,7 @@ export const orderReducer = (state = initialState, action) => {
       
       return {
         ...state,
-        orderList: [...response.filteredItems],
+        orderList: [...response.orderss],
         isLoading: false,
         // message:
       };

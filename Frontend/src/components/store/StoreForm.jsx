@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import Cookies from "js-cookie";
+import { useSelector } from "react-redux";
 const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
@@ -15,6 +16,28 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     upiId: "",
     isBranch: "",
   });
+  const jwttoken = useSelector((state) => {
+    console.log(state.user.token);
+    return state.user.token;
+  });
+  useEffect(()=>{
+    if (sisCreated && smessage) {
+      alert(smessage);
+      navigate("/sellerdashboard");
+    } else {
+      // alert(smessage || "not created")
+    }
+  },[smessage])
+  useEffect(() => {
+    console.log("jwttoken", jwttoken);
+    if (jwttoken) {
+      Cookies.set("authToken", jwttoken, { expires: 7 });
+    }
+    const token = Cookies.get("authToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
   const navigate = useNavigate();
   const [socialMediaLinks, setSocialMediaLinks] = useState([
     { platform: "", link: "" },
@@ -82,7 +105,6 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
   };
 
   const handleOnChange = (e) => {
-    console.log("hello");
     const { name, value } = e.target;
     setFormData((prev) => {
       return { ...prev, [name]: value };
@@ -96,15 +118,31 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
-    const storeData = { ...formData, mediaLinks: socialMediaLinks, logo };
-    console.log("storedata", storeData);
-    screateStore(storeData);
-    if (sisCreated && smessage) {
-      alert(smessage);
-      navigate("/");
-    } else {
-      // alert(smessage || "not created")
-    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("storeName", formData.storeName);
+    formDataToSend.append("ownerName", formData.ownerName);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("openTime", formData.openTime);
+    formDataToSend.append("closeTime", formData.closeTime);
+    formDataToSend.append("gstNumber", formData.gstNumber);
+    formDataToSend.append("upiId", formData.upiId);
+    formDataToSend.append("isBranch", formData.isBranch);
+    formDataToSend.append("logo", logo); // Add the image file
+
+    socialMediaLinks.forEach((link, index) => {
+      formDataToSend.append(
+        `mediaLinks[${index}][platform]`,
+        link.platform
+      );
+      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    });
+  
+   
+    screateStore(formDataToSend);
+   
   };
   return (
     <div className="container mt-5">
@@ -276,7 +314,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
             className="btn btn-primary btn-sm"
             onClick={addSocialMediaField}
           >
-            Add
+            Add Another
           </button>
         </div>
 

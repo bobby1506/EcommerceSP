@@ -1,7 +1,10 @@
 import { connect } from "react-redux";
 import Seller from "../pages/Seller";
 import SellerProducts from "../components/seller/SellerProducts";
-import { getSellerProducts } from "../redux/actions/sellerActions";
+import {
+  deleteProduct,
+  getSellerProducts,
+} from "../redux/actions/sellerActions";
 
 const mapStateToProps = (state) => {
   return {
@@ -13,6 +16,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     getProduct: () => {
       dispatch(getSellerProducts());
+    },
+    deleteProduct: (productId) => {
+      dispatch(deleteProduct(productId));
     },
   };
 };

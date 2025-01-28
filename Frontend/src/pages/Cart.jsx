@@ -12,6 +12,7 @@ const Cart = ({
   caddedToCart,
   updateCart,
   removeFromCart,
+  ctotalPrice
 }) => {
   // const [cartItems,setCartItems]=useState([])
   useEffect(() => {
@@ -52,10 +53,7 @@ const Cart = ({
           <div className="card p-3">
             <h5>Total Items:{ctotalItems}</h5>
             <h5>
-              Total Price: $
-              {ccartList
-                .reduce((acc, product) => acc + product.totalPrice, 0)
-                .toFixed(2) || "0.00"}
+              Total Price: {ctotalPrice}
             </h5>
             <Link to={ccartList.length > 0 ? "/checkout/1" : "/cart"}>
               <button className="btn btn-primary w-100 mt-3">
@@ -70,4 +68,3 @@ const Cart = ({
 };
 
 export default React.memo(Cart);
-

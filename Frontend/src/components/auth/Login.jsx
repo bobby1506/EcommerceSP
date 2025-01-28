@@ -22,8 +22,9 @@ const Login = () => {
     });
   };
   const dispatch = useDispatch();
-  const { message,flag,isLoading,isAuthenticated } = useSelector((state) => state.user);
-  console.log(flag)
+  const { message,flag,isLoading,isAuthenticated,isSeller} = useSelector((state) => { console.log(state) 
+    return state.user});
+  console.log()
   useEffect(() => {
     
     if (message) {
@@ -36,8 +37,12 @@ const Login = () => {
  
     }
     setTimeout(() => {
-      if(isAuthenticated){
+    
+      if(isAuthenticated && !isSeller){
         navigate("/")
+      }
+      if(isAuthenticated && isSeller){
+        navigate("/sellerdashboard")
       }
     }, 2000);
   

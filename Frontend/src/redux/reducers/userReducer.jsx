@@ -26,14 +26,15 @@ export const userReducer = (state = initialState, action) => {
         isLoading: true,
       };
     case REGISTER_SUCCESS:
-      console.log("success", action.payload.data)
+      console.log("success", action.payload.data.data.token)
       return {
         ...state,
         message: action.payload.data.message,
         flag: !state.flag,
         isAuthenticated: true,
-        token: action.payload.data.token,
+        token: action.payload.data.data.token,
         isLoading: false,
+        isSeller:action.payload.data.data.user.isSeller,
         userData: { ...action.payload.data.user },
       };
     case REGISTER_FAIL:
@@ -53,18 +54,20 @@ export const userReducer = (state = initialState, action) => {
         },
       };
     case LOGIN_SUCCESS:
-      console.log("actopm", action.payload.data);
+      // alert("hello",action.payload.data)
+      console.log("actopm",action.payload.data.data.isSeller);
       return {
         ...state,
         message: action.payload.data.message,
         flag: !state.flag,
         isAuthenticated: true,
-        token: action.payload.data.token,
+        token: action.payload.data.data.token,
         isLoading: false,
-        userData: { ...action.payload.data.user },
-        isSeller: action.payload.data.user.isSeller,
+        userData: { ...action.payload.data.data.data },
+        isSeller: action.payload.data.data.data.isSeller,
       };
     case LOGIN_FAIL:
+      console.log("fail",action.payload)
       return {
         ...state,
         message: action.payload.message,
@@ -75,11 +78,11 @@ export const userReducer = (state = initialState, action) => {
      case 'GETUSER_FULFILLED':
       return{
         ...state,
-        isSeller:action.payload.data.data.isSeller,
-        userData:{...action.payload.data}
+        isSeller:action.payload.data.data.user.isSeller,
+        userData:{...action.payload.data.data.user}
       } 
 
     default:
-      return state;
+      return {...state};
   }
 };

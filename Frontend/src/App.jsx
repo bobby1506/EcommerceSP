@@ -24,6 +24,12 @@ import OrderContainer from './container/OrderContainer';
 import SellerOrders from './components/seller/SellerOrders'
 import SellerOrderContainer from './container/SellerOrderContainer';
 import SellerProfile from './components/seller/SellerProfile';
+import SellerStore from './components/seller/SellerStore'
+import SellerStoreContainer from './container/sellerStoreContainer';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
+import SellerBalance from './components/seller/SellerBalance';
+import SellerBalanceContainer from './container/SellerBalanceContainer';
 
 function App() {
   return (
@@ -32,17 +38,21 @@ function App() {
     <Route path="/" element={<Main><HomeContainer/></Main>}/> 
     <Route path='/login' element={<Login/>}/>
     <Route path='/signup' element={<SignUp/>}/>
+    <Route path='/aboutus' element={<Main><AboutUs/></Main> }/>
+    <Route path='/contactus' element={<Main><ContactUs/></Main> }/>
     <Route path='/products/:storeId' element={<Main><ProductsContainer/></Main>}/>
     <Route path='/products/:storeId/:productId' element={<Main><ProductDetailContainer/></Main>}/>
-    <Route path='/sellerdashboard' element={<Main><SellerContainer/></Main>}/>
+    <Route path='/sellerdashboard' element={<SellerContainer/>}/>
     <Route path='/createstore' element={<Main><StoreFormContainer/></Main>}/>    
-    <Route path='/sellerdashboard/sellerprofile' element={<Main><SellerContainer><SellerProfile/></SellerContainer></Main>}/> 
-    <Route path='/sellerdashboard/sellerproducts' element={<Main><SellerContainer><SellerProductsContainer/></SellerContainer></Main>}/> 
-    <Route path='/sellerdashboard/sellerorders' element={<Main><SellerContainer><SellerOrderContainer/></SellerContainer></Main>}/> 
+    <Route path='/sellerdashboard/sellerprofile' element={<SellerContainer><SellerProfile/></SellerContainer>}/> 
+    <Route path='/sellerdashboard/sellerstore' element={<SellerContainer><SellerStoreContainer/></SellerContainer>}/> 
+    <Route path='/sellerdashboard/sellerproducts' element={<SellerContainer><SellerProductsContainer/></SellerContainer>}/> 
+    <Route path='/sellerdashboard/sellerorders' element={<SellerContainer><SellerOrderContainer/></SellerContainer>}/> 
     <Route path='/sellerdashboard/sellerproducts/addproduct' element={<Main><ProductFormContainer/></Main>}/> 
     <Route path='/cart' element={<Main><CartContainer/></Main>}/> 
     <Route path='/Checkout/:isCartStatus' element={<Main><CheckOutContainer/></Main>}/>
     <Route path='/orders' element={<Main><OrderContainer/></Main>}/>
+    <Route path='/sellerdashboard/sellerbalance' element={<SellerContainer><SellerBalanceContainer/></SellerContainer>}/>
     
   </Routes>
   
