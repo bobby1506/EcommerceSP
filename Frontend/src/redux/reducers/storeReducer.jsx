@@ -5,16 +5,13 @@ const initialState = {
   isLoading: false,
   isCreated:false,
   storesArray: [],
-  storeData: {
-    storeName: "",
-    storeId: "",
-    storeDescription: "",
-    storeAddress: "",
-  },
 };
 
 export const storeReducer = (state = initialState, action) => {
   let response=action.payload;
+  console.log("store",action.payload)
+  console.log("kdjf",action.payload?.data?.data)
+  console.log("0",action.payload?.data?.store)
   switch (action.type) {
     case "CREATESTORE_PENDING":
       return { ...state, isLoading: true };
@@ -24,8 +21,8 @@ export const storeReducer = (state = initialState, action) => {
         isLoading: false,
         flag: !state.flag,
         isCreated:true,
-        storesArray:[...state.storesArray,response.data.store],
-        message: response.data.message,
+        storesArray:response.data.store,
+        message: "store created sucessfully",
       };
     case "CREATESTORE_REJECTED":
       return {
@@ -70,30 +67,7 @@ export const storeReducer = (state = initialState, action) => {
         message: response.data.message,
         flag: !state.flag,
       };
-      case "UPDATESTORE_PENDING":
-      return { ...state, isLoading: true };
-    case "UPDATESTORE_FULFILLED":
-      const updatedStores = (state.storesArray.map = (store, index) => {
-        if (store.id == response.data.id) {
-          state.storesArray[index] = response.data.store; //check
-        }
-        return store;
-      });
-      return {
-        ...state,
-        isLoading: false,
-        storeData: response.data.store, //check
-        storesArray: updatedStores,
-        flag: !state.flag,
-        message: response.data.message,
-      };
-    case "UPDATESTORE_REJECTED":
-      return {
-        ...state,
-        isLoading: false,
-        message: response.data.message,
-        flag: !state.flag,
-      };
+
     default:
       return state;
   }

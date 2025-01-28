@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+
 import StoreCard from "./StoreCard";
 import Button from "./Button";
 import Cookies from "js-cookie"
+import { useNavigate } from "react-router-dom";
 
 const StoreContainer = ({ storeList, isLoadings,getStores, isOwner,getUser }) => {
+  const navigate=useNavigate()
 
   useEffect(()=>{
     getStores();
@@ -12,9 +14,13 @@ const StoreContainer = ({ storeList, isLoadings,getStores, isOwner,getUser }) =>
         if (token) {
           getUser();
         }
- 
-
   },[])
+  useEffect(()=>{
+      if(isOwner){
+        navigate('/sellerdashboard')
+      }
+  },[isOwner])
+  console.log("first",storeList[0]?.logo)
 
   if (isLoadings) {
     return <div>Loading.....</div>;
@@ -26,15 +32,15 @@ const StoreContainer = ({ storeList, isLoadings,getStores, isOwner,getUser }) =>
 
   return (
     <>
-   <Button isSeller={isOwner}/>
     <div className="container mt-4">
       <div className="row">
         {storeList.map((store) => (
           <div key={store._id} className="col-md-4 col-sm-6 mb-4">
             <StoreCard
-              storeName={store.storeName}
-              description={store.description}
+              storeName={store?.storeName}
+              description={store?.description}
               storeId={store._id}
+              url={store?.logo?.url}
             />
           </div>
         ))}

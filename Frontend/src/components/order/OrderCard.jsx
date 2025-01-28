@@ -1,4 +1,5 @@
 import React from 'react';
+import ProductDetail from '../../pages/productDetail';
 
 const OrderCard = ({ order }) => {
   console.log("jay-viru",order)
@@ -23,11 +24,11 @@ const OrderCard = ({ order }) => {
             </p>
 
             <ul className="list-group list-group-flush">
-              {order.orderedItems.map((item) => (
+              {order?.orderedItems?.map((item) => (
                 <li key={item._id} className="list-group-item d-flex justify-content-between align-items-center">
-                 <h4> {item?.productDetails?.productName}</h4> 
+                 <h4> {item?.ProductDetails?.productName}</h4> 
                   <span className="badge bg-primary rounded-pill fs-5 p-2">
-                    ${item?.productDetails?.price}
+                    ${item?.ProductDetails?.price+order.shippingPrice}
                   </span>
                 </li>
               ))}

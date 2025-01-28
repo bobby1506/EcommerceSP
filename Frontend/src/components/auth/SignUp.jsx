@@ -14,26 +14,34 @@ const SignUp = () => {
   const navigate=useNavigate();
   const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const { message, flag,isLoading,isAuthenticated} = useSelector((state) => state.user);
+  const { message, flag,isAuthenticated,isSeller} = useSelector((state) => state.user);
   useEffect(() => {
     if (flag) {
       if(message){
         alert(isAuthenticated)
       }
-      if(isAuthenticated){
 
+      if(isAuthenticated && !isSeller){
+        alert("hello")
          navigate('/')
+      }
+      if(isAuthenticated && isSeller){
+        alert("jello")
+        navigate('/createstore')
       }
     }
   }, [flag]);
   
 
-  const handleOnChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      return { ...prev, [name]: value };
-    });
-  };
+const handleOnChange = (e) => {
+  const { name, value, type } = e.target;
+  setFormData((prev) => {
+    return {
+      ...prev,
+      [name]: type === "radio" ? value === "true" : value,
+    };
+  });
+};
 
   const handleValidation = (values) => {
     let error = {};
@@ -81,19 +89,19 @@ const SignUp = () => {
     const validateError = handleValidation(formData);
     setError(validateError);
     if (Object.keys(validateError).length === 0) {
-      try{
+      console.log(formData)
+      // try{
         dispatch(userRegister(formData));
-      }catch(error){
+      // }catch(error){
 
-      }
+      // }
+
       
-    } else {
-      console.log(error);
-    }
+    } 
   };
-  if(isLoading){
-    return <h1>Loading......</h1>
-  }
+  // if(isLoading){
+  //   return <h1>Loading......</h1>
+  // }
   return (
     <>
       <div

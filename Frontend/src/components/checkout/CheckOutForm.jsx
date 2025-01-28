@@ -56,7 +56,7 @@ const CheckoutForm = ({postOrders,orderedItems,productInfo}) => {
         orderData={shippingInformation:formData,isCart,orderedItems:orderItems}
       }
       else{
-        orderData={shippingInformation:formData,isCart,orderedItems:{productId:productInfo._id,quantity:1,ProductDetails:productInfo}}
+        orderData={shippingInformation:formData,isCart,orderedItems:[{productId:productInfo._id,quantity:1,ProductDetails:productInfo}]}
       }
       console.log(orderData)
       postOrders(orderData);

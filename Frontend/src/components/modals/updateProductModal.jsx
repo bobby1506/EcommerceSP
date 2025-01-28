@@ -1,32 +1,52 @@
 import React, { useState } from "react";
+import { updateProduct } from "../../redux/actions/sellerActions";
+import { useDispatch } from "react-redux";
 
-const UpdateProductModal = ({ product, categories, onUpdate, isVisible, onClose }) => {
+const UpdateProductModal = ({
+  product,
+  categories,
+  onUpdate,
+  isVisible,
+  onClose,
+}) => {
   const [formData, setFormData] = useState({
     productName: product?.productName || "",
-    price: product?.price || "",
+    price: product?.price || 0,
     description: product?.description || "",
     category: product?.category || "",
-    stock: product?.stocks || "",
+    stocks: product?.stocks || 0,
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "number" ? parseInt(value) : value,
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onUpdate(formData);
-    onClose(); 
+    onClose();
   };
+  const dispatch = useDispatch();
 
   return (
     <>
-      <div className={`modal ${isVisible ? "show d-block" : "d-none"}`} tabIndex="-1">
+      <div
+        className={`modal ${isVisible ? "show d-block" : "d-none"}`}
+        tabIndex="-1"
+      >
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Update Product</h5>
-              <button type="button" className="btn-close" onClick={onClose}></button>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={onClose}
+              ></button>
             </div>
             <div className="modal-body">
               <form onSubmit={handleSubmit}>
@@ -89,18 +109,26 @@ const UpdateProductModal = ({ product, categories, onUpdate, isVisible, onClose 
                   <input
                     type="number"
                     className="form-control"
-                    name="stock"
-                    value={formData.stock}
+                    name="stocks"
+                    value={formData.stocks}
                     onChange={handleChange}
                     required
                   />
                 </div>
 
                 <div className="modal-footer">
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    onClick={() => dispatch(updateProduct)}
+                  >
                     Update Product
                   </button>
-                  <button type="button" className="btn btn-secondary" onClick={onClose}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={onClose}
+                  >
                     Close
                   </button>
                 </div>
@@ -111,7 +139,9 @@ const UpdateProductModal = ({ product, categories, onUpdate, isVisible, onClose 
       </div>
 
       {/* Overlay to close modal when clicking outside */}
-      {isVisible && <div className="modal-backdrop fade show" onClick={onClose}></div>}
+      {isVisible && (
+        <div className="modal-backdrop fade show" onClick={onClose}></div>
+      )}
     </>
   );
 };

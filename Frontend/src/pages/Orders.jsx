@@ -13,7 +13,7 @@ const Orders = ({orderItems,oisLoading,getOrders}) => {
   return (
     <>
     {
-     orderItems.map((order)=>(
+     orderItems?.map((order)=>(
       <OrderCard order={order}/>
      ))
     }

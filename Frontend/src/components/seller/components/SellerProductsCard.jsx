@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import UpdateProductModal from "../../modals/updateProductModal";
+import { useDispatch } from "react-redux";
+import { deleteProduct, updateProduct } from "../../../redux/actions/sellerActions";
 
-const SellerProductCard = ({ product, onUpdate, onDelete }) => {
+const SellerProductCard = ({ product}) => {
+
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const dispatch=useDispatch();
   if (!product) return null;
-  const { productName, price, description } = product;
+  const {_id, productName, price, description } = product;
 
 
   const categories = ["Electronics", "Clothing", "Books", "Furniture"];
 
   const handleUpdate = (updatedProduct) => {
     console.log("Updated Product Data:", updatedProduct);
+    dispatch(updateProduct(_id,updatedProduct))
   };
 
-  const hadleDelete=()=>{
-    console.log("deleted")
-  }
 
  
 
@@ -50,7 +52,7 @@ const SellerProductCard = ({ product, onUpdate, onDelete }) => {
             <button className="btn btn-sm btn-primary me-2" onClick={() => setIsModalVisible(true)}>
               Update
             </button>
-            <button className="btn btn-sm btn-danger" onClick={onDelete}>
+            <button className="btn btn-sm btn-danger" onClick={()=>dispatch(deleteProduct(_id))}>
               Delete
             </button>
           </div>
