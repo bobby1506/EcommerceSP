@@ -28,6 +28,19 @@
   color: #61dafb;
 }
 
+/* Hide arrows for Chrome, Safari, Edge, and Opera */
+.no-arrows::-webkit-inner-spin-button,
+.no-arrows::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide arrows for Firefox */
+.no-arrows {
+  -moz-appearance: textfield;
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

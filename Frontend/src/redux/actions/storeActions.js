@@ -7,7 +7,7 @@ export const createStore = (storeData) => {
     dispatch({
       type: "CREATESTORE",
       payload: axios.post(`${url+"createStore"}`, storeData, {
-        headers: { "Content-Type": "application/json" },withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },withCredentials: true,
       }),
     });
   };
@@ -18,7 +18,7 @@ export const getStores = () => {
   return async (dispatch) => {
     dispatch({
       type: "GETSTORES",
-      payload: axios.get(`${url + "listStore"}`),
+      payload: axios.get(`${url + "listStore"}`,{withCredentials:true}),
     });
   };
 };

@@ -57,7 +57,7 @@ export const updateCart = (productId, quantity,count) => {
           withCredentials: true,
         }
       ),
-      meta:{count}
+      meta:{count,productId}
     });
 
   };

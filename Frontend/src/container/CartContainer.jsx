@@ -10,6 +10,7 @@ const mapStateToProps = (state) => {
         cmessage:state.cart.message,
         ctotalItems:state.cart.totalItems,
         caddedToCart:state.cart.addedToCart,
+        ctotalPrice:state.cart.totalPrice
     }
 };
 const mapDispatchToProps = (dispatch) => {

@@ -30,21 +30,23 @@ export const getProduct = (productId) => {
     };
   };
 
-export const deleteProduct = () => {
+export const deleteProduct = (productId) => {
     return async (dispatch) => {
       dispatch({
         type: "DELETEPRODUCT",
-        payload: axios.get(`${url + "deleteProduct"}`),
+        payload: axios.get(`${url +" deleteProduct"+ productId}`),
+        meta:{productId}
+
       });
     };
   };
   
-  export const updateStore = () => {
-    return async (dispatch) => {
-      dispatch({
-        type: "UPDATEPRODUCT",
-        payload: axios.get(`${url + "updateProduct"}`),
-      });
-    };
-  };  
+  // export const updateStore = () => {
+  //   return async (dispatch) => {
+  //     dispatch({
+  //       type: "UPDATEPRODUCT",
+  //       payload: axios.get(`${url + "updateProduct"}`),
+  //     });
+  //   };
+  // };  
 

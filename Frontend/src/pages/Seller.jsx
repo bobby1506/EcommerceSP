@@ -1,7 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { useSelector } from "react-redux";
 
 const Seller = ({ children }) => {
+    const navigate=useNavigate();
+    const jwttoken=useSelector((state)=>state.user.token)
+    
+    useEffect(() => {
+      console.log("jwttoken",jwttoken)
+      if (jwttoken) {
+        Cookies.set("authToken", jwttoken, { expires: 7 }); 
+      }
+      const token = Cookies.get("authToken");
+      if (!token) {
+        navigate("/login"); 
+      }
+      
+    }, []);
+  
   return (
     <>
       <div className="d-flex" style={{ height: "100vh" }}>
@@ -30,6 +47,21 @@ const Seller = ({ children }) => {
             <li className="nav-item">
               <Link to="#withdraw" className="nav-link text-black">
                 <i className="bi bi-cash"></i> Withdraw Money
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="#withdraw" className="nav-link text-black">
+                <i className="bi bi-cash"></i> Todays Credit
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/sellerdashboard/SellerBalance" className="nav-link text-black">
+                <i className="bi bi-cash"></i> Balance
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/sellerdashboard/sellerstore" className="nav-link text-black">
+                <i className="bi bi-cash"></i> Store
               </Link>
             </li>
           </ul>

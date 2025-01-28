@@ -16,6 +16,9 @@ useEffect(()=>{
     if(isSeller){
         SetSellerbutton("Dashboard")
     }
+    if(isSeller){
+      navigate('/sellerdashboard')
+    }
 },[isSeller])
   return (
    <button className='btn btn-dark' onClick={handleOnClick}>{sellerbutton}</button>
