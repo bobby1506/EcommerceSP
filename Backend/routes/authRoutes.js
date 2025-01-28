@@ -26,15 +26,15 @@ router.post(
   registerUser
 );
 
-router.post("/login", validateAll([emailValidator, passwordValidator]), login);
+router.post("/login", login);
 
 router.post("logout", logout);
 
 router.get(
   "/getuser",
   verifyToken,
-  userAuth,
-  validateAll([getUserValidator]),
+  // userAuth,
+  // validateAll([getUserValidator]),
   getUser
 );
 

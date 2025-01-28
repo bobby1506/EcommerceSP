@@ -1,14 +1,7 @@
 const validateOrder = (ctx) => {
-  const { shippingInformation, orderedItems, shippingPrice, paymentStatus } =
-    ctx.request.body;
+  const { shippingInformation, orderedItems, isCart } = ctx.request.body;
 
-  if (
-    !shippingInformation ||
-    !Array.isArray(orderedItems) ||
-    orderedItems.length === 0 ||
-    !shippingPrice ||
-    !paymentStatus
-  ) {
+  if (!shippingInformation || orderedItems.length === 0) {
     return {
       success: false,
       message: "Invalid input data",
@@ -19,8 +12,6 @@ const validateOrder = (ctx) => {
     ...(ctx.state.shared || {}),
     shippingInformation,
     orderedItems,
-    shippingPrice,
-    paymentStatus,
   };
 
   return null;

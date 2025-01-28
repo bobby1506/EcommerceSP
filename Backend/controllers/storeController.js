@@ -327,7 +327,7 @@ const deleteStoreOwner = async (ctx) => {
 
     const OwnerstoreId = user.storeId;
 
-    if (OwnerstoreId != storeId) {
+    if (OwnerstoreId.toString() != storeId.toString()) {
       console.log("You are a hacker");
       return;
     }

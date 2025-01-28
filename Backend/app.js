@@ -8,6 +8,8 @@ require("dotenv").config();
 const cloudinary = require("cloudinary");
 const dbMiddleware = require("./middlewares/dbMiddleware");
 const { cronScheduler } = require("./controllers/cronController");
+const { socketSetup } = require("./utils/socket");
+
 //Auth Routers
 const authRoute = require("./routes/authRoutes");
 const storeRoutes = require("./routes/storeRoutes");
@@ -33,7 +35,7 @@ const router = new Router();
 //middlewares
 // app.use(bodyParser());
 app.use(dbMiddleware);
-app.use(cors());
+// app.use(cors());
 app.use(koaHelmet());
 app.use(
   koaBody({

@@ -7,15 +7,15 @@ import { ProductReducer } from "./reducers/productReducer";
 import { sellerReducer } from "./reducers/sellerReducers";
 import { cartReducer } from "./reducers/cartReducer";
 import { orderReducer } from "./reducers/orderReducer";
-import { composeWithDevTools } from 'redux-devtools-extension';
+// import { composeWithDevTools } from 'redux-devtools-extension';
 
 const rootReducer = combineReducers({
   user: userReducer,
-  store:storeReducer,
-  product:ProductReducer,
-  seller:sellerReducer,
-  cart:cartReducer,
-  order:orderReducer,
+  store: storeReducer,
+  product: ProductReducer,
+  seller: sellerReducer,
+  cart: cartReducer,
+  order: orderReducer,
 });
 // const middleware=[thunk,promise]
-export const store = createStore(rootReducer, composeWithDevTools( applyMiddleware(thunk, promise)));
+export const store = createStore(rootReducer, applyMiddleware(thunk, promise));

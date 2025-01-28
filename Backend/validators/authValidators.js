@@ -60,6 +60,7 @@ const passwordValidators = (ctx) => {
 //password validators
 const passwordValidator = async (ctx) => {
   let { password, email } = ctx.request.body;
+
   console.log(ctx.request.body);
 
   const emptyError = isEmpty(password, "password");

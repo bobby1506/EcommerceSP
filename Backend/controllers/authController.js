@@ -11,6 +11,8 @@ const registerUser = async (ctx) => {
   try {
     console.log("Hello");
     const { username, email, password } = ctx.state.shared;
+    const { isSeller } = ctx.request.body;
+    console.log(isSeller);
 
     const userExist = await findUser(ctx, { email }); //validator
 
@@ -20,7 +22,7 @@ const registerUser = async (ctx) => {
     const newUser = {
       username,
       email,
-      isSeller: false,
+      isSeller,
       storeId: null,
       password: hashed,
       createdAt: new Date(),
@@ -62,8 +64,8 @@ const registerUser = async (ctx) => {
 const login = async (ctx) => {
   try {
     console.log(ctx.request.body);
-    const { email } = ctx.state.shared;
-
+    const { email, password } = ctx.state.shared;
+    console.log(email);
     console.log("Hello2");
 
     const user = await findUser(ctx, { email });

@@ -21,7 +21,7 @@ const createProduct = async (ctx) => {
       !category ||
       !description ||
       price == 0 ||
-      stocks == null
+      stocks == 0
     ) {
       ctx.status = 400;
       ctx.body = {
@@ -81,8 +81,8 @@ const createProduct = async (ctx) => {
       productName,
       category,
       description,
-      price,
-      stocks,
+      price: parseInt(price),
+      stocks: parseInt(stocks),
       storeId,
       logo: {
         public_id: myCloud.public_id,
@@ -231,17 +231,19 @@ const deleteProductOwner = async (ctx) => {
     if (!user) {
       return;
     }
-    const storeId = user.storeId;
+    const storeId = user.storeId.toString();
     const { productId } = ctx.params;
     const productCollection = ctx.db.collection("products");
-    const product = await productCollection.findOne({ _id: productId });
+    const product = await productCollection.findOne({
+      _id: new ObjectId(productId),
+    });
     if (!product) {
       return;
     }
 
     const storeOwnerId = product.storeId;
 
-    if (storeId != storeOwnerId) {
+    if (storeId.toString() != storeOwnerId.toString()) {
       console.log("You are a hacker");
       return;
     }

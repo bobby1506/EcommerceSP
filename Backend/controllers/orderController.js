@@ -20,7 +20,7 @@ const { resHandler } = require("../middlewares/errorHandler");
 
 const createOrder = async (ctx) => {
   try {
-    const { orderedItems } = ctx.state.shared;
+    const { orderedItems, shippingInformation } = ctx.state.shared;
 
     const userId = ctx.state.user?.id;
 
@@ -161,7 +161,14 @@ const createOrder = async (ctx) => {
       await updateProductStock(ctx.db, item.productId, item.quantity);
     }
 
-    const newOrder = { ...orderedItems, userId: userId };
+    const newOrder = {
+      ...orderedItems,
+      userId: userId,
+      shippingInformation,
+      shippingPrice: 50,
+      paidAt: new Date(),
+      paymentStatus: "Pending",
+    };
 
     const insertedOrder = await insertOrder(ctx, newOrder);
     if (insertedOrder.insertedCount === 0) {
@@ -240,10 +247,12 @@ const orderDetailOwner = async (ctx) => {
         return item.storeId == storeId;
         // console.log(item.orderedItems.storeId);
       });
+
+      const orderss = filteredItems || [];
       console.log("filterItems", filteredItem);
       return {
         shippingInformation: order.shippingInformation,
-        orderedItems: filteredItem,
+        orderss,
         orderId: order._id,
         createdAt: new Date(),
       };

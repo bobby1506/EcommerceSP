@@ -7,6 +7,7 @@ const { findUser } = require("../queries/userQueries");
 const verifyToken = async (ctx, next) => {
   try {
     console.log("Hello");
+
     const token = ctx.cookies.get("authToken");
 
     console.log("Token", token);
