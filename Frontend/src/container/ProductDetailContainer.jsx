@@ -8,8 +8,9 @@ const mapStateToProps = (state) => {
         productList:state.product.productsArray,
         cmessage:state.cart.message,
         caddedToCart:state.cart.addedToCart,
+        cflag:state.cart.flag,
         pisLoading:state.product.isLoading,
-        productInformation:state.product.productData
+        productInformation:state.product.productData,
     }
     
 };

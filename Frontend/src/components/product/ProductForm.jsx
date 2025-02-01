@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../.././App.css";
+import { toast } from "react-toastify";
 
 const ProductForm = ({
   addProduct,
   smessage,
   sproductCreated,
   sflag,
+  sisLoading,
   emptymsg,
 }) => {
   const [formData, setFormData] = useState({
@@ -20,15 +22,22 @@ const ProductForm = ({
   const [errors, setErrors] = useState({});
   const [pimage, setPimage] = useState(null);
   const navigate = useNavigate();
+  const nameRef = useRef(null);
+
+  useEffect(()=>{
+  nameRef.current.focus();
+  },[])
 
   useEffect(() => {
     if (smessage) {
-      alert(smessage);
+      if (sproductCreated) {
+        toast.success(smessage);
+        navigate("/sellerdashboard/sellerproducts");
+      } else {
+        toast.error(smessage);
+      }
+      emptymsg();
     }
-    if (sproductCreated) {
-      navigate("/sellerdashboard/sellerproducts");
-    }
-    emptymsg();
   }, [sflag]);
 
   const handleOnChange = (e) => {
@@ -89,6 +98,7 @@ const ProductForm = ({
             name="productName"
             value={formData.productName}
             onChange={handleOnChange}
+            ref={nameRef}
           />
           {errors.productName && (
             <p className="text-danger">{errors.productName}</p>
@@ -112,6 +122,7 @@ const ProductForm = ({
             <option value="fashion">Fashion</option>
             <option value="grocery">Grocery</option>
             <option value="home-appliances">Home Appliances</option>
+            <option value="other">other</option>
           </select>
           {errors.category && <p className="text-danger">{errors.category}</p>}
         </div>

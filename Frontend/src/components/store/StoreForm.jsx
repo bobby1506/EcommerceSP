@@ -1,8 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { useSelector } from "react-redux";
-const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
+import { useDispatch, useSelector } from "react-redux";
+import { socket } from "../../socket";
+import { loginContext } from "../../context/ContextProvider";
+import { toast } from "react-toastify";
+const StoreForm = ({
+  smessage,
+  sisLoading,
+  sisCreated,
+  screateStore,
+  sflag,
+  jwttoken,
+}) => {
+  // const dispatch = useDispatch();
+  // const { email } = useSelector((state) => {
+  //   return state?.user?.userData;
+  // });
+   
+  // useEffect(() => {
+  //   console.log("email", { email, socket });
+
+  //   socket.on("connect", () => {
+  //     console.log("socket connected");
+  //     socket.emit("register", { key: email });
+  //   });
+
+  //   socket.on("resultRes", (payload) => {
+  //     //action call socket ke liye
+  //     dispatch({ type: "SOCKETRESULT", payload });
+  //     console.log("socket data", payload);
+  //   });
+
+  //   socket.on("delayRes", (payload) => {
+  //     dispatch({ type: "SOCKETDELAY", payload });
+  //     //action call socket delay ke liye
+  //     console.log("socket delay data", payload);
+  //   });
+  //   // return () => {
+  //   //   socket.disconnect();
+  //   // };
+  // }, [socket.connected]);
+
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     storeName: "",
@@ -16,29 +55,35 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     upiId: "",
     isBranch: "",
   });
-  const jwttoken = useSelector((state) => {
-    console.log(state.user.token);
-    return state.user.token;
-  });
-  useEffect(()=>{
-    if (sisCreated && smessage) {
-      alert(smessage);
-      navigate("/sellerdashboard");
-    } else {
-      // alert(smessage || "not created")
-    }
-  },[smessage])
-  useEffect(() => {
-    console.log("jwttoken", jwttoken);
-    if (jwttoken) {
-      Cookies.set("authToken", jwttoken, { expires: 7 });
-    }
-    const token = Cookies.get("authToken");
-    if (!token) {
-      navigate("/login");
-    }
-  }, []);
   const navigate = useNavigate();
+  const dispatch=useDispatch();
+  const { contextUserData } = useContext(loginContext);
+  let loginToken = contextUserData.token;
+  // alert(loginToken);
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    if(smessage){
+      if(sisCreated){
+        toast.success(smessage)
+        // navigate('/sellerdashboard/sellerprofile')
+      }
+      else{
+        toast.error(smessage)
+      }
+    }
+  }, [sflag]);
+  useEffect(() => {
+    nameRef.current.focus();
+    console.log("jwttoken", jwttoken);
+    if (jwttoken || loginToken) {
+      jwttoken
+        ? Cookies.set("authToken", jwttoken, { expires: 7 })
+        : Cookies.set("authToken", loginToken, { expires: 7 });
+    }
+    
+  }, []);
+
   const [socialMediaLinks, setSocialMediaLinks] = useState([
     { platform: "", link: "" },
   ]);
@@ -133,16 +178,12 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     formDataToSend.append("logo", logo); // Add the image file
 
     socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(
-        `mediaLinks[${index}][platform]`,
-        link.platform
-      );
+      formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
       formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
     });
-  
-   
+
     screateStore(formDataToSend);
-   
+
   };
   return (
     <div className="container mt-5">
@@ -160,6 +201,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
             name="storeName"
             value={formData.storeName}
             onChange={handleOnChange}
+            ref={nameRef}
           />
           {errors.storeName && (
             <p className="text-danger">{errors.storeName}</p>

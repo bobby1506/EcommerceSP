@@ -11,8 +11,8 @@ const mapStateToProps = (state) =>{
 };
 const mapDispatchToProps = (dispatch) => {
     return{
-        getStores:getStores(),
-        getUser:getUserStatus()
+        getStores:()=>dispatch(getStores()),
+        getUser:()=>dispatch(getUserStatus())
     }
 };
 

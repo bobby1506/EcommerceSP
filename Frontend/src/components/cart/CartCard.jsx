@@ -30,7 +30,7 @@ useEffect(()=>{
     {/* Product Image */}
     <div className="col-md-4">
       <img
-        src="https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ"
+        src={product.logo.url}
         className="img-fluid rounded-start"
         alt="Product"
         style={{ objectFit: 'cover', height: '150px' }}

@@ -5,25 +5,31 @@ const initialState = {
   isLoading: false,
   isCreated:false,
   storesArray: [],
+  storeData:{}
 };
 
 export const storeReducer = (state = initialState, action) => {
   let response=action.payload;
-  console.log("store",action.payload)
-  console.log("kdjf",action.payload?.data?.data)
-  console.log("0",action.payload?.data?.store)
   switch (action.type) {
     case "CREATESTORE_PENDING":
       return { ...state, isLoading: true };
     case "CREATESTORE_FULFILLED":
+
+    if(!response.data.isSocket){
       return {
         ...state,
         isLoading: false,
         flag: !state.flag,
         isCreated:true,
-        storesArray:response.data.store,
         message: "store created sucessfully",
       };
+    }
+    else{
+      return{
+        ...state
+      }
+    }
+    
     case "CREATESTORE_REJECTED":
       return {
         ...state,
@@ -31,6 +37,22 @@ export const storeReducer = (state = initialState, action) => {
         flag: !state.flag,
         message: response.data.message,
       };
+
+    case "SOCKETDELAY":
+      return{
+        ...state,
+        message: "it is taking too much time msg:Socket",
+        flag:!state.flag
+      }
+    case "SOCKETRESULT":
+        return{
+          ...state,
+          isLoading: false,
+          flag: !state.flag,
+          isCreated:true,
+          message: "store created sucessfully  message by Socket",
+        }
+     
     case "GETSTORES_PENDING":
       return { ...state, isLoading: true };
     case "GETSTORES_FULFILLED":

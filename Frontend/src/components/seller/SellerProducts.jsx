@@ -1,18 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SellerProductCard from "./components/SellerProductsCard";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const SellerProducts = ({ productsList, getProduct,sisLoading,deleteProduct }) => {
+const SellerProducts = ({
+  productsList,
+  getProduct,
+  sisLoading,
+  deleteProduct,
+  sproductCreated,
+  sproductDeleted,
+  smessage,
+  sproductUpdated,
+  emptyStoreMsg,
+  sflag,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
+
   const navigate = useNavigate();
 
   useEffect(() => {
     getProduct();
+ 
   }, []);
+
+  useEffect(() => {
+    if (smessage) {
+      if (sproductUpdated) {
+        toast.success(smessage)
+      }
+      else if(sproductDeleted){
+        toast.success(smessage)
+      }
+      else{
+        toast(smessage)
+      }
+      emptyStoreMsg();
+    }
+  }, [sflag]);
 
   const handleOnClick = () => {
     navigate("/sellerdashboard/sellerproducts/addproduct");
@@ -44,9 +73,9 @@ const SellerProducts = ({ productsList, getProduct,sisLoading,deleteProduct }) =
     setCurrentPage(pageNumber);
   };
 
-  if(sisLoading){
-    return <h1>Loading...</h1>
-  }
+  // if (sisLoading) {
+  //   return <h1>Loading...</h1>;
+  // }
 
   if (productsList.length === 0) {
     return (
@@ -73,6 +102,7 @@ const SellerProducts = ({ productsList, getProduct,sisLoading,deleteProduct }) =
             placeholder="Search products"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+          
           />
           <select
             className="form-select"
@@ -93,27 +123,27 @@ const SellerProducts = ({ productsList, getProduct,sisLoading,deleteProduct }) =
       ) : (
         filteredProducts.map((product) => (
           <div key={product._id}>
-            <SellerProductCard product={product}  />
+            <SellerProductCard product={product} />
           </div>
         ))
       )}
 
       <div className="d-flex justify-content-center mt-4">
         <ul className="pagination">
-          {pageNumbers.map((number) => (
-            <li key={number} className="page-item">
-              <button
-                onClick={() => handlePageChange(number)}
-                className="page-link"
-                style={{ borderRadius: "5px", padding: "10px 15px" }}
-              >
-                {number}
-              </button>
-            </li>
-          ))}
+          {pageNumbers.length == 8 &&
+            pageNumbers.map((number) => (
+              <li key={number} className="page-item">
+                <button
+                  onClick={() => handlePageChange(number)}
+                  className="page-link"
+                  style={{ borderRadius: "5px", padding: "10px 15px" }}
+                >
+                  {number}
+                </button>
+              </li>
+            ))}
         </ul>
       </div>
-      
     </div>
   );
 };

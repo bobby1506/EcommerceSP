@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import UpdateProductModal from "../../modals/updateProductModal";
 import { useDispatch } from "react-redux";
-import { deleteProduct, updateProduct } from "../../../redux/actions/sellerActions";
+import { createCoupon, deleteCoupon, deleteProduct, updateCoupon, updateProduct } from "../../../redux/actions/sellerActions";
+import DiscountProductModal from "../../modals/DiscountModal";
+
 
 const SellerProductCard = ({ product}) => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCouponModalVisible, setIsCouponModalVisible] = useState(false);
   const dispatch=useDispatch();
   if (!product) return null;
   const {_id, productName, price, description } = product;
@@ -18,6 +21,16 @@ const SellerProductCard = ({ product}) => {
     dispatch(updateProduct(_id,updatedProduct))
   };
 
+  const handleOnCoupon=(FormData)=>{
+    dispatch(createCoupon (FormData))
+  }
+  const handleCouponUpdate=(FormData)=>{
+    dispatch(updateCoupon(FormData))
+  }
+
+  const handleCouponDelete=(productId)=>{
+    dispatch(deleteCoupon(productId));
+  }
 
  
 
@@ -27,7 +40,7 @@ const SellerProductCard = ({ product}) => {
         {/* Image container */}
         <div className="me-3">
           <img
-            src="https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ"
+            src={product?.logo?.url}
             className="rounded"
             alt={productName}
             style={{ width: "100px", height: "100px", objectFit: "cover" }}
@@ -52,8 +65,11 @@ const SellerProductCard = ({ product}) => {
             <button className="btn btn-sm btn-primary me-2" onClick={() => setIsModalVisible(true)}>
               Update
             </button>
-            <button className="btn btn-sm btn-danger" onClick={()=>dispatch(deleteProduct(_id))}>
+            <button className="btn btn-sm btn-danger me-2" onClick={()=>dispatch(deleteProduct(_id))}>
               Delete
+            </button>
+            <button className="btn btn-sm btn-success me-2" onClick={() => setIsCouponModalVisible(true)}>
+             { product.isDiscount?"Update Discount":"create Discount"}
             </button>
           </div>
         </div>
@@ -65,6 +81,17 @@ const SellerProductCard = ({ product}) => {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
       />
+         <DiscountProductModal
+        product={product}
+        categories={categories}
+        onCoupon={handleOnCoupon}
+        onUpdate={handleCouponUpdate}
+        onDelete={handleCouponDelete}
+        isVisible={isCouponModalVisible}
+        onClose={() => setIsCouponModalVisible(false)}
+      />
+
+      
     </div>
   );
 };

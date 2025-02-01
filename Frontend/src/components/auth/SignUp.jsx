@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { userRegister } from "../../redux/actions/userActions";
 import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -14,22 +15,27 @@ const SignUp = () => {
   const navigate=useNavigate();
   const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const { message, flag,isAuthenticated,isSeller} = useSelector((state) => state.user);
+  const { message,flag,isAuthenticated,isSeller} = useSelector((state) => state.user);
   useEffect(() => {
-    if (flag) {
-      if(message){
-        alert(isAuthenticated)
+   
+    if (message) {
+     
+      if(isAuthenticated){
+        toast.success(message)
       }
-
+      else{
+        toast.error(message)
+      }
+      dispatch({type:"emptyMsg"})
+    
+    }
       if(isAuthenticated && !isSeller){
-        alert("hello")
          navigate('/')
       }
       if(isAuthenticated && isSeller){
-        alert("jello")
         navigate('/createstore')
       }
-    }
+   
   }, [flag]);
   
 

@@ -1,11 +1,13 @@
 const initialState = {
   cartItems: [],
   message: "",
+  flag: false,
   isLoading: false,
   cardLoading: false,
   addedToCart: false,
   totalItems: 0,
   totalPrice: 0,
+  couponApplied: false,
 };
 
 export const cartReducer = (state = initialState, action) => {
@@ -20,8 +22,9 @@ export const cartReducer = (state = initialState, action) => {
           ...state.cartItems,
           action.payload?.data?.productDetails || {},
         ],
-        message: action.payload?.data?.message || "",
+        message: action.payload?.data?.message || "addedToCart",
         addedToCart: true,
+        flag: !state.flag,
       };
 
     case "ADDTOCART_REJECTED":
@@ -34,6 +37,7 @@ export const cartReducer = (state = initialState, action) => {
         addedToCart: false,
         message:
           action.payload?.response?.data?.message || "Failed to add item",
+        flag: !state.flag,
       };
 
     case "GETCART_PENDING":
@@ -46,7 +50,10 @@ export const cartReducer = (state = initialState, action) => {
           (acc, elem) => acc + (elem?.quantity || 0),
           0
         ) || 0;
-       const gettotalPrice=action.payload.data.data.items.reduce((acc,product)=>acc+Number(product.totalPrice),0);
+      const gettotalPrice = action.payload.data.data.items.reduce(
+        (acc, product) => acc + Number(product.totalPrice),
+        0
+      );
 
       return {
         ...state,
@@ -54,7 +61,8 @@ export const cartReducer = (state = initialState, action) => {
         cartItems: action.payload?.data?.data?.items || [],
         totalItems: totalQuantity,
         addedToCart: true,
-        totalPrice:gettotalPrice
+        totalPrice: gettotalPrice,
+        flag: !state.flag,
       };
 
     case "GETCART_REJECTED":
@@ -64,6 +72,7 @@ export const cartReducer = (state = initialState, action) => {
         message:
           action.payload?.response?.data?.message || "Failed to fetch cart",
         addedToCart: false,
+        flag: !state.flag,
       };
 
     case "REMOVEFROMCART_PENDING":
@@ -74,6 +83,14 @@ export const cartReducer = (state = initialState, action) => {
       const updatedCart = state.cartItems.filter(
         (product) => product?.productId !== removeId
       );
+      const RemovedTotalPrice = updatedCart.reduce((acc, product) => {
+        if (product.productId == removeId) {
+          product.totalPrice =
+            Number(product.totalPrice) +
+            Number(product.productDetails.price) * updateCount;
+        }
+        return acc + product.totalPrice;
+      }, 0);
 
       const updatedTotalQuantity = updatedCart.reduce(
         (acc, elem) => acc + (elem?.quantity || 0),
@@ -82,10 +99,12 @@ export const cartReducer = (state = initialState, action) => {
 
       return {
         ...state,
-        message: action.payload?.data?.message || "",
+        message: action.payload?.data?.message || "removed",
         cartItems: updatedCart,
         totalItems: updatedTotalQuantity,
+        totalPrice: RemovedTotalPrice,
         cardLoading: false,
+        flag: !state.flag,
       };
 
     case "REMOVEFROMCART_REJECTED":
@@ -94,6 +113,7 @@ export const cartReducer = (state = initialState, action) => {
         cardLoading: false,
         message:
           action.payload?.response?.data?.message || "Failed to remove item",
+        flag: !state.flag,
       };
 
     case "UPDATECART_PENDING":
@@ -101,24 +121,68 @@ export const cartReducer = (state = initialState, action) => {
 
     case "UPDATECART_FULFILLED":
       const updateCount = action.meta.count;
+      const updateCart = state.cartItems.map((item) => {
+        if (action.meta.productId === item.productId) {
+          item.quantity = Number(item.quantity) + updateCount;
+        }
+        return item;
+      });
       const updateProductId = action.meta.productId;
-      console.log("first",updateCount,"Second",updateProductId)
+      console.log("first", updateCount, "Second", updateProductId);
       const updatedTotalPrice = state.cartItems.reduce((acc, product) => {
         if (product.productId == updateProductId) {
-          product.totalPrice=Number(product.totalPrice) + (Number(product.productDetails.price)* updateCount);
+          product.totalPrice =
+            Number(product.totalPrice) +
+            Number(product.productDetails.price) * updateCount;
         }
-        return acc+product.totalPrice
-      },0);
+        return acc + product.totalPrice;
+      }, 0);
       // alert(updatedTotalPrice)
-      
+
       return {
         ...state,
         totalItems: state.totalItems + (action.meta?.count || 0),
-        totalPrice:updatedTotalPrice
+        totalPrice: updatedTotalPrice,
+        cartItems: [...updateCart],
       };
 
     case "UPDATECART_REJECTED":
-      return { ...state };
+      return {
+        ...state,
+        message: action.payload?.response?.data?.message,
+        isLoading: false,
+        flag: !state.flag,
+      };
+
+    case "APPLYCOUPON_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case "APPLYCOUPON_FULFILLED":
+      const ctotalprice = action.payload?.data?.newCart?.items?.reduce(
+        (acc, product) => {
+          return acc + Number(product.totalPrice);
+        },
+        0
+      );
+      console.log("agg", action.payload?.data?.newCart?.items );
+      return {
+        ...state,
+        isLoading: false,
+        totalPrice: ctotalprice,
+        cartItems: [...action.payload?.data?.newCart?.items],
+        message: action.payload?.data?.message || "coupoun applied",
+        flag: !state.flag,
+        couponApplied: true,
+      };
+    case "APPLYCOUPON_REJECTED":
+      return {
+        ...state,
+        flag: !state.flag,
+        message: action.payload.response.data.message || "some error occured",
+        isLoading: false,
+      };
 
     case "EMPTYMSG":
       return {

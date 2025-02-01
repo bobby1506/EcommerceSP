@@ -13,7 +13,6 @@ export const userRegister = (userData) => {
       return response;
     } catch (error) {
       dispatch({ type: "REGISTER_FAIL", payload: error });
-      throw error
     }
   };
 };
@@ -44,3 +43,5 @@ export const getUserStatus=()=>{
 
   }
 }
+
+

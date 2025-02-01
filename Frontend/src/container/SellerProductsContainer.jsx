@@ -10,6 +10,11 @@ const mapStateToProps = (state) => {
   return {
     productsList: state.seller.productsArray,
     sisLoading: state.seller.isLoading,
+    sproductCreated: state.seller.productCreated,
+    sproductDeleted: state.seller.productDeleted,
+    sproductUpdated: state.seller.productUpdated,
+    sflag: state.seller.flag,
+    smessage: state.seller.message,
   };
 };
 const mapDispatchToProps = (dispatch) => {
@@ -20,6 +25,7 @@ const mapDispatchToProps = (dispatch) => {
     deleteProduct: (productId) => {
       dispatch(deleteProduct(productId));
     },
+    emptyStoreMsg: () => dispatch({ type: "emptyStoreMsg" }),
   };
 };
 

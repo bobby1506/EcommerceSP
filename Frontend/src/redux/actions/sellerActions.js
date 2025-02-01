@@ -91,7 +91,39 @@ export const deleteStore = (storeId) => {
   };
 };
 
+export const createCoupon=(formdata)=>{
+return async(dispatch)=>{
+    dispatch({
+      type:"CREATECOUPON",
+      payload: axios.post(`${url}createCoupon`,formdata,{withCredentials:true}),
+      meta:{...formdata}
+    })
+}
+}
+
+export const updateCoupon=(formdata)=>{
+  return async(dispatch)=>{
+      dispatch({
+        type:"UPDATECOUPON",
+        payload: axios.post(`${url}updateCoupon`,formdata,{withCredentials:true}),
+        meta:{...formdata}
+      })
+  }
+  }
+  export const deleteCoupon=(productId)=>{
+    return async(dispatch)=>{
+        dispatch({
+          type:"DELETECOUPON",
+          payload: axios.post(`${url}deleteCoupon`,{productId},{withCredentials:true}),
+          meta:{productId}
+        })
+    }
+    }  
+
 export const getSellerStore = () => ({
   type: "GETSTORE",
   payload: axios.get(`${url + "ownerDashboard"}`, { withCredentials: true }),
 });
+
+
+

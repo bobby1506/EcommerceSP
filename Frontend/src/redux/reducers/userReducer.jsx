@@ -14,11 +14,11 @@ const initialState = {
   isAuthenticated: false,
   userData: {},
   isSeller: false,
+  byLogin:false,
   token: "",
 };
 
 export const userReducer = (state = initialState, action) => {
-  console.log("initial-state",state)
   switch (action.type) {
     case REGISTER_REQUEST:
       return {
@@ -26,7 +26,6 @@ export const userReducer = (state = initialState, action) => {
         isLoading: true,
       };
     case REGISTER_SUCCESS:
-      console.log("success", action.payload.data.data.token)
       return {
         ...state,
         message: action.payload.data.message,
@@ -35,13 +34,12 @@ export const userReducer = (state = initialState, action) => {
         token: action.payload.data.data.token,
         isLoading: false,
         isSeller:action.payload.data.data.user.isSeller,
-        userData: { ...action.payload.data.user },
+        userData: { ...action.payload.data.data.user },
       };
     case REGISTER_FAIL:
-      console.log("state",state)
       return {
         ...state,
-        message: action.payload.data?.message,
+        message: action.payload.response?.data?.message,
         flag: !state.flag,
         isLoading: false,
       };
@@ -81,6 +79,23 @@ export const userReducer = (state = initialState, action) => {
         isSeller:action.payload.data.data.user.isSeller,
         userData:{...action.payload.data.data.user}
       } 
+
+      case 'USERLOGOUT':
+        // alert("hello")
+        return {
+          ...state,
+          userData:{},
+          flag:!state.flag,
+          isAuthenticated:false,
+          message:"logout Sucessfully",
+          token:""
+
+        }
+      case 'emptyMsg':
+        return{
+          ...state,
+          message:""
+        }  
 
     default:
       return {...state};
