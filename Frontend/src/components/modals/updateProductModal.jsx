@@ -15,6 +15,9 @@ const UpdateProductModal = ({
     description: product?.description || "",
     category: product?.category || "",
     stocks: product?.stocks || 0,
+    logo: { 
+      public_id: product?.logo?.public_id, 
+      url: product?.logo?.url },
   });
 
   const handleChange = (e) => {
@@ -120,7 +123,6 @@ const UpdateProductModal = ({
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    onClick={() => dispatch(updateProduct)}
                   >
                     Update Product
                   </button>

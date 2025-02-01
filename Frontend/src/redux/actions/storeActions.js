@@ -2,7 +2,6 @@ import axios from "axios";
 import { url } from "../../apiConfig";
 
 export const createStore = (storeData) => {
-  console.log("first",storeData)
   return async (dispatch) => {
     dispatch({
       type: "CREATESTORE",

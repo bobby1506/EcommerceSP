@@ -6,7 +6,9 @@ const mapStateToProps = (state) => {
     return {
        smessage:state.store.message,
        sisLoading:state.store.isLoading,
-       sisCreated:state.store.isCreated 
+       sisCreated:state.store.isCreated,
+       sflag:state.store.flag,
+       jwttoken:state.user.token,
     }
 };
 const mapDispatchToProps = (dispatch) => {

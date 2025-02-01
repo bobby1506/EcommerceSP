@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import Seller from "../pages/Seller";
 import Cart from "../pages/Cart";
-import { addToCart, emptyMsg, getCart, removeFromCart, updateCart } from "../redux/actions/cartAction";
+import { addToCart, applyCoupon, emptyMsg, getCart, removeFromCart, updateCart } from "../redux/actions/cartAction";
 
 const mapStateToProps = (state) => {
     return {
@@ -10,7 +10,9 @@ const mapStateToProps = (state) => {
         cmessage:state.cart.message,
         ctotalItems:state.cart.totalItems,
         caddedToCart:state.cart.addedToCart,
-        ctotalPrice:state.cart.totalPrice
+        ctotalPrice:state.cart.totalPrice,
+        cflag:state.cart.flag,
+        ccouponApplied:state.cart.ccouponApplied
     }
 };
 const mapDispatchToProps = (dispatch) => {
@@ -19,7 +21,8 @@ const mapDispatchToProps = (dispatch) => {
       removeFromCart: (productId) => dispatch(removeFromCart(productId)),
       updateCart:(productId,quantity,count)=>dispatch(updateCart(productId,quantity,count)),
       getItem:()=>dispatch(getCart()),
-      emptyMsg:()=>dispatch(emptyMsg())
+      emptyMsg:()=>dispatch(emptyMsg()),
+      applyCoupon:(couponCode)=>dispatch(applyCoupon(couponCode))
       // addToCart:(productId)=>dispatch(addToCart(productId))
     //   cemptyMsg: () => dispatch(emptyMsg())
     };

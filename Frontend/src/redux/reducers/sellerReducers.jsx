@@ -5,6 +5,8 @@ const initialState = {
   isLoading: false,
   productsArray: [],
   ordersArray: [],
+  isUpdated: false,
+  isDeleted: false,
   storeData: {
     storeName: "",
     storeId: "",
@@ -12,6 +14,8 @@ const initialState = {
     storeAddress: "",
   },
   productCreated: false,
+  productDeleted: false,
+  productUpdated: false,
   balance: 0,
 };
 
@@ -25,31 +29,32 @@ export const sellerReducer = (state = initialState, action) => {
         ...state,
         isLoading: false,
         productsArray: [...response.data.products],
-        flag: !state.flag,
+        // flag: !state.flag,
         // message: response.data.message,
       };
     case "GETSELLERPRODUCTS_REJECTED":
       return {
         ...state,
         isLoading: false,
-        // message: response.data.message,
+        message: response?.response?.data?.message || "some error occured",
         flag: !state.flag,
       };
-    case "GETSELLERORDERS_PENDING":
+    case "GETORDERSSELLER_PENDING":
       return { ...state, isLoading: true };
-    case "GETSELLERORDERS_FULFILLED":
+    case "GETORDERSSELLER_FULFILLED":
+      //  const getSellerOrder=action.payload.data.orderss.flatMap((order)=>(order.orderedItems))
       return {
         ...state,
         isLoading: false,
-        ordersArray: response.data.orders, //check
-        flag: !state.flag,
+        ordersArray: [...action.payload.data.orderss],
+        // flag: !state.flag,
         // message: response.data.message,
       };
-    case "GETSELLERORDERS_REJECTED":
+    case "GETORDERSSELLER_REJECTED":
       return {
         ...state,
         isLoading: false,
-        // message: response.data.message,
+        message: response?.response?.data?.message || "some error occured",
         flag: !state.flag,
       };
     case "GETSELLERBALANCE_PENDING":
@@ -58,15 +63,15 @@ export const sellerReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        ordersArray: response.data.balance, //check
-        flag: !state.flag,
+        ordersArray: response.data.balance,
+        // flag: !state.flag,
         // message: response.data.message,
       };
     case "GETSELLERBALANCE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        // message: response.data.message,
+        message: response?.response?.data?.message || "some error occured",
         flag: !state.flag,
       };
     case "ADDSELLERPRODUCT_PENDING":
@@ -86,12 +91,16 @@ export const sellerReducer = (state = initialState, action) => {
         isLoading: false,
         flag: !state.flag,
         // error: action.payload.error,
-        message: action.payload.data?.message,
+        message: response?.response?.data?.message || "some error occured",
       };
     case "DELETEPRODUCT_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
 
     case "DELETEPRODUCT_FULFILLED":
-      console.log(action.meta)
+      console.log(action.meta);
       const { productId } = action.meta;
       const deletedProduct = state.productsArray.filter(
         (product) => product._id != productId
@@ -99,80 +108,212 @@ export const sellerReducer = (state = initialState, action) => {
       return {
         ...state,
         productsArray: [...deletedProduct],
+        flag: !state.flag,
+        productDeleted: true,
+        message: response?.data?.message || "product Deleted",
+        isLoading: false,
       };
-    case "DELETEPRODUCT_REJECTED":
+    case "DELETEPRODUCT_REJECTED": {
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        message: response?.response?.data?.message || "some error occured",
+      };
+    }
 
-    case "UPDATEPRODUCT_PENDING":
+    case "UPDATEPRODUCT_PENDING": {
+      return { ...state, isLoading: true };
+    }
 
     case "UPDATEPRODUCT_FULFILLED":
       let updated_produtId = action.meta.productId;
       let updated_productData = action.meta.productData;
       const updatedProduct = state.productsArray.map((product) => {
         if (product._id == updated_produtId) {
+          console.log("helloooo", updated_productData);
           return updated_productData;
         }
+        return product;
       });
       return {
         ...state,
-        // productsArray: [...updatedProduct],
+        productsArray: [...updatedProduct],
         message: "product updated sucessfully",
+        flag: !state.flag,
+        isLoading: false,
+        productUpdated: true,
       };
     case "UPDATEPRODUCT_REJECTED":
       return {
         ...state,
-        message: "some error occur",
+        message: response?.response?.data?.message || "some error occured",
+        isLoading: false,
+        flag: !state.flag,
       };
 
     case "UPDATESTORE_PENDING":
-
+      return {
+        ...state,
+        isLoading: true,
+      };
     case "UPDATESTORE_FULFILLED":
-    
       let updated_storeId = action.meta.storeId;
       let updated_storeData = action.meta.storeData;
-      console.log("metadata",action.meta.storeData);
+      console.log("metadata", action.meta.storeData);
       return {
         ...state,
         storeData: { ...updated_storeData },
         message: "store updated sucessfully",
+        isUpdated: true,
+        isLoading: false,
+        flag: !state.flag,
       };
     case "UPDATESTORE_REJECTED":
       return {
         ...state,
-        message: "some error occur",
+        flag: !state.flag,
+        message: response?.response?.data?.message || "some error occured",
+        isLoading: false,
       };
     case "GETSTORE_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
 
     case "GETSTORE_FULFILLED":
-      console.log("first",action.payload?.data?.store)
+      console.log("first", action.payload?.data?.store);
       return {
         ...state,
         storeData: { ...action.payload?.data?.store },
-        message: "store updated sucessfully",
+        isLoading: false,
       };
     case "GETSTORE_REJECTED":
       return {
         ...state,
-        message: "some error occur",
+        flag: !state.flag,
+        isLoading: false,
+        message: response?.response?.data?.message || "some error occured",
       };
 
-    case "DELETESTORE_PENDING": 
+    case "DELETESTORE_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
 
     case "DELETESTORE_FULFILLED":
       return {
         ...state,
-        storeData: { }, 
+        storeData: {},
+        flag: !state.flag,
+        isLoading: false,
         message: "store deleted sucessfully",
       };
     case "DELETESTORE_REJECTED":
       return {
         ...state,
-        message: "some error occur",
+        flag: !state.flag,
+        message: response?.response?.data?.message || "some error occured",
+        isLoading: false,
       };
-    case "emptymsg":
+    case "CREATECOUPON_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case "CREATECOUPON_FULFILLED":
+      const coupounProductId = action.meta.productId;
+      const { coupounCode, discountedPrice } = action.meta;
+      const coupounProduct = state.productsArray.map((product) => {
+        if (product._id === coupounProductId) {
+          return { ...product, coupounCode, discountedPrice, isDiscount: true };
+        }
+        return product;
+      });
+
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        productsArray: [...coupounProduct],
+        message: action.payload?.data?.message,
+      };
+    case "CREATECOUPON_REJECTED":
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        message:
+          action.payload?.response?.data?.message || "some error occured",
+      };
+
+    case "UPDATECOUPON_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case "UPDATECOUPON_FULFILLED":
+      const ucoupounProductId = action.meta.productId;
+      const ucoupounCode = action.meta.coupounCode;
+      const udiscountedPrice = action.meta.discountedPrice;
+      const ucoupounProduct = state.productsArray.map((product) => {
+        if (product._id === ucoupounProductId) {
+          return { ...product, ucoupounCode, udiscountedPrice, isDiscount: true };
+        }
+        return product;
+      });
+
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        productsArray: [...ucoupounProduct],
+        message: action.payload?.data?.message,
+      };
+    case "UPDATECOUPON_REJECTED":
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        message:
+          action.payload?.response?.data?.message || "some error occured",    
+      };
+      case "DELETECOUPON_PENDING":
+        return {
+          ...state,
+          isLoading: true,
+        };
+      case "DELETECOUPON_FULFILLED":
+        const dcoupounProductId = action.meta.productId;
+        const dcoupounProduct = state.productsArray.map((product) => {
+          if (product._id === dcoupounProductId) {
+            return { ...product,isDiscount: false};
+          }
+          return product;
+        });
+  
+        return {
+          ...state,
+          isLoading: false,
+          flag: !state.flag,
+          productsArray: [...dcoupounProduct],
+          message: action.payload?.data?.message,
+        };
+      case "DELETECOUPON_REJECTED":
+        return {
+          ...state,
+          isLoading: false,
+          flag: !state.flag,
+          message:
+            action.payload?.response?.data?.message || "some error occured", 
+    };
+
+    case "emptyStoreMsg":
       return {
         ...state,
         message: "",
-        productCreated: false,
       };
 
     default:
