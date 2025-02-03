@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Cookies from "js-cookie";
+import Logout from "../auth/Logout";
 
 const Navbar = () => {
-const [cartItemCount, setCartItemCount] = useState(0);
+  const [cartItemCount, setCartItemCount] = useState(0);
 
-useEffect(() => {
-  const cartData = JSON.parse(localStorage.getItem("cart"));
-  setCartItemCount(cartData?.cartItems.length || 0);
-}, []);
+ 
+  useEffect(() => {
+    const cartData = JSON.parse(localStorage.getItem("cart"));
+    setCartItemCount(cartData?.cartItems.length || 0);
+  }, []);
+
+  
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-body-tertiary">
+      <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/">
             Ebazar
@@ -44,7 +50,7 @@ useEffect(() => {
                   Contact us
                 </Link>
               </li>
-    
+
               <li className="nav-item">
                 <Link className="nav-link active" to="/orders">
                   Orders
@@ -55,14 +61,19 @@ useEffect(() => {
             <ul className="navbar-nav ms-auto">
               <li className="nav-item position-relative">
                 <Link className="nav-link" to="/cart">
-                  <button className="btn btn-danger position-relative">
+                  <button className="btn btn-success position-relative">
                     Cart
-                    {cartItemCount > 0 && (
+                    {/* {cartItemCount > 0 && (
                       <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
                         {cartItemCount}
                       </span>
-                    )}
+                    )} */}
                   </button>
+                </Link>
+              </li>
+              <li className="nav-item position-relative">
+                <Link className="nav-link">
+              <Logout/>
                 </Link>
               </li>
             </ul>

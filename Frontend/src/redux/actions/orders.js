@@ -36,3 +36,9 @@ export const postOrders = (orderData) => {
       });
     };
   };
+
+  export const emptyOrderMsg = () => {
+    return {
+      type: "EMPTYORDERMSG",
+    };
+  };

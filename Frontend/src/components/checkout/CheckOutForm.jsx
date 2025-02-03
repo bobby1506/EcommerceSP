@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const CheckoutForm = ({postOrders,orderedItems,productInfo}) => {
+const CheckoutForm = ({cmessage,orderedItems,cflag,corderCreated,postOrders,productInfo, emptyOrderMsg}) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -26,6 +27,18 @@ const CheckoutForm = ({postOrders,orderedItems,productInfo}) => {
    }
   },[])
 
+  useEffect(()=>{
+    if(cmessage){
+      if(corderCreated){
+        toast.success(cmessage)
+      }
+      else{
+        toast.error(cmessage)
+      }
+      emptyOrderMsg()
+    }
+   
+  },[cflag])
   
 
   const handleChange = (e) => {
@@ -53,14 +66,15 @@ const CheckoutForm = ({postOrders,orderedItems,productInfo}) => {
     e.preventDefault();
     if (validateForm()) {
       if(isCart=="1"){
-        orderData={shippingInformation:formData,isCart,orderedItems:orderItems}
+        const updatedOrderItems=orderItems.map((order)=>{let newOrder={...order,deliveryStatus:"pending"}; return newOrder})
+        console.log("updated_productData" ,updatedOrderItems)
+        orderData={shippingInformation:formData,isCart,orderedItems:updatedOrderItems}
       }
       else{
-        orderData={shippingInformation:formData,isCart,orderedItems:[{productId:productInfo._id,quantity:1,ProductDetails:productInfo}]}
+        orderData={shippingInformation:formData,isCart,orderedItems:[{productId:productInfo._id,quantity:1,productDetails:productInfo,deliveryStatus:"pending"}]}
       }
       console.log(orderData)
       postOrders(orderData);
-      navigate('/')
       
     }
   };

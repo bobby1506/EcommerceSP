@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { userLogin } from "../../redux/actions/userActions";
-import { ToastContainer, toast } from 'react-toastify';
-
-
+import { ToastContainer, toast } from "react-toastify";
+import { loginContext } from "../../context/ContextProvider";
+import axios from "axios";
+import { url } from "../../apiConfig";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState({});
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
@@ -21,44 +22,56 @@ const Login = () => {
       return { ...prev, [name]: value };
     });
   };
-  const dispatch = useDispatch();
-  const { message,flag,isLoading,isAuthenticated,isSeller} = useSelector((state) => { console.log(state) 
-    return state.user});
-  console.log()
+
+  // const dispatch = useDispatch();
+  const { contextUserData, loginDispatch } = useContext(loginContext);
+
+  const { message, flag, isLoading, isAuthenticated, isSeller } =
+    contextUserData;
+
   useEffect(() => {
-    
     if (message) {
-      if(isAuthenticated){
-        toast.success(message)
+      if (isAuthenticated) {
+        toast.success(message);
+      } else {
+        toast.error(message);
       }
-      else{
-        toast.error(message)
-      }
- 
+      loginDispatch({type:"emptyMsg"})
     }
-    setTimeout(() => {
-    
-      if(isAuthenticated && !isSeller){
-        navigate("/")
-      }
-      if(isAuthenticated && isSeller){
-        navigate("/sellerdashboard")
-      }
-    }, 2000);
-  
+
+    if (isAuthenticated && !isSeller) {
+      navigate("/");
+    }
+    if (isAuthenticated && isSeller) {
+      navigate("/sellerdashboard/sellerprofile");
+    }
   }, [flag]);
-  const handleOnSubmit = (e) => {
-    e.preventDefault();
-    dispatch(userLogin(formData));
+
+  const handleOnFetch = async () => {
+    try {
+      loginDispatch({ type: "LOGIN_PENDING" });
+      const response = await axios.post(`${url}login`, formData);
+      loginDispatch({
+        type: "LOGIN_FULFILLED",
+        payload: response,
+      });
+    } catch (error) {
+      loginDispatch({ type: "LOGIN_REJECTED", payload: error });
+    }
   };
 
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+    handleOnFetch();
+    // dispatch(userLogin(formData));
+  };
 
-  if(isLoading){
-    return <h1>Loading......</h1>
+  if (isLoading) {
+    return <h1>Loading......</h1>;
   }
   return (
     <>
-    <ToastContainer/>
+      <ToastContainer />
       <div
         className="container mt-3 shadow p-5 rounded"
         style={{ maxWidth: "400px" }}

@@ -1,6 +1,10 @@
 import logo from "./logo.svg";
 import "./App.css";
+<<<<<<< HEAD
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+=======
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
 import Home from "./pages/Home";
 import Navbar from "./components/layouts/Navbar";
 import Login from "./components/auth/Login";
@@ -30,6 +34,7 @@ import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import SellerBalance from "./components/seller/SellerBalance";
 import SellerBalanceContainer from "./container/SellerBalanceContainer";
+<<<<<<< HEAD
 import { useEffect } from "react";
 import { socket } from "../src/socketFrontend.js";
 
@@ -52,6 +57,70 @@ function App() {
       socket.disconnect();
     };
   }, []);
+=======
+import SellerTotalCreditContainer from "./container/SellerTotalCreditContainer";
+import Cookies from "js-cookie";
+import { useContext, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import PrivateRoute from "./components/layouts/PrivateRoute";
+import { loginContext } from "./context/ContextProvider";
+import { getUserStatus } from "./redux/actions/userActions";
+import { url } from "./apiConfig";
+import axios from "axios";
+import { socket } from "./socket";
+
+function App() {
+  // const { userData } = useSelector((state) => state?.user);
+  // const email = userData?.email;
+  // useEffect(() => {
+  //   // alert(email);
+  //   // if (email) {
+  //     // alert("Abeyy hello");
+
+  //     socket.on("connect", () => {
+  //       console.log("socket connected");
+  //       socket.emit("register", { key: "milton@gmail.com" });
+  //     });
+
+  //       socket.on("resultRes", (payload) => {
+  //         //action call socket ke liye
+  //         dispatch({ type: "SOCKETRESULT", payload });
+  //         console.log("socket data", payload);
+  //       });
+
+  //       socket.on("delayRes", (payload) => {
+  //         dispatch({ type: "SOCKETDELAY", payload });
+  //         //action call socket delay ke liye
+  //         console.log("socket delay data", payload);
+  //       });
+  //     return () => {
+  //       socket.disconnect();
+  //     };
+  //   }
+  // // }
+  // , []);
+  const { loginDispatch } = useContext(loginContext);
+  const handleUserDetails = async () => {
+    try {
+      const response = await axios.get(`${url + "getuser"}`, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+      loginDispatch({ type: "GETUSER_FULFILLED", payload: response });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const dispatch = useDispatch();
+  useEffect(() => {
+    let token = Cookies.get("authToken");
+    if (token) {
+      handleUserDetails();
+      dispatch(getUserStatus());
+    }
+  }, []);
+
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
   return (
     <BrowserRouter>
       <Routes>
@@ -68,49 +137,93 @@ function App() {
         <Route
           path="/aboutus"
           element={
+<<<<<<< HEAD
             <Main>
               <AboutUs />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <AboutUs />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/contactus"
           element={
+<<<<<<< HEAD
             <Main>
               <ContactUs />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <ContactUs />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/products/:storeId"
           element={
+<<<<<<< HEAD
             <Main>
               <ProductsContainer />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <ProductsContainer />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/products/:storeId/:productId"
           element={
+<<<<<<< HEAD
             <Main>
               <ProductDetailContainer />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <ProductDetailContainer />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route path="/sellerdashboard" element={<SellerContainer />} />
         <Route
           path="/createstore"
           element={
+<<<<<<< HEAD
             <Main>
               <StoreFormContainer />
             </Main>
+=======
+            // <PrivateRoute>
+            <StoreFormContainer />
+            // </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/sellerdashboard/sellerprofile"
           element={
             <SellerContainer>
+<<<<<<< HEAD
               <SellerProfile />
+=======
+              <PrivateRoute>
+                <SellerProfile />
+              </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
             </SellerContainer>
           }
         />
@@ -118,7 +231,13 @@ function App() {
           path="/sellerdashboard/sellerstore"
           element={
             <SellerContainer>
+<<<<<<< HEAD
               <SellerStoreContainer />
+=======
+              <PrivateRoute>
+                <SellerStoreContainer />
+              </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
             </SellerContainer>
           }
         />
@@ -126,7 +245,13 @@ function App() {
           path="/sellerdashboard/sellerproducts"
           element={
             <SellerContainer>
+<<<<<<< HEAD
               <SellerProductsContainer />
+=======
+              <PrivateRoute>
+                <SellerProductsContainer />
+              </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
             </SellerContainer>
           }
         />
@@ -134,47 +259,101 @@ function App() {
           path="/sellerdashboard/sellerorders"
           element={
             <SellerContainer>
+<<<<<<< HEAD
               <SellerOrderContainer />
+=======
+              <PrivateRoute>
+                <SellerOrderContainer />
+              </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
             </SellerContainer>
           }
         />
         <Route
           path="/sellerdashboard/sellerproducts/addproduct"
           element={
+<<<<<<< HEAD
             <Main>
               <ProductFormContainer />
             </Main>
+=======
+            <SellerContainer>
+              <PrivateRoute>
+                <ProductFormContainer />
+              </PrivateRoute>
+            </SellerContainer>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/cart"
           element={
+<<<<<<< HEAD
             <Main>
               <CartContainer />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <CartContainer />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/Checkout/:isCartStatus"
           element={
+<<<<<<< HEAD
             <Main>
               <CheckOutContainer />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <CheckOutContainer />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/orders"
           element={
+<<<<<<< HEAD
             <Main>
               <OrderContainer />
             </Main>
+=======
+            <PrivateRoute>
+              <Main>
+                <OrderContainer />
+              </Main>
+            </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
           }
         />
         <Route
           path="/sellerdashboard/sellerbalance"
           element={
             <SellerContainer>
+<<<<<<< HEAD
               <SellerBalanceContainer />
+=======
+              <PrivateRoute>
+                <SellerBalanceContainer />
+              </PrivateRoute>
+            </SellerContainer>
+          }
+        />
+        <Route
+          path="/sellerdashboard/sellertotalcredit"
+          element={
+            <SellerContainer>
+              <PrivateRoute>
+                <SellerTotalCreditContainer />
+              </PrivateRoute>
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
             </SellerContainer>
           }
         />

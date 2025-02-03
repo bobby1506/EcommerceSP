@@ -7,13 +7,14 @@ const mapStateToProps = (state) => {
 return{
     smessage:state.seller.message,
     sflag:state.seller.flag,
-    sproductCreated:state.seller.productCreated
+    sproductCreated:state.seller.productCreated,
+    sisLoading:state.seller.isLoading
 }
 };
 const mapDispatchToProps = (dispatch) => {
     return{
         addProduct:(productData)=>{dispatch(addSellerProduct(productData))},
-        emptymsg:()=>{dispatch({type:"emptymsg" ,payload:""})}
+        emptymsg:()=>{dispatch({type:"emptyStoreMsg" ,payload:""})}
     }
 };
 

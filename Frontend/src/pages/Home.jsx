@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import CartCard from "../components/cart/CartCard";
 import StoreCard from "../components/store/StoreCard";
 import SignUp from "../components/auth/SignUp";
@@ -11,26 +11,32 @@ import Cookies from "js-cookie";
 import AdminSidebar from "./Admin";
 import { useNavigate } from "react-router-dom";
 import StoreContainerContainer from "../container/StoreContainerContainer";
+import { loginContext } from "../context/ContextProvider";
 
-
-const Home = ({jwttoken}) => {
-  const navigate=useNavigate();
-  
+const Home = ({ jwttoken,getStores}) => {
+  const navigate = useNavigate();
+  const { contextUserData } = useContext(loginContext);
+  let loginToken = contextUserData.token;
+  // let [token,setToken]=useState()
   useEffect(() => {
-    console.log("jwttoken",jwttoken)
-    if (jwttoken) {
-      Cookies.set("authToken", jwttoken, { expires: 7 }); 
+    if (jwttoken || loginToken) {
+      jwttoken
+        ? Cookies.set("authToken", jwttoken, { expires: 7 })
+        : Cookies.set("authToken", loginToken, { expires: 7 });
     }
+
     const token = Cookies.get("authToken");
     if (!token) {
-      navigate("/login"); 
+      navigate("/login");
     }
-    
+    else{
+      getStores();
+    }
   }, []);
 
   return (
     <>
-    <StoreContainerContainer/>
+      {<StoreContainerContainer />}
     </>
   );
 };

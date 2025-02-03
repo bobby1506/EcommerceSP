@@ -3,7 +3,10 @@ import { url } from "../../apiConfig";
 import { socket } from "../../socketFrontend";
 
 export const createStore = (storeData) => {
+<<<<<<< HEAD
   console.log("first", storeData);
+=======
+>>>>>>> baeff40c40275dcb68589a938b88f598b91850fe
   return async (dispatch) => {
     dispatch({
       type: "CREATESTORE",

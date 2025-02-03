@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/product/ProductCard";
 
@@ -15,25 +15,40 @@ const Products = ({ getProduct, productsList, isLoadings }) => {
     getProduct(storeId);
   }, [storeId]);
 
-  useEffect(() => {
+  //debouncing
+
+  const handleFilterSearch = useCallback(() => {
     let filtered = productsList;
     if (searchTerm) {
-      filtered = filtered.filter((product) =>
+      filtered = productsList.filter((product) =>
         product.productName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    setFilteredProducts(filtered);
+  }, [productsList, searchTerm]);
+
+  const handleFilter = useCallback(() => {
+    let filtered = productsList;
     if (selectedCategory) {
       filtered = filtered.filter(
         (product) => product.category === selectedCategory
       );
     }
     setFilteredProducts(filtered);
-  }, [searchTerm, selectedCategory, productsList]);
+  }, [productsList, selectedCategory]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(handleFilterSearch, 500);
+    return () => clearTimeout(timeoutId);
+  }, [handleFilterSearch]);
+
+  useEffect(() => {
+    handleFilter();
+  }, [handleFilter]);
 
   if (isLoadings) {
     return <h1>Loading...</h1>;
   }
-
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -85,6 +100,7 @@ const Products = ({ getProduct, productsList, isLoadings }) => {
                 price={product.price}
                 productId={product._id}
                 description={product.description}
+                url={product.logo.url}
               />
             </div>
           ))}
