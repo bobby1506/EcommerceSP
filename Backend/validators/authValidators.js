@@ -1,7 +1,5 @@
-const { resHandler } = require("../middlewares/errorHandler");
-const { findUser } = require("../queries/userQueries");
-const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
+const { findUser } = require("../queries/userQueries");
 
 const {
   isEmpty,
@@ -11,36 +9,38 @@ const {
 
 const emailValidator = (ctx) => {
   let { email } = ctx.request.body;
-
   const emptyError = isEmpty(email, "email");
   if (emptyError) return emptyError;
-
   email = email.trim();
-
   if (!isValidEmail(email)) {
     return {
       field: "email",
       message: "Enter a valid email address",
     };
   }
-
-  // Storing valid email in shared state for further processing
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     email,
   };
-
   return null;
 };
 
-const passwordValidators = (ctx) => {
-  let { password } = ctx.request.body;
+const isSellerValidator = (ctx) => {
+  let { isSeller } = ctx.request.body;
+  const emptyError = isEmpty(isSeller, "seller");
+  if (emptyError) return emptyError;
+  ctx.state.shared = {
+    ...(ctx.state.shared || {}),
+    isSeller,
+  };
+  return null;
+};
 
+const passwordValidator = (ctx) => {
+  let { password } = ctx.request.body;
   const emptyError = isEmpty(password, "password");
   if (emptyError) return emptyError;
-
   password = password.trim();
-
   if (!isValidPassword(password)) {
     return {
       field: "password",
@@ -48,103 +48,72 @@ const passwordValidators = (ctx) => {
         "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.",
     };
   }
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     password,
   };
-
   return null;
 };
 
-//password validators
-const passwordValidator = async (ctx) => {
-  let { password, email } = ctx.request.body;
-
-  console.log(ctx.request.body);
-
-  const emptyError = isEmpty(password, "password");
-  if (emptyError) return emptyError;
-
-  password = password.trim();
-
-  if (!isValidPassword(password)) {
+const passwordMatchValidator = async (ctx) => {
+  let { password, email } = ctx.state.shared;
+  const user = await findUser(ctx, { email });
+  const ismatchPassword = await bcrypt.compare(password, user.password);
+  if (!ismatchPassword) {
     return {
-      field: "password",
-      message:
-        "Password must be at least 8 characters long, include a number, an uppercase, and a lowercase letter",
+      field: "email",
+      message: "Enter a valid email address",
     };
   }
-
-  const user = await findUser(ctx, { email });
-  console.log(user, "user");
-
-  const ismatchPassword = await bcrypt.compare(password, user.password);
-
-  console.log("Hello4");
-
-  if (!ismatchPassword) {
-    resHandler(
-      ctx,
-      false,
-      "Incorrect password",
-      401,
-      null,
-      "Password mismatch in login."
-    );
-    return;
-  }
-
-  // Storing valid password in shared state for further processing
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     password,
   };
-
   return null;
 };
 
 const usernameValidator = (ctx) => {
   const { username } = ctx.request.body;
-
   const emptyError = isEmpty(username, "username");
   if (emptyError) return emptyError;
-
-  // Storing valid username in shared state for further processing
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     username: username.trim(),
   };
-
   return null;
 };
 
-//userId validator
-const getUserValidator = async (ctx) => {
-  const userId = ctx.state.user?.id;
-
-  if (isEmpty(userId, "userId")) {
-    return {
-      field: "userId",
-      message: "User ID is required to fetch user details",
-    };
-  }
-
+const isuserExistValidator = async (ctx) => {
+  const { email } = ctx.state.shared;
   const userCollection = ctx.db.collection("users");
-  const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-
+  const user = await userCollection.findOne({ email });
   if (!user) {
     return {
       field: "user",
-      message: "User not found",
+      message: "User not exist",
     };
   }
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     user,
   };
+  return null;
+};
 
+const userExist = async (ctx) => {
+  const { email } = ctx.state.shared;
+  const userCollection = ctx.db.collection("users");
+  const user = await userCollection.findOne({ email });
+  if (user) {
+    return {
+      field: "userExist",
+      message: "User already exist",
+    };
+  }
+  ctx.state.shared = {
+    ...(ctx.state.shared || {}),
+    user,
+  };
   return null;
 };
 
@@ -152,6 +121,9 @@ module.exports = {
   emailValidator,
   passwordValidator,
   usernameValidator,
-  getUserValidator,
-  passwordValidators,
+  passwordValidator,
+  passwordMatchValidator,
+  isSellerValidator,
+  isuserExistValidator,
+  userExist,
 };

@@ -3,14 +3,16 @@ const { Server } = require("socket.io");
 const sockets = {};
 
 const socketSetup = async (server) => {
+  console.log("Hellooo");
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: "http://localhost:3000",
+      credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connnected");
+    console.log("Client connnectedd");
 
     socket.on("register", (data) => {
       console.log("Socket register");
@@ -30,7 +32,14 @@ const socketSetup = async (server) => {
 };
 
 const eventEmitter = (key, eventt, data) => {
+  console.log(key, eventt);
+  //key = bobbyy12@gmail.com
+  console.log("sockets", sockets);
+
+  console.log("first");
   if (sockets[key]) {
+    console.log("second");
+
     sockets[key].emit(eventt, data);
   }
 };

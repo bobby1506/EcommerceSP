@@ -2,7 +2,6 @@ const Router = require("koa-router");
 const {
   registerUser,
   login,
-  logout,
   getUser,
 } = require("../controllers/authController");
 
@@ -10,11 +9,12 @@ const { validateAll } = require("../middlewares/ValidatorsAll");
 const {
   usernameValidator,
   emailValidator,
+  isSellerValidator,
   passwordValidator,
-  getUserValidator,
-  passwordValidators,
+  isuserExistValidator,
+  userExist,
+  passwordMatchValidator,
 } = require("../validators/authValidators");
-const { userAuth } = require("../middlewares/tokenMiddleware");
 
 const { verifyToken } = require("../middlewares/tokenMiddleware");
 
@@ -22,19 +22,31 @@ const router = new Router();
 
 router.post(
   "/register",
-  validateAll([emailValidator, usernameValidator, passwordValidators]),
+  validateAll([
+    emailValidator,
+    usernameValidator,
+    passwordValidator,
+    isSellerValidator,
+    userExist,
+  ]),
   registerUser
 );
 
-router.post("/login", login);
-
-router.post("logout", logout);
+router.post(
+  "/login",
+  validateAll([
+    emailValidator,
+    passwordValidator,
+    passwordMatchValidator,
+    isuserExistValidator,
+  ]),
+  login
+);
 
 router.get(
   "/getuser",
   verifyToken,
-  // userAuth,
-  // validateAll([getUserValidator]),
+  validateAll([emailValidator, isuserExistValidator]),
   getUser
 );
 

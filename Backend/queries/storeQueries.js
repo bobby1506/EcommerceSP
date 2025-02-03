@@ -64,11 +64,43 @@ const findUserByEmail = async (ctx, email) => {
   }
 };
 
-const updateUserStore = async (ctx, userId, storeId) => {};
+const updateUserStore = async (ctx, userId, storeId) => {
+  const collectionUser = ctx.db.collection("users");
+  const updatedData = await collectionUser.updateOne(
+    {
+      email: userId,
+    },
+    {
+      $set: {
+        isSeller: true,
+        storeId: storeId,
+      },
+    }
+  );
+  return updatedData;
+};
 
-const findStoreById = async (ctx, storeId) => {};
+const findStoreById = async (ctx, storeId) => {
+  const storeCollection = ctx.db.collection("stores");
+  return await storeCollection.findOne({ _id: storeId });
+};
 
-const deleteStoreById = async (ctx, storeId) => {};
+const deleteStoreById = async (ctx, storeId) => {
+  const storeCollection = ctx.db.collection("store");
+  return await storeCollection.deleteOne({
+    _id: new ObjectId(storeId),
+  });
+};
+
+const updatedStore = async (ctx, updatedData, storeId) => {
+  const storeCollection = ctx.db.collection("store");
+  return await storeCollection.updateOne(
+    {
+      _id: new ObjectId(storeId),
+    },
+    { $set: updatedData }
+  );
+};
 
 module.exports = {
   findStoreByGstNumber,
@@ -78,4 +110,5 @@ module.exports = {
   updateUserStore,
   findStoreById,
   deleteStoreById,
+  updatedStore,
 };

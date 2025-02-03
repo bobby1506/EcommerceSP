@@ -11,7 +11,11 @@ const {
   validateCartUpdate,
   validateProductId,
 } = require("../validators/cartValidator");
-const { getUserValidator } = require("../validators/authValidators");
+const {
+  getUserValidator,
+  emailValidator,
+  isuserExistValidator,
+} = require("../validators/authValidators");
 
 const router = new Router();
 
@@ -39,7 +43,7 @@ router.post(
 router.get(
   "/getCart",
   verifyToken,
-  validateAll([getUserValidator]),
+  validateAll([emailValidator, isuserExistValidator]),
   userAuth,
   getCart
 );

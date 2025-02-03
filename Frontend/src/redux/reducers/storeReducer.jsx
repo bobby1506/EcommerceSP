@@ -1,17 +1,17 @@
 const initialState = {
   error: "",
-  message: "",
+  //message: "",
   flag: false,
   isLoading: false,
-  isCreated:false,
+  isCreated: false,
   storesArray: [],
 };
 
 export const storeReducer = (state = initialState, action) => {
-  let response=action.payload;
-  console.log("store",action.payload)
-  console.log("kdjf",action.payload?.data?.data)
-  console.log("0",action.payload?.data?.store)
+  let response = action.payload;
+  console.log("store", action.payload);
+  console.log("kdjf", action.payload?.data?.data);
+  console.log("0", action.payload?.data?.store);
   switch (action.type) {
     case "CREATESTORE_PENDING":
       return { ...state, isLoading: true };
@@ -20,16 +20,16 @@ export const storeReducer = (state = initialState, action) => {
         ...state,
         isLoading: false,
         flag: !state.flag,
-        isCreated:true,
-        storesArray:response.data.store,
-        message: "store created sucessfully",
+        isCreated: true,
+        storesArray: response.data.store,
+        //message: "store created sucessfully",
       };
     case "CREATESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
         flag: !state.flag,
-        message: response.data.message,
+        //message: response.data.//message,
       };
     case "GETSTORES_PENDING":
       return { ...state, isLoading: true };
@@ -58,13 +58,13 @@ export const storeReducer = (state = initialState, action) => {
         storeData: {},
         storesArray: deletedStores,
         flag: !state.flag,
-        message: response.data.message,
+        //message: response.data.//message,
       };
     case "DELETESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message: response.data.message,
+        //message: response.data.//message,
         flag: !state.flag,
       };
 
@@ -72,4 +72,3 @@ export const storeReducer = (state = initialState, action) => {
       return state;
   }
 };
-

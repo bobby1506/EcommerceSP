@@ -5,12 +5,12 @@ const koaHelmet = require("koa-helmet");
 const { koaBody } = require("koa-body");
 const connectDB = require("./config/db");
 require("dotenv").config();
+
 const cloudinary = require("cloudinary");
 const dbMiddleware = require("./middlewares/dbMiddleware");
 const { cronScheduler } = require("./controllers/cronController");
 const { socketSetup } = require("./utils/socket");
 
-//Auth Routers
 const authRoute = require("./routes/authRoutes");
 const storeRoutes = require("./routes/storeRoutes");
 const productRoute = require("./routes/productRoutes");
@@ -27,34 +27,28 @@ const routes = [
   discountRoute,
 ];
 
-//instead of doing this create index.js in routes folder and do that looping over their
-
 const app = new koa();
 const router = new Router();
 
-//middlewares
-// app.use(bodyParser());
 app.use(dbMiddleware);
-// app.use(cors());
 app.use(koaHelmet());
 app.use(
   koaBody({
-    multipart: true, // Enables parsing of multipart data
+    multipart: true,
     urlencoded: true,
     json: true,
     formidable: {
-      maxFileSize: 50 * 1024 * 1024, // Set a file size limit if required (optional)
+      maxFileSize: 50 * 1024 * 1024,
     },
   })
 );
 app.use(
   cors({
-    origin: "http://localhost:3001",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
 
-//other middlewares than body parser
 router.get("/", (ctx) => {
   ctx.status = 200;
   ctx.body = {
@@ -79,12 +73,11 @@ const startServer = async () => {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    // cronScheduler();
+    cronScheduler();
 
     const server = app.listen(process.env.PORT, () => {
       console.log(`Server running on http://localhost:${process.env.PORT}`);
     });
-
     socketSetup(server);
   } catch (error) {
     console.error("Failed to start the server:", error);
