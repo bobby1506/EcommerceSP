@@ -10,24 +10,21 @@ const {
   decreaseStock,
 } = require("../queries/orderQueries");
 
-const {
-  findProductById,
-  getProductById,
-} = require("../queries/productQueries");
-
-const { findUserById } = require("../queries/userQueries");
+const { getProductById } = require("../queries/productQueries");
 
 const { resHandler } = require("../middlewares/errorHandler");
 
 const createOrder = async (ctx) => {
   try {
-    const { orderedItems } = ctx.state.shared;
+    const { isCart } = ctx.request.body;
     const userId = ctx.state.user?.id;
-
-    await decreaseStock(ctx);
-
+    const result = await decreaseStock(ctx);
+    if (!result) {
+      return resHandler(ctx, false, "Not enough stocks", 400);
+    }
     const insertedOrder = await insertOrder(ctx);
-    if (!insertedOrder.acknowledge) {
+    console.log(insertedOrder);
+    if (!insertedOrder.acknowledged) {
       return resHandler(ctx, false, "Error in order creation", 400);
     }
     const newBalance = await calculateStoreBalance(
@@ -41,20 +38,22 @@ const createOrder = async (ctx) => {
       },
     }));
     await updateStoreBalance(ctx, balanceUpdate);
-    if (orderedItems.isCart) {
+    if (isCart) {
       await deleteCart(ctx, userId);
     }
     resHandler(ctx, true, "Order created successfully", 200);
   } catch (err) {
-    console.log("Order creation failed", err);
-    resHandler(ctx, false, "Order creation denied", 401);
+    resHandler(ctx, false, "Order creation denied", 500);
   }
 };
 
 const orderDetails = async (ctx) => {
   try {
     const orders = await findOrdersByUserId(ctx);
-    resHandler(ctx, true, "Order fetched successfully", 200, orders);
+    resHandler(ctx, true, "Order fetched successfully", 200);
+    ctx.body = {
+      orders,
+    };
   } catch (err) {
     resHandler(ctx, false, "Orders not fetched", 500);
   }
@@ -63,22 +62,24 @@ const orderDetails = async (ctx) => {
 const orderDetailOwner = async (ctx) => {
   try {
     const { user } = ctx.state.shared;
-
     const storeId = user.storeId.toString();
     const orders = await findOrdersByStoreId(ctx);
     const filteredItems = orders?.map((order) => {
       const filteredItem = order.orderedItems.filter((item) => {
-        return item.storeId == storeId;
+        return item.productDetails.storeId == storeId;
       });
-      const orderss = filteredItem ? filteredItem : [];
       return {
         shippingInformation: order.shippingInformation,
-        orderss,
+        orderedItems: filteredItem,
         orderId: order._id,
         createdAt: new Date(),
       };
     });
-    resHandler(ctx, true, "Order fetch successfully", 200, filteredItems);
+    const orderss = filteredItems ? filteredItems : [];
+    ctx.body = {
+      orderss,
+    };
+    resHandler(ctx, true, "Order detail fetched for owner", 200);
   } catch (err) {
     resHandler(ctx, false, "Order not fetched", 403);
   }

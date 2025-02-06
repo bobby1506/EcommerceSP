@@ -24,7 +24,7 @@ const updateCreditAndBalance = async () => {
     }));
     await storeCollection.bulkWrite(updateCredits);
   } catch (err) {
-    return resHandler(ctx, false, "Error updating balance", 403);
+    return resHandler(ctx, false, "Error updating balance", 500);
   }
 };
 

@@ -1,22 +1,18 @@
 const { ObjectId } = require("mongodb");
 const { resHandler } = require("../middlewares/errorHandler");
 
-
 const findOrderById = async (ctx, orderId) => {
   try {
     if (!ObjectId.isValid(orderId)) {
       return resHandler(ctx, false, "Invalid order ID");
     }
-
     const orderCollection = ctx.db.collection("orders");
-
     const result = await orderCollection.findOne({
       _id: new ObjectId(orderId),
     });
     if (!result) {
       return resHandler(ctx, false, "Order not found");
     }
-
     return result;
   } catch (error) {
     console.log(error.message);
@@ -27,13 +23,11 @@ const findOrderById = async (ctx, orderId) => {
 const findOrdersByUserId = async (ctx) => {
   try {
     const userId = ctx.state.user?.id;
-
     const orderCollection = ctx.db.collection("orders");
     const result = await orderCollection.find({ userId }).toArray();
     if (result.length === 0) {
       return resHandler(ctx, false, "No orders found for this user");
     }
-
     return result;
   } catch (error) {
     console.log(error.message);
@@ -45,17 +39,10 @@ const findOrdersByStoreId = async (ctx) => {
   try {
     const orderCollection = ctx.db.collection("orders");
     const { user } = ctx.state.shared;
-
     const storeId = user.storeId.toString();
-
     const result = await orderCollection
-      .find({ "orderedItems.ProductDetails.storeId": storeId })
+      .find({ "orderedItems.productDetails.storeId": storeId })
       .toArray();
-
-    if (result.length === 0) {
-      return resHandler(ctx, false, "No orders found for this store");
-    }
-
     return result;
   } catch (error) {
     console.log(error.message);
@@ -74,9 +61,7 @@ const updateOrderDeliveryStatus = async (
     if (!ObjectId.isValid(orderId)) {
       return resHandler(ctx, false, "Invalid order ID", 403);
     }
-
     const orderCollection = ctx.db.collection("orders");
-
     const result = await orderCollection.updateOne(
       {
         _id: new ObjectId(orderId),
@@ -97,7 +82,6 @@ const updateOrderDeliveryStatus = async (
         ],
       }
     );
-
     if (result.matchedCount === 0) {
       return resHandler(
         ctx,
@@ -106,11 +90,9 @@ const updateOrderDeliveryStatus = async (
         403
       );
     }
-
     if (result.modifiedCount === 0) {
       return resHandler(ctx, false, "Order or product not found", 403);
     }
-
     return result;
   } catch (error) {
     console.log(error.message);
@@ -118,13 +100,10 @@ const updateOrderDeliveryStatus = async (
   }
 };
 
-// Insert new order
 const insertOrder = async (ctx, orderData) => {
   try {
     const { orderedItems, shippingInformation } = ctx.state.shared;
-
     const userId = ctx.state.user?.id;
-
     const newOrder = {
       orderedItems,
       userId: userId,
@@ -133,7 +112,6 @@ const insertOrder = async (ctx, orderData) => {
       paidAt: new Date(),
       paymentStatus: "Pending",
     };
-
     const result = await ctx.db.collection("orders").insertOne(newOrder);
     return result;
   } catch (error) {
@@ -148,18 +126,18 @@ const calculateStoreBalance = async (ctx, orderId) => {
       return resHandler(ctx, false, "Invalid order ID", 403);
     }
     const orderCollection = ctx.db.collection("orders");
-    const order = await orderCollection.findOne({ _id: new ObjectId(orderId) });
+    await orderCollection.findOne({ _id: orderId });
     const result = await orderCollection
       .aggregate([
         { $match: { _id: new ObjectId(orderId) } },
         { $unwind: "$orderedItems" },
         {
           $group: {
-            _id: "$orderedItems.ProductDetails.storeId",
+            _id: "$orderedItems.productDetails.storeId",
             totalAmount: {
               $sum: {
                 $multiply: [
-                  "$orderedItems.ProductDetails.price",
+                  "$orderedItems.productDetails.price",
                   "$orderedItems.quantity",
                 ],
               },
@@ -181,25 +159,19 @@ const calculateStoreBalance = async (ctx, orderId) => {
 const updateStoreBalance = async (ctx, balanceUpdates) => {
   try {
     if (balanceUpdates.length === 0) {
-      return resHandler(ctx, false, "No balance updates provided", 403);
+      return resHandler(ctx, false, "No balance updates provided", 400);
     }
-
-    console.log("Final balance updates:", balanceUpdates);
-
-    const result = await ctx.db.collection("store").bulkWrite(balanceUpdates);
-    console.log("Bulk Write Result:", result);
-
-    return result;
+    return await ctx.db.collection("store").bulkWrite(balanceUpdates);
   } catch (error) {
-    console.log("Error updating store balance:", error.message);
     return resHandler(ctx, false, "Error updating store balance", 500);
   }
 };
 
-// Delete cart for user
 const deleteCart = async (ctx, userId) => {
   try {
-    const result = await ctx.db.collection("carts").deleteOne({ userId });
+    const result = await ctx.db
+      .collection("carts")
+      .deleteOne({ userId: userId });
     if (result.deletedCount === 0) {
       return resHandler(ctx, false, "No cart found for this user", 401);
     }
@@ -210,21 +182,14 @@ const deleteCart = async (ctx, userId) => {
   }
 };
 
-//decrease stock
 const decreaseStock = async (ctx) => {
   const { orderedItems } = ctx.state.shared;
-  console.log("ordrered items", orderedItems);
-
   const productCollection = ctx.db.collection("products");
-  // console.log("Step1");
-
-  //check if the stock is avaivlable or not
   for (const item of orderedItems) {
     console.log(item.productId);
     const product = await productCollection.findOne({
       _id: new ObjectId(item.productId),
     });
-
     if (!product) {
       ctx.status = 404;
       ctx.body = {
@@ -233,19 +198,15 @@ const decreaseStock = async (ctx) => {
       };
       return;
     }
-
     if (product.stocks < item.quantity) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Not enough stock",
-      };
-      return;
+      console.log(
+        product.stocks < item.quantity,
+        "console hor r ah ahi ya nahi"
+      );
+      return resHandler(ctx, false, "Not enough stock", 400);
     }
-
-    //decrease stock
     for (const item of orderedItems) {
-      const product = await productCollection.updateOne(
+      await productCollection.updateOne(
         {
           _id: new ObjectId(item.productId),
         },
@@ -253,7 +214,6 @@ const decreaseStock = async (ctx) => {
       );
     }
   }
-
   return true;
 };
 

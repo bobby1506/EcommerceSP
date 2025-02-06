@@ -4,15 +4,12 @@ const { ObjectId } = require("mongodb");
 
 const productNameValidator = async (ctx) => {
   const { productName } = ctx.request.body;
-
   const emptyError = isEmpty(productName, "productName");
   if (emptyError) return emptyError;
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     productName,
   };
-
   return null;
 };
 
@@ -20,14 +17,12 @@ const productIdValidator = async (ctx) => {
   const { productId } = ctx.request.body;
   const emptyError = isEmpty(productId, "productId");
   if (emptyError) return emptyError;
-
   if (!ObjectId.isValid(productId)) {
     return {
       field: "productId",
       message: "Product id is not in valid format",
     };
   }
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     productId,
@@ -39,14 +34,12 @@ const productIdValidatorByParams = async (ctx) => {
   const { productId } = ctx.request.params;
   const emptyError = isEmpty(productId, "productId");
   if (emptyError) return emptyError;
-
   if (!ObjectId.isValid(productId)) {
     return {
       field: "productId",
       message: "Product id is not in valid format",
     };
   }
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     productId,

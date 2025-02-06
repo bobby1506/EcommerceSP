@@ -21,6 +21,7 @@ const storeNameValidator = async (ctx) => {
   };
   return null;
 };
+
 const ownerNameValidator = async (ctx) => {
   const { ownerName } = ctx.request.body;
   const emptyError = isEmpty(ownerName, "ownerName");
@@ -31,6 +32,7 @@ const ownerNameValidator = async (ctx) => {
   };
   return null;
 };
+
 const openTimeValidator = async (ctx) => {
   const { openTime } = ctx.request.body;
   const emptyError = isEmpty(openTime, "openTime");
@@ -41,6 +43,7 @@ const openTimeValidator = async (ctx) => {
   };
   return null;
 };
+
 const closeTimeValidator = async (ctx) => {
   const { closeTime } = ctx.request.body;
   const emptyError = isEmpty(closeTime, "closeTime");
@@ -51,6 +54,7 @@ const closeTimeValidator = async (ctx) => {
   };
   return null;
 };
+
 const addressValidator = async (ctx) => {
   const { address } = ctx.request.body;
   const emptyError = isEmpty(address, "address");
@@ -61,6 +65,7 @@ const addressValidator = async (ctx) => {
   };
   return null;
 };
+
 const descriptionValidator = async (ctx) => {
   const { description } = ctx.request.body;
   const emptyError = isEmpty(description, "description");
@@ -71,6 +76,7 @@ const descriptionValidator = async (ctx) => {
   };
   return null;
 };
+
 const categoryValidator = async (ctx) => {
   const { category } = ctx.request.body;
   const emptyError = isEmpty(category, "category");
@@ -81,6 +87,7 @@ const categoryValidator = async (ctx) => {
   };
   return null;
 };
+
 const mediaLinksValidator = async (ctx) => {
   const { mediaLinks } = ctx.request.body;
   const emptyError = isEmpty(mediaLinks, "mediaLinks");
@@ -91,6 +98,7 @@ const mediaLinksValidator = async (ctx) => {
   };
   return null;
 };
+
 const gstNumberValidator = async (ctx) => {
   const { gstNumber } = ctx.request.body;
   const emptyError = isEmpty(gstNumber, "gstNumber");
@@ -101,6 +109,7 @@ const gstNumberValidator = async (ctx) => {
   };
   return null;
 };
+
 const isBranchValidator = async (ctx) => {
   const { isBranch } = ctx.request.body;
   const emptyError = isEmpty(isBranch, "isBranch");
@@ -111,6 +120,7 @@ const isBranchValidator = async (ctx) => {
   };
   return null;
 };
+
 const upiIdValidator = async (ctx) => {
   const { upiId } = ctx.request.body;
   const emptyError = isEmpty(upiId, "upiId");
@@ -124,10 +134,8 @@ const upiIdValidator = async (ctx) => {
 
 const updatedValidator = async (ctx) => {
   const updatedData = ctx.request.body;
-
   const emptyError = isEmpty(updatedData);
   if (emptyError) return emptyError;
-
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     updatedData,

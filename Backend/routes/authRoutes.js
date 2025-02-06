@@ -13,7 +13,7 @@ const {
   passwordValidator,
   isuserExistValidator,
   userExist,
-  passwordMatchValidator,
+  emailValidatorSignIn,
 } = require("../validators/authValidators");
 
 const { verifyToken } = require("../middlewares/tokenMiddleware");
@@ -23,23 +23,18 @@ const router = new Router();
 router.post(
   "/register",
   validateAll([
-    emailValidator,
+    emailValidatorSignIn,
+    userExist,
     usernameValidator,
     passwordValidator,
     isSellerValidator,
-    userExist,
   ]),
   registerUser
 );
 
 router.post(
   "/login",
-  validateAll([
-    emailValidator,
-    passwordValidator,
-    passwordMatchValidator,
-    isuserExistValidator,
-  ]),
+  validateAll([emailValidatorSignIn, passwordValidator]),
   login
 );
 

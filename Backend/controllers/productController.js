@@ -1,5 +1,4 @@
 const { ObjectId } = require("mongodb");
-const cloudinary = require("cloudinary");
 const { resHandler } = require("../middlewares/errorHandler");
 const {
   uploadProductLogo,
@@ -17,9 +16,9 @@ const createProduct = async (ctx) => {
   try {
     const { productName, category, description, price, stocks } =
       ctx.state.shared;
-    uploadProductLogo(ctx.request.files.logo.filepath);
+    const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
     const userId = ctx.state.user?.id;
-    const seller = findUserById(ctx, userId);
+    const seller = await findUserById(ctx, userId);
     if (!seller || !seller.isSeller) {
       return resHandler(
         ctx,
@@ -29,7 +28,7 @@ const createProduct = async (ctx) => {
       );
     }
     const { storeId } = seller;
-    const existingProduct = await findProductByName(ctx, productName);
+    const existingProduct = await findProductByName(ctx, productName, storeId);
     if (existingProduct) {
       return resHandler(
         ctx,
@@ -51,10 +50,11 @@ const createProduct = async (ctx) => {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
-      isDiscount: true,
+      isDiscount: false,
       discountPrice: 0,
+      couponCode: "",
     };
-    const result = await createProductInDB(newProduct);
+    const result = await createProductInDB(ctx, newProduct);
     resHandler(ctx, true, "Product created successfully", 201, {
       productId: result.insertedId,
       product: newProduct,
@@ -67,13 +67,17 @@ const createProduct = async (ctx) => {
 const getProductsOfStore = async (ctx) => {
   try {
     const { storeId } = ctx.state.shared;
+    console.log(storeId);
     if (!storeId) {
-      resHandler(ctx, false, "Invalid store id", 404);
+      resHandler(ctx, false, "Invalid store id", 400);
     }
     const products = await getProductsByStoreId(ctx, storeId);
-    resHandler(ctx, true, "Product fetched successfully", 200, { products });
+    resHandler(ctx, true, "Product fetched successfully", 200);
+    ctx.body = {
+      products,
+    };
   } catch (err) {
-    resHandler(ctx, false, "Product fetched error", 400);
+    resHandler(ctx, false, "Product fetched error", 500);
   }
 };
 
@@ -83,11 +87,12 @@ const getProductsDetails = async (ctx) => {
     if (!productDetails) {
       return resHandler(ctx, false, "Product not found", 404);
     }
-    resHandler(ctx, true, "Product details fetched successfully", 200, {
+    resHandler(ctx, true, "Product details fetched successfully", 200);
+    ctx.body = {
       productDetails,
-    });
+    };
   } catch (err) {
-    resHandler(ctx, false, "Product details fetched fail for user", 403);
+    resHandler(ctx, false, "Product details fetched fail for user", 500);
   }
 };
 
@@ -101,7 +106,10 @@ const getstoreProductAdmin = async (ctx) => {
       return resHandler(ctx, false, "please provide the storeid", 400);
     }
     const products = await getProductsByStoreId(ctx, storeId);
-    resHandler(ctx, true, "Products fetched successfully", 200, { products });
+    resHandler(ctx, true, "Products fetched successfully", 200);
+    ctx.body = {
+      products,
+    };
   } catch (err) {
     resHandler(ctx, false, "Error in getting owners product", 500);
   }
@@ -115,9 +123,7 @@ const deleteProductOwner = async (ctx) => {
       return resHandler(ctx, false, "User not found", 404);
     }
     const storeId = user.storeId.toString();
-    // const { productId } = ctx.params;
-    // const productCollection = ctx.db.collection("products");
-    const product = await getProductById(ctx); //get
+    const product = await getProductById(ctx);
     if (!product) {
       return resHandler(ctx, false, "Product not found", 404);
     }
@@ -136,13 +142,13 @@ const deleteProductOwner = async (ctx) => {
     }
     resHandler(ctx, true, "Product deleted successfully", 200);
   } catch (err) {
-    resHandler(ctx, false, "Error in deleting product");
+    resHandler(ctx, false, "Error in deleting product", 500);
   }
 };
 
 const updatedProductOwner = async (ctx) => {
   try {
-    const updatedData = ctx.request.body;
+    const productData = ctx.request.body;
     const userId = ctx.state.user?.id;
     const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
@@ -162,11 +168,11 @@ const updatedProductOwner = async (ctx) => {
         403
       );
     }
-    const products = await updateProductById(ctx, updatedData);
+    const products = await updateProductById(ctx, productData);
     if (products.matchedCount == 0) {
       return resHandler(ctx, false, "product not found", 404);
     }
-    resHandler(ctx, true, "Product not found", 200);
+    resHandler(ctx, true, "Product updated successfully", 200);
   } catch (err) {
     resHandler(ctx, false, "Update product failed", 500);
   }

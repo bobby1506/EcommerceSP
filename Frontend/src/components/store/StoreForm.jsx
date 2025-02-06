@@ -17,7 +17,7 @@ const StoreForm = ({
   // const { email } = useSelector((state) => {
   //   return state?.user?.userData;
   // });
-   
+
   // useEffect(() => {
   //   console.log("email", { email, socket });
 
@@ -56,20 +56,19 @@ const StoreForm = ({
     isBranch: "",
   });
   const navigate = useNavigate();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
   // alert(loginToken);
   const nameRef = useRef(null);
 
   useEffect(() => {
-    if(smessage){
-      if(sisCreated){
-        toast.success(smessage)
-        // navigate('/sellerdashboard/sellerprofile')
-      }
-      else{
-        toast.error(smessage)
+    if (smessage) {
+      if (sisCreated) {
+        toast.success(smessage);
+        navigate("/sellerdashboard/sellerprofile");
+      } else {
+        toast.error(smessage);
       }
     }
   }, [sflag]);
@@ -81,7 +80,6 @@ const StoreForm = ({
         ? Cookies.set("authToken", jwttoken, { expires: 7 })
         : Cookies.set("authToken", loginToken, { expires: 7 });
     }
-    
   }, []);
 
   const [socialMediaLinks, setSocialMediaLinks] = useState([
@@ -183,7 +181,6 @@ const StoreForm = ({
     });
 
     screateStore(formDataToSend);
-
   };
   return (
     <div className="container mt-5">

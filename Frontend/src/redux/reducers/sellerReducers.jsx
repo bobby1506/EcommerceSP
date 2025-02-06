@@ -132,7 +132,7 @@ export const sellerReducer = (state = initialState, action) => {
       const updatedProduct = state.productsArray.map((product) => {
         if (product._id == updated_produtId) {
           console.log("helloooo", updated_productData);
-          return updated_productData;
+          return { _id: updated_produtId, ...updated_productData };
         }
         return product;
       });
@@ -260,7 +260,12 @@ export const sellerReducer = (state = initialState, action) => {
       const udiscountedPrice = action.meta.discountedPrice;
       const ucoupounProduct = state.productsArray.map((product) => {
         if (product._id === ucoupounProductId) {
-          return { ...product, ucoupounCode, udiscountedPrice, isDiscount: true };
+          return {
+            ...product,
+            ucoupounCode,
+            udiscountedPrice,
+            isDiscount: true,
+          };
         }
         return product;
       });
@@ -278,37 +283,37 @@ export const sellerReducer = (state = initialState, action) => {
         isLoading: false,
         flag: !state.flag,
         message:
-          action.payload?.response?.data?.message || "some error occured",    
+          action.payload?.response?.data?.message || "some error occured",
       };
-      case "DELETECOUPON_PENDING":
-        return {
-          ...state,
-          isLoading: true,
-        };
-      case "DELETECOUPON_FULFILLED":
-        const dcoupounProductId = action.meta.productId;
-        const dcoupounProduct = state.productsArray.map((product) => {
-          if (product._id === dcoupounProductId) {
-            return { ...product,isDiscount: false};
-          }
-          return product;
-        });
-  
-        return {
-          ...state,
-          isLoading: false,
-          flag: !state.flag,
-          productsArray: [...dcoupounProduct],
-          message: action.payload?.data?.message,
-        };
-      case "DELETECOUPON_REJECTED":
-        return {
-          ...state,
-          isLoading: false,
-          flag: !state.flag,
-          message:
-            action.payload?.response?.data?.message || "some error occured", 
-    };
+    case "DELETECOUPON_PENDING":
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case "DELETECOUPON_FULFILLED":
+      const dcoupounProductId = action.meta.productId;
+      const dcoupounProduct = state.productsArray.map((product) => {
+        if (product._id === dcoupounProductId) {
+          return { ...product, isDiscount: false };
+        }
+        return product;
+      });
+
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        productsArray: [...dcoupounProduct],
+        message: action.payload?.data?.message,
+      };
+    case "DELETECOUPON_REJECTED":
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        message:
+          action.payload?.response?.data?.message || "some error occured",
+      };
 
     case "emptyStoreMsg":
       return {

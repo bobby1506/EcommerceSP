@@ -1,4 +1,4 @@
-const isEmpty = require("../sharedFunction/authShared");
+const { isEmpty } = require("../sharedFunction/authShared");
 
 const validateProductId = (ctx) => {
   const { productId } = ctx.request.body;

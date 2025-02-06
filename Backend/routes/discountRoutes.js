@@ -12,9 +12,8 @@ const {
   verifyToken,
   userAuth,
 } = require("../middlewares/tokenMiddleware");
-const validateAll = require("../middlewares/ValidatorsAll");
+const { validateAll } = require("../middlewares/ValidatorsAll");
 const {
-  discountIdValidator,
   couponCodeValidator,
   discountedPriceValidator,
 } = require("../validators/discountValidator");
@@ -23,21 +22,26 @@ const { productIdValidator } = require("../validators/productValidators");
 router.post(
   "/createCoupon",
   verifyToken,
-  validateAll([discountIdValidator, couponCodeValidator, productIdValidator]),
+  validateAll([
+    couponCodeValidator,
+    productIdValidator,
+    discountedPriceValidator,
+  ]),
   sellerAuth,
   createDiscount
 );
-router.put(
+router.post(
   "/updateCoupon",
   verifyToken,
-  validateAll([discountIdValidator, discountedPriceValidator]),
+  validateAll([productIdValidator, discountedPriceValidator]),
   sellerAuth,
   updateDiscount
 );
+
 router.post(
   "/deleteCoupon",
   verifyToken,
-  validateAll([discountIdValidator]),
+  validateAll([productIdValidator]),
   sellerAuth,
   deleteDiscount
 );

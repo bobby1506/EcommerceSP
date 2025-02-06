@@ -33,7 +33,6 @@ const socketSetup = async (server) => {
 
 const eventEmitter = (key, eventt, data) => {
   console.log(key, eventt);
-  //key = bobbyy12@gmail.com
   console.log("sockets", sockets);
 
   console.log("first");

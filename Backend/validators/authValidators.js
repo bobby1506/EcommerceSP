@@ -8,16 +8,36 @@ const {
 } = require("../sharedFunction/authShared");
 
 const emailValidator = (ctx) => {
-  let { email } = ctx.request.body;
+  const { email } = ctx.state.user;
+  console.log(email, "email1");
   const emptyError = isEmpty(email, "email");
   if (emptyError) return emptyError;
-  email = email.trim();
   if (!isValidEmail(email)) {
     return {
       field: "email",
       message: "Enter a valid email address",
     };
   }
+  console.log("good");
+  ctx.state.shared = {
+    ...(ctx.state.shared || {}),
+    email,
+  };
+  return null;
+};
+
+const emailValidatorSignIn = (ctx) => {
+  let { email } = ctx.request.body;
+  console.log(email, "email1");
+  const emptyError = isEmpty(email, "email");
+  if (emptyError) return emptyError;
+  if (!isValidEmail(email)) {
+    return {
+      field: "email",
+      message: "Enter a valid email address",
+    };
+  }
+  console.log("good");
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     email,
@@ -26,9 +46,8 @@ const emailValidator = (ctx) => {
 };
 
 const isSellerValidator = (ctx) => {
-  let { isSeller } = ctx.request.body;
-  const emptyError = isEmpty(isSeller, "seller");
-  if (emptyError) return emptyError;
+  const { isSeller } = ctx.request.body;
+  console.log(isSeller, "isSeller");
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     isSeller,
@@ -40,7 +59,6 @@ const passwordValidator = (ctx) => {
   let { password } = ctx.request.body;
   const emptyError = isEmpty(password, "password");
   if (emptyError) return emptyError;
-  password = password.trim();
   if (!isValidPassword(password)) {
     return {
       field: "password",
@@ -57,6 +75,7 @@ const passwordValidator = (ctx) => {
 
 const passwordMatchValidator = async (ctx) => {
   let { password, email } = ctx.state.shared;
+  console.log("password", password);
   const user = await findUser(ctx, { email });
   const ismatchPassword = await bcrypt.compare(password, user.password);
   if (!ismatchPassword) {
@@ -84,7 +103,7 @@ const usernameValidator = (ctx) => {
 };
 
 const isuserExistValidator = async (ctx) => {
-  const { email } = ctx.state.shared;
+  const { email } = ctx.state.user;
   const userCollection = ctx.db.collection("users");
   const user = await userCollection.findOne({ email });
   if (!user) {
@@ -100,8 +119,25 @@ const isuserExistValidator = async (ctx) => {
   return null;
 };
 
+const isuserExistValidatorSignIn = async (ctx) => {
+  const { email } = ctx.request.body;
+  const userCollection = ctx.db.collection("users");
+  const user = await userCollection.findOne({ email: email });
+  if (!user) {
+    return {
+      field: "user",
+      message: "User not exist",
+    };
+  }
+  ctx.state.shared = {
+    ...(ctx.state.shared || {}),
+    user,
+  };
+  return null;
+};
+
 const userExist = async (ctx) => {
-  const { email } = ctx.state.shared;
+  const { email } = ctx.request.body;
   const userCollection = ctx.db.collection("users");
   const user = await userCollection.findOne({ email });
   if (user) {
@@ -126,4 +162,6 @@ module.exports = {
   isSellerValidator,
   isuserExistValidator,
   userExist,
+  emailValidatorSignIn,
+  isuserExistValidatorSignIn,
 };

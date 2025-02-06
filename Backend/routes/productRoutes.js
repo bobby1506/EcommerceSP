@@ -15,7 +15,6 @@ const {
   userAuth,
 } = require("../middlewares/tokenMiddleware");
 const {
-  productIdValidator,
   productNameValidator,
   descriptionValidator,
   priceValidator,
@@ -31,7 +30,6 @@ router.post(
   "/createProduct",
   verifyToken,
   validateAll([
-    productIdValidator,
     productNameValidator,
     descriptionValidator,
     priceValidator,
@@ -69,7 +67,7 @@ router.post(
   validateAll([productIdValidatorByParams]),
   updatedProductOwner
 );
-router.delete(
+router.post(
   "/deleteProduct/:productId",
   verifyToken,
   validateAll([productIdValidatorByParams]),

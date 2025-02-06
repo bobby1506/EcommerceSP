@@ -1,4 +1,3 @@
-//ismee optimization karna hai agar array ya number aay ato kya karne ka
 const isEmpty = (field, fieldName) => {
   if (!field) {
     return {

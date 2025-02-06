@@ -4,9 +4,9 @@ const initialState = {
   orderList: [],
   isLoading: false,
   message: "",
-  orderCreated:false,
-  orderFetch:false,
-  flag:false
+  orderCreated: false,
+  orderFetch: false,
+  flag: false,
 };
 
 export const orderReducer = (state = initialState, action) => {
@@ -18,26 +18,26 @@ export const orderReducer = (state = initialState, action) => {
         isLoading: true,
       };
     case "GETORDERS_FULFILLED":
-        const updateOrdersList=[];
-        for(const item of response.orders){
-            for(const order of item.orderedItems){
-                updateOrdersList.unshift(order);
-            }
+      const updateOrdersList = [];
+      for (const item of response.orders) {
+        for (const order of item.orderedItems) {
+          updateOrdersList.unshift(order);
         }
+      }
       return {
         ...state,
         orderList: [...response.orders],
         isLoading: false,
-        orderFetch:true,
+        orderFetch: true,
         // message:response.message,
-        flag:!state.flag,
+        flag: !state.flag,
       };
     case "GETORDERS_REJECTED":
       return {
         ...state,
         isLoading: false,
         // message:action.payload?.response?.data?.message,
-        flag:!state.flag,
+        flag: !state.flag,
       };
     case "POSTORDERS_PENDING":
       return {
@@ -48,16 +48,17 @@ export const orderReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        orderCreated:true,
-        message:response?.message ||"order created",
-        flag:!state.flag
+        orderCreated: true,
+        message: response?.message || "order created",
+        flag: !state.flag,
       };
     case "POSTORDERS_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message:action.payload?.response?.data?.message ||"some error occurred",
-        flag:!state.flag,
+        message:
+          action.payload?.response?.data?.message || "some error occurred",
+        flag: !state.flag,
       };
     case "UPDATEORDERS_PENDING":
       return {
@@ -72,25 +73,24 @@ export const orderReducer = (state = initialState, action) => {
         // message:
       };
     case "UPDATEORDERS_REJECTED":
-      // return {
-      //   ...state,
-      //   isLoading: false,
-      //   message:action.payload?.response?.data?.message ||"some error occurred"
-      // };
+    // return {
+    //   ...state,
+    //   isLoading: false,
+    //   message:action.payload?.response?.data?.message ||"some error occurred"
+    // };
 
     case "GETORDERSSELLER_PENDING":
       return {
         ...state,
-        isLoading:true,
+        isLoading: true,
       };
     case "GETORDERSSELLER_FULFILLED":
-      
       return {
         ...state,
         orderList: [...response.orderss],
         isLoading: false,
-        orderFetch:true,
-        flag:!state.flag,
+        orderFetch: true,
+        flag: !state.flag,
 
         // message:
       };
@@ -98,17 +98,15 @@ export const orderReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        message:action.payload?.response?.data?.message,
-        flag:!state.flag,
+        message: action.payload?.response?.data?.message,
+        flag: !state.flag,
       };
-      case "EMPTYORDERMSG":
-        return{
-          ...state,
-          message:"",
-        }
-     default:
-        return {...state }
+    case "EMPTYORDERMSG":
+      return {
+        ...state,
+        message: "",
+      };
+    default:
+      return { ...state };
   }
-
-
 };

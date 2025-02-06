@@ -1,5 +1,4 @@
 const { ObjectId } = require("mongodb");
-const cloudinary = require("cloudinary");
 const { resHandler } = require("../middlewares/errorHandler");
 const { eventEmitter } = require("../utils/socket");
 const { uploadProductLogo } = require("../queries/productQueries");
@@ -11,6 +10,7 @@ const {
   findStoreById,
   updatedStore,
 } = require("../queries/storeQueries");
+const { findUser } = require("../queries/userQueries");
 // const { getData, setData, close, deleteCache } = require("../utils/redisUtils");
 
 const createStore = async (ctx) => {
@@ -35,7 +35,7 @@ const createStore = async (ctx) => {
   }, TIME);
 
   try {
-    uploadProductLogo(ctx.request.files.logo.filepath);
+    const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
 
     const {
       storeName,
@@ -106,7 +106,7 @@ const createStore = async (ctx) => {
     }
 
     const result = await insertNewStore(ctx, newStore);
-    const updatedData = await updateUserStore(ctx, userId, result.insertedId);
+    await updateUserStore(ctx, userId, result.insertedId);
 
     clearTimeout(timeout);
 
@@ -140,10 +140,8 @@ const createStore = async (ctx) => {
     console.log("Registration Failed", err.message);
     resHandler(ctx, false, "Internal server error by socket", 500);
   }
-  // error(ctx, 500, "Internal server error");
 };
 
-//Normal store listing
 const storeList = async (ctx) => {
   try {
     // const redisKey = "storelist";
@@ -160,11 +158,13 @@ const storeList = async (ctx) => {
     //   };
     //   return;
     // }
-    //two way
     const collectionStore = ctx.db.collection("store");
     const store = await collectionStore.find().toArray();
     // await setData(redisKey, store, 3600);
-    resHandler(ctx, true, "Store list fetch successfully", 200, store);
+    resHandler(ctx, true, "Store list fetch successfully", 200);
+    ctx.body = {
+      store,
+    };
   } catch (err) {
     resHandler(ctx, false, "Internal server error", 500);
   }
@@ -172,7 +172,6 @@ const storeList = async (ctx) => {
 
 const ownerDashboardDetail = async (ctx) => {
   try {
-    // const userId = ctx.state.user;
     const userId = ctx.state.user?.id;
     if (!userId) {
       return resHandler(ctx, false, "User not found", 403);
@@ -197,14 +196,18 @@ const ownerDashboardDetail = async (ctx) => {
     }
     // await setData(redisKey, store, 3600);
     resHandler(ctx, true, "Store details fetched successfully", 200);
+    ctx.body = {
+      store,
+    };
   } catch (err) {
-    resHandler(ctx, false, "Internal server error", 500);
+    resHandler(ctx, false, err, 500);
   }
 };
 
 const updateStore = async (ctx) => {
   try {
     const userId = ctx.state.user?.id;
+    const { storeId } = ctx.state.shared;
     const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
       return resHandler(ctx, false, "User not found", 404);
@@ -213,13 +216,10 @@ const updateStore = async (ctx) => {
     if (OwnerstoreId.toString() != storeId.toString()) {
       return resHandler(ctx, false, "You are a hacker", 403);
     }
-
     if (!storeId) {
       return resHandler(ctx, false, "store id required", 404);
     }
-
-    const updatedData = ctx.state.shared;
-
+    const updatedData = ctx.request.body;
     const updatedDoc = await updatedStore(ctx, updatedData, storeId);
 
     if (updatedDoc.modifiedCount === 0) {
@@ -241,7 +241,6 @@ const deleteStoreOwner = async (ctx) => {
       return resHandler(ctx, false, "User not found", 404);
     }
     const OwnerstoreId = user.storeId;
-
     if (OwnerstoreId.toString() != storeId.toString()) {
       console.log("You are a hacker");
       return;
@@ -249,7 +248,6 @@ const deleteStoreOwner = async (ctx) => {
     if (!storeId) {
       return resHandler(ctx, false, "Store id required", 404);
     }
-
     const deletedStore = await deleteStoreById(ctx, storeId);
     if (deletedStore.deletedCount == 0) {
       return resHandler(ctx, false, "Store not found", 403);

@@ -4,31 +4,83 @@ const createDiscountCoupon = async (ctx, newDiscount) => {
   return discount;
 };
 
-const findDiscountCouponById = async (ctx) => {
-  const { discountId } = ctx.state.shared;
+const findDiscountCouponById = async (ctx, discountId) => {
   const discountCollection = ctx.db.collection("discounts");
-  const discount = await discountCollection.findOne({ discountId });
+  const discount = await discountCollection.findOne({ _id: discountId });
   return discount;
 };
 
-const deleteCoupons = async (ctx) => {
-  const { discountId } = ctx.state.shared;
+const findDiscountCouponByProductId = async (ctx) => {
+  const { productId } = ctx.request.shared;
+  const discountCollection = ctx.db.collection("discounts");
+  const discountDoc = await discountCollection.findOne({
+    productId: productId,
+  });
+  return discountDoc;
+};
+
+const updateProductDiscountDetails = async (ctx) => {
+  const productCollection = ctx.db.collection("products");
+  const updatedProduct = await productCollection.updateOne(
+    {
+      _id: new ObjectId(productId),
+    },
+    {
+      $set: { isDiscount: false, couponCode: "", discountedPrice: 0 },
+    }
+  );
+  return updatedProduct;
+};
+
+const updateDiscountOnProduct = async (ctx) => {
+  const { productId, couponCode, discountedPrice } = ctx.state.shared;
+  const productCollection = ctx.db.collection("products");
+  const updateDiscount = await productCollection.updateOne(
+    {
+      _id: new ObjectId(productId),
+    },
+    {
+      $set: {
+        couponCode: couponCode,
+        discountedPrice: discountedPrice,
+      },
+    }
+  );
+  return updateDiscount;
+};
+
+const updateDiscountOnCart = async (ctx, finalDiscount, storeId, productId) => {
+  const cartCollection = await ctx.db.collection("carts");
+  const updatedCart = await cartCollection.updateOne(
+    {
+      userId,
+      "items.productId": productId,
+      "items.productDetails.storeId": storeId,
+    },
+    {
+      $mul: { "items.$.totalPrice": 1 - finalDiscount },
+    }
+  );
+  return updatedCart;
+};
+
+const deleteCoupons = async (ctx, discountId) => {
+  const discountCollection = ctx.db.collection("discounts");
   const deleteCoupon = await discountCollection.deleteOne({
-    _id: new ObjectId(discountId),
+    _id: discountId,
   });
   return deleteCoupon;
 };
 
-const updateDiscounts = async (ctx) => {
-  const { discountId, discountedPrice } = ctx.state.shared;
+const updateDiscounts = async (ctx, discountId, updatedData) => {
   const discountCollection = ctx.db.collection("discounts");
   const updatedDiscount = await discountCollection.updateOne(
     {
-      _id: new ObjectId(discountId),
+      _id: discountId,
     },
     {
       $set: {
-        discountedprice: discountedPrice,
+        ...updatedData,
       },
     }
   );
@@ -45,54 +97,8 @@ const findCouponByCouponCode = async (ctx) => {
   return discountCoupon;
 };
 
-const calculateDiscountedPrice = async (ctx, finalDiscount, productId) => {
-  const userId = ctx.state.user?.id;
-
-  if (!userId) {
-    return resHandler(ctx, false, "Unauthorized user", 403);
-  }
-
-  const cartCollection = ctx.db.collection("cart");
-
-  const aggregatedCart = await cartCollection
-    .aggregate([
-      {
-        $match: {
-          userId,
-          "items.productId": productId,
-        },
-      },
-      {
-        $unwind: "$items",
-      },
-      {
-        $match: {
-          "items.productId": productId,
-        },
-      },
-      {
-        $set: {
-          "items.totalPrice": {
-            $subtract: [
-              "$items.totalPrice",
-              { $multiply: ["$items.totalPrice", finalDiscount] },
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          items: { $push: "$items" },
-        },
-      },
-    ])
-    .toArray();
-
-  return aggregatedCart;
-};
-
 const claimUserUpdate = async (ctx, filterone, filtertwo) => {
+  const discountCollection = ctx.db.collection("discounts");
   return await discountCollection.updateOne(filterone, filtertwo);
 };
 
@@ -102,6 +108,9 @@ module.exports = {
   deleteCoupons,
   updateDiscounts,
   findCouponByCouponCode,
-  calculateDiscountedPrice,
+  updateDiscountOnProduct,
   claimUserUpdate,
+  findDiscountCouponByProductId,
+  updateProductDiscountDetails,
+  updateDiscountOnCart,
 };

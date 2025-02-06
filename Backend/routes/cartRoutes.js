@@ -11,11 +11,7 @@ const {
   validateCartUpdate,
   validateProductId,
 } = require("../validators/cartValidator");
-const {
-  getUserValidator,
-  emailValidator,
-  isuserExistValidator,
-} = require("../validators/authValidators");
+const { isuserExistValidator } = require("../validators/authValidators");
 
 const router = new Router();
 
@@ -28,22 +24,22 @@ router.post(
 );
 router.post(
   "/removeCart",
-  validateAll([validateProductId]),
   verifyToken,
+  validateAll([validateProductId]),
   userAuth,
   removeFromCart
 );
 router.post(
   "/updateCart",
-  validateAll([validateProductId, validateCartUpdate]),
   verifyToken,
+  validateAll([validateProductId, validateCartUpdate]),
   userAuth,
   updateCarts
 );
 router.get(
   "/getCart",
   verifyToken,
-  validateAll([emailValidator, isuserExistValidator]),
+  validateAll([isuserExistValidator]),
   userAuth,
   getCart
 );

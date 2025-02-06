@@ -8,7 +8,7 @@ const findProductById = async (ctx, productId) => {
   return foundProduct;
 };
 
-const updateCart = async (ctx, userId, product) => {
+const updateCart = async (ctx, userId, product, quantity) => {
   const cartCollection = ctx.db.collection("carts");
   const updatedCart = await cartCollection.updateOne(
     { userId },
@@ -16,7 +16,7 @@ const updateCart = async (ctx, userId, product) => {
       $push: {
         items: {
           productId: product._id.toString(),
-          quantity: 1,
+          quantity,
           productDetails: product,
           totalPrice: product.price,
         },
@@ -28,9 +28,11 @@ const updateCart = async (ctx, userId, product) => {
 };
 
 const removeProductFromCart = async (ctx, userId, productId) => {
-  const collection = ctx.collection("carts");
+  console.log("hello");
+  const collection = ctx.db.collection("carts");
+  console.log(userId, "userId");
   const result = await collection.updateOne(
-    { userId },
+    { userId: userId },
     { $pull: { items: { productId } } }
   );
   return result;

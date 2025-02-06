@@ -50,7 +50,7 @@ router.post(
   createStore
 );
 router.get("/listStore", verifyToken, userAuth, storeList);
-router.get("/ownerDashboard", sellerAuth, ownerDashboardDetail);
+router.get("/ownerDashboard", verifyToken, sellerAuth, ownerDashboardDetail);
 router.post(
   "/deleteStore/:storeId",
   verifyToken,

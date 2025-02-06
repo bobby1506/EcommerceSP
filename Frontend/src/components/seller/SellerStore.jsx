@@ -33,7 +33,7 @@ const SellerStore = ({
     isBranch: "",
     logo: { url: "" },
   });
-
+  const [logo, setLogo] = useState(null);
   useEffect(() => {
     sGetStore();
   }, []);
@@ -41,6 +41,7 @@ const SellerStore = ({
   useEffect(() => {
     setSocialMediaLinks(sStoreData.mediaLinks);
     setFormData(sStoreData);
+    setLogo(sStoreData.logo);
   }, [sStoreData]);
 
   useEffect(() => {
@@ -61,7 +62,6 @@ const SellerStore = ({
   const addSocialMediaField = () => {
     setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
   };
-  const [logo, setLogo] = useState(null);
 
   const handleSocialMediaChange = (index, field, value) => {
     const updatedLinks = [...socialMediaLinks];

@@ -13,7 +13,7 @@ const verifyToken = async (ctx, next) => {
     ctx.state.user = verifiedToken;
     await next();
   } catch (err) {
-    return resHandler(ctx, false, "Invalid or expired token", 401);
+    return resHandler(ctx, false, err, 401);
   }
 };
 
