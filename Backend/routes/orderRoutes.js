@@ -15,7 +15,11 @@ const {
   validateOrderStatus,
   validateOrder,
 } = require("../validators/orderValidators");
-const { getUserValidator } = require("../validators/authValidators");
+const {
+  isuserExistValidator,
+  emailValidator,
+} = require("../validators/authValidators");
+const { productIdValidator } = require("../validators/productValidators");
 
 const router = new Router();
 
@@ -23,21 +27,22 @@ router.post(
   "/createOrder",
   verifyToken,
   validateAll([validateOrder]),
-  userAuth, //make it a validator
+  userAuth,
   createOrder
 );
 router.get(
   "/orderDetailOwner",
   verifyToken,
-  validateAll([getUserValidator]),
+  validateAll([emailValidator, isuserExistValidator]),
   sellerAuth,
   orderDetailOwner
 );
 router.get("/orderDetails", verifyToken, userAuth, orderDetails);
 router.post(
   "/orderStatusChange",
-  validateAll([validateOrderStatus]),
-  sellerAuth, //make it a validator
+  verifyToken,
+  validateAll([validateOrderStatus, productIdValidator]),
+  sellerAuth,
   orderStatusChange
 );
 

@@ -1,37 +1,44 @@
 const { ObjectId } = require("mongodb");
-const cloudinary = require("cloudinary");
 const { resHandler } = require("../middlewares/errorHandler");
-const { eventEmitter } = require("../middlewares/socketMiddleware");
+const { eventEmitter } = require("../utils/socket");
+// const { uploadProductLogo } = require("../queries/productQueries");
+const {
+  deleteStoreById,
+  insertNewStore,
+  updateUserStore,
+  findStoreByGstNumber,
+  findStoreById,
+  updatedStore,
+} = require("../queries/storeQueries");
+const { findUser } = require("../queries/userQueries");
+const { client } = require("../config/db");
+const storeCollection = client.db(process.env.DB_NAME).collection("store");
 // const { getData, setData, close, deleteCache } = require("../utils/redisUtils");
 
-//create store for users
 const createStore = async (ctx) => {
   const userId = ctx.state.user.email;
 
   let isTimeOver = false;
+  let isResponseSent = false;
+
   const TIME = 1 * 1000;
 
   const timeout = setTimeout(() => {
-    (isTimeOver = true),
+    console.log("Enter in settimeout");
+    isTimeOver = true;
+    if (!isResponseSent) {
       eventEmitter(userId, "delayRes", {
         message: "Too long time taken",
+        success: false,
+        status: 200,
       });
+    }
+    isResponseSent = true;
   }, TIME);
 
   try {
-    console.log(ctx.request.body);
-    // console.log(ctx.request.files);
-    console.log("first");
-    console.log(ctx.request.files.logo);
-    const myCloud = await cloudinary.v2.uploader.upload(
-      ctx.request.files.logo.filepath,
-      {
-        folder: "EcommerceSP",
-        width: 150,
-        crop: "scale",
-      }
-    );
-    console.log("second");
+    // const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
+
     const {
       storeName,
       ownerName,
@@ -40,68 +47,47 @@ const createStore = async (ctx) => {
       category,
       openTime,
       closeTime,
-      mediaLinks,
       gstNumber,
       isBranch,
       upiId,
+    } = ctx.state.shared;
 
-      // credits,
-    } = ctx.request.body;
-    console.log("third");
+    const { logo } = ctx.request.body;
 
-    //validations rahe gaye
+    const store = await findStoreByGstNumber(ctx, gstNumber);
+    // if (storeExisting) {
+    //   if (isBranch) {
+    //     const existingBranch = await collectionStore.findOne({
+    //       gstNumber,
+    //       address,
+    //     });
 
-    //one way
-    // const db = await connectDB();
-    // const collectionStore = db.collection("store");
-
-    const collectionStore = ctx.db.collection("store");
-    const collectionUser = ctx.db.collection("users");
-
-    const storeExisting = await collectionStore.findOne({
-      gstNumber,
-    });
-    console.log("fourth");
-
-    if (storeExisting) {
-      if (isBranch) {
-        const existingBranch = await collectionStore.findOne({
-          gstNumber,
-          address,
-        });
-
-        if (existingBranch) {
-          clearTimeout(timeout);
-          (ctx.status = 400),
-            (ctx.body = {
-              success: true,
-              message: "A branch with same number and address already exists",
-            });
-          return;
-        }
-      } else {
-        clearTimeout(timeout);
-        (ctx.status = 400),
-          (ctx.body = {
-            success: false,
-            message: "This GST number is already resgistered",
-          });
-        return;
-      }
-    }
-
-    console.log("fifth");
+    //     if (existingBranch) {
+    //       clearTimeout(timeout);
+    //       (ctx.status = 400),
+    //         (ctx.body = {
+    //           success: true,
+    //           message: "A branch with same number and address already exists",
+    //         });
+    //     }
+    //     return;
+    //   }
+    // } else {
+    //   clearTimeout(timeout);
+    //   (ctx.status = 400),
+    //     (ctx.body = {
+    //       success: false,
+    //       message: "This GST number is already resgistered",
+    //     });
+    //   return;
+    // }
 
     const newStore = {
       storeName,
       ownerName,
       address,
       description,
-      logo: {
-        public_id: myCloud.public_id,
-        url: myCloud.secure_url,
-      },
-      mediaLinks,
+      logo,
       category,
       openTime,
       closeTime,
@@ -113,28 +99,13 @@ const createStore = async (ctx) => {
       Credits: 0,
     };
 
-    console.log("Hello userid se phele");
     const userId = ctx.state.user?.email;
     if (!userId) {
-      return;
+      return resHandler(ctx, false, "Userid not valid", 403);
     }
-    console.log(userId);
 
-    const result = await collectionStore.insertOne(newStore);
-    console.log("Update se phele");
-    // const findObj = await collectionStore.findOne({ email: userId });
-    // console.dir({ findObj }, { depth: null });
-    const updatedData = await collectionUser.updateOne(
-      {
-        email: userId,
-      },
-      {
-        $set: {
-          isSeller: true,
-          storeId: result.insertedId,
-        },
-      }
-    );
+    const result = await insertNewStore(ctx, newStore);
+    await updateUserStore(ctx, userId, result.insertedId);
 
     clearTimeout(timeout);
 
@@ -142,12 +113,17 @@ const createStore = async (ctx) => {
       eventEmitter(userId, "resultRes", {
         success: true,
         message: "Store created via socket",
-        store: { ...newStore },
+        store: newStore,
       });
-    } else {
-      console.log("UpdatedData", updatedData);
-      resHandler(ctx, true, "Store created via api", 201);
+      resHandler(ctx, true, "Store created via socket", 201, {
+        isSocket: true,
+      });
     }
+
+    resHandler(ctx, true, "Store created via api", 201, {
+      store: newStore,
+      isSocket: false,
+    });
 
     //invalidate cache data
     // await deleteCache("storeList");
@@ -161,17 +137,10 @@ const createStore = async (ctx) => {
   } catch (err) {
     clearTimeout(timeout);
     console.log("Registration Failed", err.message);
-
-    if (isTimeOver) {
-      resHandler(ctx, false, "Internal server error by socket", 500);
-    } else {
-      resHandler(ctx, false, "Internal server error by api", 500);
-    }
-    // error(ctx, 500, "Internal server error");
+    resHandler(ctx, false, "Internal server error by socket", 500);
   }
 };
 
-//Normal store listing
 const storeList = async (ctx) => {
   try {
     // const redisKey = "storelist";
@@ -188,38 +157,23 @@ const storeList = async (ctx) => {
     //   };
     //   return;
     // }
-    //two way
-    const collectionStore = ctx.db.collection("store");
-    const store = await collectionStore.find().toArray();
-    console.log(store);
-
+    const store = await storeCollection.find().toArray();
     // await setData(redisKey, store, 3600);
-
-    ctx.status = 200;
+    resHandler(ctx, true, "Store list fetch successfully", 200);
     ctx.body = {
-      message: "Store list fetch successfully",
       store,
     };
   } catch (err) {
-    console.log(500, "Internal server error");
-    (ctx.status = 500),
-      (ctx.body = {
-        success: false,
-        message: err,
-      });
+    resHandler(ctx, false, "Internal server error", 500);
   }
 };
 
-//store owner store details
 const ownerDashboardDetail = async (ctx) => {
   try {
-    // const userId = ctx.state.user;
-    console.log("Hello userid se phele");
     const userId = ctx.state.user?.id;
-    console.log("hello", userId);
-    // if (!userId) {
-    //   return;
-    // }
+    if (!userId) {
+      return resHandler(ctx, false, "User not found", 403);
+    }
     // console.log(userId);
     // const redisKey = `storeDetail:${storeId}`;
     // const cachedData = await getData(redisKey);
@@ -232,78 +186,40 @@ const ownerDashboardDetail = async (ctx) => {
     //   return;
     // }
 
-    // const db = await dbConnect();
-    const userCollection = await ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    console.log(user);
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
     const storeId = user.storeId;
-    const storeCollection = ctx.db.collection("store");
-    const store = await storeCollection.findOne({ _id: storeId });
-    console.log(store, "store");
-
+    const store = await findStoreById(ctx, storeId);
     if (!store) {
-      console.log("store not found");
-      // error(ctx, 404, "Store not found");
+      resHandler(ctx, false, "Store not found", 404);
     }
     // await setData(redisKey, store, 3600);
-
-    ctx.status = 200;
+    resHandler(ctx, true, "Store details fetched successfully", 200);
     ctx.body = {
-      message: "Store details fetched successfully",
       store,
     };
   } catch (err) {
-    // error(500, "Internal Server Error");
-    console.log(err);
+    resHandler(ctx, false, err, 500);
   }
 };
 
-//update store
 const updateStore = async (ctx) => {
-  console.log("first");
   try {
-    console.log("first");
-    const { storeId } = ctx.params;
     const userId = ctx.state.user?.id;
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    const { storeId } = ctx.state.shared;
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
-      return;
+      return resHandler(ctx, false, "User not found", 404);
     }
-    console.log(user);
-
     const OwnerstoreId = user.storeId;
-
-    if (OwnerstoreId != storeId) {
-      console.log("You are a hacker");
-      return;
+    if (OwnerstoreId.toString() != storeId.toString()) {
+      return resHandler(ctx, false, "You are a hacker", 403);
     }
-
     if (!storeId) {
-      console.log("Store id required");
-      (ctx.status = 404),
-        (ctx.body = {
-          message: "Store id required",
-          success: false,
-        });
-      return;
+      return resHandler(ctx, false, "store id required", 404);
     }
-
     const updatedData = ctx.request.body;
-    console.log(updatedData);
+    const updatedDoc = await updatedStore(ctx, updatedData, storeId);
 
-    const storeCollection = ctx.db.collection("store");
-
-    const updatedDoc = await storeCollection.updateOne(
-      {
-        _id: new ObjectId(storeId),
-      },
-      {
-        $set: updatedData,
-      }
-    );
-
-    console.log(updatedDoc);
     if (updatedDoc.modifiedCount === 0) {
       return resHandler(ctx, false, "Samee name already there", 404);
     }
@@ -314,60 +230,29 @@ const updateStore = async (ctx) => {
   }
 };
 
-//store delete
 const deleteStoreOwner = async (ctx) => {
   try {
-    const { storeId } = ctx.params;
     const userId = ctx.state.user?.id;
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    const { storeId } = ctx.state.shared;
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
-      return;
+      return resHandler(ctx, false, "User not found", 404);
     }
-
     const OwnerstoreId = user.storeId;
-
     if (OwnerstoreId.toString() != storeId.toString()) {
       console.log("You are a hacker");
       return;
     }
-
     if (!storeId) {
-      console.log("Store id required");
-      (ctx.status = 404),
-        (ctx.body = {
-          message: "Store id required",
-          success: false,
-        });
-      return;
+      return resHandler(ctx, false, "Store id required", 404);
     }
-
-    const storeCollection = ctx.db.collection("store");
-    const deletedStore = await storeCollection.deleteOne({
-      _id: new ObjectId(storeId),
-    });
-
+    const deletedStore = await deleteStoreById(ctx, storeId);
     if (deletedStore.deletedCount == 0) {
-      (ctx.status = 403),
-        (ctx.body = {
-          message: "Store not found",
-          success: false,
-        });
-      return;
+      return resHandler(ctx, false, "Store not found", 403);
     }
-
-    ctx.status = 200;
-    ctx.body = {
-      message: "Store deleted successfully",
-      success: true,
-    };
+    resHandler(ctx, true, "Store deleted successfully", 200);
   } catch (err) {
-    console.log(err);
-    ctx.status = 500;
-    ctx.body = {
-      message: "Internal error",
-      success: false,
-    };
+    resHandler(ctx, false, "Internal server error", 500);
   }
 };
 

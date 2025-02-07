@@ -2,11 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useSelector } from "react-redux";
-const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
+import { toast } from "react-toastify";
+const SellerStore = ({
+  sStoreData,
+  sGetStore,
+  smessage,
+  sflag,
+  sisUpdated,
+  sUpdateStore,
+  sDeleteStore,
+  sisDeleted,
+  // sisLoading,
+  emptyStoreMsg,
+}) => {
   const [errors, setErrors] = useState({});
-  const [socialMediaLinks, setSocialMediaLinks] = useState([
-    { platform: "", link: "" },
-  ]);
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
   const [formData, setFormData] = useState({
     _id: "",
     storeName: "",
@@ -19,30 +31,43 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
     gstNumber: "",
     upiId: "",
     isBranch: "",
+    logo: { url: "" },
   });
-
+  const [logo, setLogo] = useState(null);
   useEffect(() => {
     sGetStore();
-    // console.log("ssss",sStoreData)
-    // console.log("HELLO",sStoreData)
-    setTimeout(() => {
-      setSocialMediaLinks(sStoreData.mediaLinks);
-      setFormData(sStoreData);
-    }, 1000);
   }, []);
+
+  useEffect(() => {
+    // setSocialMediaLinks(sStoreData.mediaLinks);
+    setFormData(sStoreData);
+    setLogo(sStoreData.logo);
+  }, [sStoreData]);
+
+  useEffect(() => {
+    if (smessage) {
+      if (sisUpdated) {
+        toast.success(smessage);
+      } else if (sisDeleted) {
+        toast.success(smessage);
+      } else {
+        toast.error(smessage);
+      }
+      emptyStoreMsg();
+    }
+  }, [sflag]);
 
   const navigate = useNavigate();
 
-  const addSocialMediaField = () => {
-    setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
-  };
-  const [logo, setLogo] = useState(null);
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
 
-  const handleSocialMediaChange = (index, field, value) => {
-    const updatedLinks = [...socialMediaLinks];
-    updatedLinks[index][field] = value;
-    setSocialMediaLinks(updatedLinks);
-  };
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
 
@@ -81,15 +106,15 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
       errors.isBranch = "Please select if it's a branch";
     }
 
-    socialMediaLinks.forEach((link, index) => {
-      if (!link.platform?.trim() || !link.link?.trim()) {
-        errors[
-          `socialMediaLinks_${index}`
-        ] = `Both platform and link are required`;
-      } else if (!/^https?:\/\/\S+$/.test(link.link)) {
-        errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
-      }
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform?.trim() || !link.link?.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
     return errors;
   };
@@ -110,7 +135,7 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData, socialMediaLinks);
+    const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -128,18 +153,15 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
     formDataToSend.append("gstNumber", formData.gstNumber);
     formDataToSend.append("upiId", formData.upiId);
     formDataToSend.append("isBranch", formData.isBranch);
-    formDataToSend.append("logo", logo); // Add the image file
+    formDataToSend.append("logo", logo);
     console.log({ formDataToSend, formData });
     for (const [key, value] of formDataToSend.entries()) {
       console.log("check", key, value);
     }
-    socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(
-        `socialMediaLinks[${index}][platform]`,
-        link.platform
-      );
-      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
     sUpdateStore(formData._id, formDataToSend);
   };
   return (
@@ -273,7 +295,7 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
             </div>
           </div>
         </div>
-
+        {/* 
         <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks?.map((socialMedia, index) => (
@@ -306,15 +328,15 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
                 />
               </div>
             </div>
-          ))}
-          <button
+          ))} */}
+        {/* <button
             type="button"
             className="btn btn-primary btn-sm"
             onClick={addSocialMediaField}
           >
             Add Another
           </button>
-        </div>
+        </div> */}
 
         <div className="mb-3">
           <label htmlFor="gstNumber" className="form-label">
@@ -335,39 +357,6 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Is Branch?</label>
-          <div>
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="isBranch"
-                id="isBranchYes"
-                value="yes"
-                onChange={handleOnChange}
-              />
-              <label className="form-check-label" htmlFor="isBranchYes">
-                Yes
-              </label>
-            </div>
-            <div className="form-check form-check-inline">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="isBranch"
-                id="isBranchNo"
-                value="no"
-                onChange={handleOnChange}
-              />
-              <label className="form-check-label" htmlFor="isBranchNo">
-                No
-              </label>
-            </div>
-          </div>
-          {errors.isBranch && <p className="text-danger">{errors.isBranch}</p>}
-        </div>
-
-        <div className="mb-3">
           <label htmlFor="upiId" className="form-label">
             UPI ID
           </label>
@@ -383,11 +372,11 @@ const SellerStore = ({ sStoreData, sGetStore, sUpdateStore, sDeleteStore }) => {
           {errors.upiId && <p className="text-danger">{errors.upiId}</p>}
         </div>
         <div className="mb-3">
-       <img src={formData.logo.url} alt="" />
+          <img src={formData?.logo?.url} alt="" />
         </div>
         <div className="mb-3">
           <label htmlFor="uploadLogo" className="form-label">
-            UPLOAD LOGO
+            UPDATE LOGO
           </label>
           <input
             type="file"

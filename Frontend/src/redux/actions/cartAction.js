@@ -63,6 +63,17 @@ export const updateCart = (productId, quantity,count) => {
   };
 };
 
+export const applyCoupon = (couponCode) => {
+  return async (dispatch) => {
+    dispatch({
+      type: "APPLYCOUPON",
+      payload: axios.post(`${url + "applycoupon"}`,{couponCode},{ headers: { "Content-Type": "application/json" },withCredentials: true,}
+      ),
+    });
+
+  };
+};
+
 export const emptyMsg = () => {
   return {
     type: "EMPTYMSG",

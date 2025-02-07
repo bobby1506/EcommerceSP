@@ -1,58 +1,95 @@
 const { ObjectId } = require("mongodb");
 const cloudinary = require("cloudinary");
+const { client } = require("../config/db");
+const productCollection = client.db(process.env.DB_NAME).collection("products");
+const userCollection = client.db(process.env.DB_NAME).collection("users");
 
+const getProductById = async (ctx) => {
+  const { productId } = ctx.state.shared;
+  return await productCollection.findOne({
+    _id: new ObjectId(productId),
+  });
+};
 
-  const uploadProductLogo= async (filepath) => {
-    return await cloudinary.v2.uploader.upload(filepath, {
-      folder: "EcommerceSP",
-      width: 150,
-      crop: "scale",
-    });
-  },
+const getProductByIDStoreId = async (ctx, storeId) => {
+  const { productId } = ctx.state.shared;
+  return await productCollection.findOne({
+    _id: new ObjectId(productId),
+    storeId: storeId,
+  });
+};
 
-  const findUserById= async (db, userId) => {
-    return await db.collection("users").findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { storeId: 1, isSeller: 1 } }
-    );
-  },
-
-  const checkExistingProduct = async (db, productName, storeId) => {
-    return await db.collection("products").findOne({ productName, storeId });
-  },
-
-  const createProductInDB= async (db, product) => {
-    return await db.collection("products").insertOne(product);
-  },
-
-  const getProductsByStoreId= async (db, storeId) => {
-    return await db
-      .collection("products")
-      .find({ storeId: new ObjectId(storeId) })
-      .toArray();
-  },
-
-  const getProductById=async (db, productId) => {
-    return await db.collection("products").findOne({
+const updateProductDisocunt = async (ctx) => {
+  const { couponCode, discountedPrice, productId } = ctx.state.shared;
+  const res = await productCollection.updateOne(
+    {
       _id: new ObjectId(productId),
-    });
-  },
+    },
+    {
+      $set: {
+        isDiscount: true,
+        discountedPrice: discountedPrice,
+        couponCode: couponCode,
+      },
+    }
+  );
+  console.log(res, "res");
+  return res;
+};
 
-const updateProductById= async (db, productId, updatedData) => {
-    return await db.collection("products").updateOne(
-      { _id: new ObjectId(productId) },
-      { $set: updatedData }
-    );
-  },
+const uploadProductLogo = async (filepath) => {
+  return await cloudinary.v2.uploader.upload(filepath, {
+    folder: "EcommerceSP",
+    width: 150,
+    crop: "scale",
+  });
+};
 
-  const deleteProductById= async (db, productId) => {
-    return await db.collection("products").deleteOne({
-      _id: new ObjectId(productId),
-    });
-  },
+const findUserById = async (ctx, userId) => {
+  return await userCollection.findOne(
+    { _id: new ObjectId(userId), isSeller: true },
+    { projection: { storeId: 1, isSeller: 1 } }
+  );
+};
 
+const findProductByName = async (ctx, productName, storeId) =>
+  await productCollection.findOne({
+    productName: productName,
+    storeId: storeId,
+  });
 
-module.exports = {updateProductById,
-   uploadProductLogo,findUserById,
-   checkExistingProduct,createProductInDB,
-   getProductsByStoreId, getProductById};
+const createProductInDB = async (ctx, product) => {
+  const res = await productCollection.insertOne(product);
+  console.log(res, "resulted product");
+};
+
+const getProductsByStoreId = async (ctx, storeId) =>
+  await productCollection.find({ storeId: new ObjectId(storeId) }).toArray();
+
+const deleteProductById = async (ctx) => {
+  const { productId } = ctx.state.shared;
+  return await productCollection.deleteOne({
+    _id: new ObjectId(productId),
+  });
+};
+
+const updateProductById = async (ctx, productData) => {
+  const { productId } = ctx.state.shared;
+  return productCollection.updateOne(
+    { _id: new ObjectId(productId) },
+    { $set: productData.productData }
+  );
+};
+
+module.exports = {
+  updateProductById,
+  uploadProductLogo,
+  findUserById,
+  getProductByIDStoreId,
+  createProductInDB,
+  getProductsByStoreId,
+  getProductById,
+  deleteProductById,
+  updateProductDisocunt,
+  findProductByName,
+};

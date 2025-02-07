@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import CartCard from "../components/cart/CartCard";
 import { Link } from "react-router-dom";
+import useCart from "../customHooks/useCart";
+import { toast } from "react-toastify";
 
 const Cart = ({
   ccartList,
@@ -9,10 +11,13 @@ const Cart = ({
   getItem,
   emptyMsg,
   cmessage,
+  ccouponApplied,
   caddedToCart,
   updateCart,
   removeFromCart,
-  ctotalPrice
+  ctotalPrice,
+  applyCoupon,
+  cflag,
 }) => {
   // const [cartItems,setCartItems]=useState([])
   useEffect(() => {
@@ -20,9 +25,35 @@ const Cart = ({
     emptyMsg();
   }, []);
 
+  const [couponCode, setCouponCode] = useState("");
+
+  const { message, totalPrice } = useCart(ctotalItems, ctotalPrice);
+ 
+
+  useEffect(() => {
+    if (message) {
+      toast(message);
+    }
+  }, [message]);
+
+  useEffect(() => {
+    if (cmessage) {
+      if (removeFromCart) {
+        toast.success(cmessage);
+      } else if (ccouponApplied) {
+        toast.success(cmessage);
+      } else {
+        toast.error(cmessage);
+      }
+      emptyMsg();
+    }
+  }, [cflag]);
+
   if (cisLoading) {
     return <div>isloading....</div>;
   }
+  const price = parseFloat(totalPrice).toFixed(2);
+  const cctotalPrice=parseFloat(ctotalPrice).toFixed(2);
   // if(ccartList.length==)
   return (
     <div className="container mt-5">
@@ -52,14 +83,33 @@ const Cart = ({
           <h3 className="mb-4">Cart Summary</h3>
           <div className="card p-3">
             <h5>Total Items:{ctotalItems}</h5>
-            <h5>
-              Total Price: {ctotalPrice}
-            </h5>
+            {totalPrice == ctotalPrice ? (
+              <h5>Total Price: {totalPrice}</h5>
+            ) : (
+              <h5>
+                Total Price: <del>{cctotalPrice}</del> {price}
+              </h5>
+            )}
             <Link to={ccartList.length > 0 ? "/checkout/1" : "/cart"}>
               <button className="btn btn-primary w-100 mt-3">
                 Proceed to Checkout
               </button>
             </Link>
+            <div className="d-flex mt-3">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                className="form-control me-2"
+                placeholder="Enter Coupon"
+              />
+              <button
+                className="btn btn-primary"
+                onClick={() => applyCoupon(couponCode)}
+              >
+                Apply Coupon
+              </button>
+            </div>
           </div>
         </div>
       </div>

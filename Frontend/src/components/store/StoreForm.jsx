@@ -1,8 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { useSelector } from "react-redux";
-const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
+// import { useDispatch, useSelector } from "react-redux";
+// import { socket } from "../../socket";
+import { loginContext } from "../../context/ContextProvider";
+import { toast } from "react-toastify";
+const StoreForm = ({
+  smessage,
+  sisLoading,
+  sisCreated,
+  screateStore,
+  sflag,
+  jwttoken,
+}) => {
+  // const dispatch = useDispatch();
+  // const { email } = useSelector((state) => {
+  //   return state?.user?.userData;
+  // });
+
+  // useEffect(() => {
+  //   console.log("email", { email, socket });
+
+  //   socket.on("connect", () => {
+  //     console.log("socket connected");
+  //     socket.emit("register", { key: email });
+  //   });
+
+  //   socket.on("resultRes", (payload) => {
+  //     //action call socket ke liye
+  //     dispatch({ type: "SOCKETRESULT", payload });
+  //     console.log("socket data", payload);
+  //   });
+
+  //   socket.on("delayRes", (payload) => {
+  //     dispatch({ type: "SOCKETDELAY", payload });
+  //     //action call socket delay ke liye
+  //     console.log("socket delay data", payload);
+  //   });
+  //   // return () => {
+  //   //   socket.disconnect();
+  //   // };
+  // }, [socket.connected]);
+
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     storeName: "",
@@ -15,44 +54,49 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     gstNumber: "",
     upiId: "",
     isBranch: "",
+    logo: "",
   });
-  const jwttoken = useSelector((state) => {
-    console.log(state.user.token);
-    return state.user.token;
-  });
-  useEffect(()=>{
-    if (sisCreated && smessage) {
-      alert(smessage);
-      navigate("/sellerdashboard");
-    } else {
-      // alert(smessage || "not created")
-    }
-  },[smessage])
+  const navigate = useNavigate();
+  // const dispatch = useDispatch();
+  const { contextUserData } = useContext(loginContext);
+  let loginToken = contextUserData.token;
+  // alert(loginToken);
+  const nameRef = useRef(null);
+
   useEffect(() => {
-    console.log("jwttoken", jwttoken);
-    if (jwttoken) {
-      Cookies.set("authToken", jwttoken, { expires: 7 });
+    if (smessage) {
+      if (sisCreated) {
+        toast.success(smessage);
+        navigate("/sellerdashboard/sellerprofile");
+      } else {
+        toast.error(smessage);
+      }
     }
-    const token = Cookies.get("authToken");
-    if (!token) {
-      navigate("/login");
+  }, [sflag]);
+  useEffect(() => {
+    nameRef.current.focus();
+    console.log("jwttoken", jwttoken);
+    if (jwttoken || loginToken) {
+      jwttoken
+        ? Cookies.set("authToken", jwttoken, { expires: 7 })
+        : Cookies.set("authToken", loginToken, { expires: 7 });
     }
   }, []);
-  const navigate = useNavigate();
-  const [socialMediaLinks, setSocialMediaLinks] = useState([
-    { platform: "", link: "" },
-  ]);
 
-  const addSocialMediaField = () => {
-    setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
-  };
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
+
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
   const [logo, setLogo] = useState(null);
 
-  const handleSocialMediaChange = (index, field, value) => {
-    const updatedLinks = [...socialMediaLinks];
-    updatedLinks[index][field] = value;
-    setSocialMediaLinks(updatedLinks);
-  };
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
 
@@ -91,15 +135,15 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
       errors.isBranch = "Please select if it's a branch";
     }
 
-    socialMediaLinks.forEach((link, index) => {
-      if (!link.platform.trim() || !link.link.trim()) {
-        errors[
-          `socialMediaLinks_${index}`
-        ] = `Both platform and link are required`;
-      } else if (!/^https?:\/\/\S+$/.test(link.link)) {
-        errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
-      }
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform.trim() || !link.link.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
     return errors;
   };
@@ -112,7 +156,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
   };
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData, socialMediaLinks);
+    const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -130,19 +174,14 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
     formDataToSend.append("gstNumber", formData.gstNumber);
     formDataToSend.append("upiId", formData.upiId);
     formDataToSend.append("isBranch", formData.isBranch);
-    formDataToSend.append("logo", logo); // Add the image file
+    formDataToSend.append("logo", formData.logo); // Add the image file
 
-    socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(
-        `mediaLinks[${index}][platform]`,
-        link.platform
-      );
-      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
-    });
-  
-   
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
+
     screateStore(formDataToSend);
-   
   };
   return (
     <div className="container mt-5">
@@ -160,6 +199,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
             name="storeName"
             value={formData.storeName}
             onChange={handleOnChange}
+            ref={nameRef}
           />
           {errors.storeName && (
             <p className="text-danger">{errors.storeName}</p>
@@ -276,7 +316,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
           </div>
         </div>
 
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks.map((socialMedia, index) => (
             <div className="row mb-2" key={index}>
@@ -316,7 +356,7 @@ const StoreForm = ({ smessage, sisLoading, sisCreated, screateStore }) => {
           >
             Add Another
           </button>
-        </div>
+        </div> */}
 
         <div className="mb-3">
           <label htmlFor="gstNumber" className="form-label">

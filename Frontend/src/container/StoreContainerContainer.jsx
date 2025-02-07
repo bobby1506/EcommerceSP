@@ -9,6 +9,7 @@ const mapStateToProps = (state) =>{
          storeList:state.store.storesArray,
          isLoadings:state.store.isLoading,
          isOwner:state.user.isSeller,
+         userToken:state.user.token
     }
 };
 const mapDispatchToProps = (dispatch) => {

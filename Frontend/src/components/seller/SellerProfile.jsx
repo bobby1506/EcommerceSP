@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserStatus } from "../../redux/actions/userActions";
 import { getStore } from "../../redux/actions/storeActions";
+import Cookies from "js-cookie"
 
 const SellerProfile = () => {
   const [userData, setUserData] = useState({
@@ -13,13 +14,16 @@ const SellerProfile = () => {
 
   const dispatch = useDispatch();
   const data = useSelector((state) => state.user.userData);
-  console.log("first", data);
+ 
+  const token=Cookies.get("authToken")
   useEffect(() => {
-    console.log("useeffect 1 runs");
-    dispatch(getUserStatus());
-  }, []);
+    
+    if(token){
+      dispatch(getUserStatus());
+    }
+    
+  }, [token]);
   useEffect(() => {
-    console.log("useEffect 2 running", data);
     setUserData(data);
   }, [data]);
 

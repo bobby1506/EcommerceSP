@@ -10,6 +10,7 @@ const ProductDetail = ({
   cmessage,
   caddedToCart,
   pisLoading,
+  cflag
 }) => {
   const [product, setProduct] = useState({
     productName: "",
@@ -40,7 +41,7 @@ const ProductDetail = ({
       }
       emptyMsg();
     }
-  }, [cmessage]);
+  }, [cflag]);
 
   if (pisLoading) {
     return <h1>Loading....</h1>;
@@ -52,10 +53,10 @@ const ProductDetail = ({
         {/* Product Image */}
         <div className="col-md-6">
           <img
-            src="https://fastly.picsum.photos/id/2/5000/3333.jpg?hmac=_KDkqQVttXw_nM-RyJfLImIbafFrqLsuGO5YuHqD-qQ"
+            src={productInformation?.logo?.url}
             alt=""
             className="img-fluid rounded"
-            style={{ maxHeight: "400px", objectFit: "cover" }}
+            style={{ maxHeight: "500px", objectFit: "contain" }}
           />
         </div>
 

@@ -15,6 +15,7 @@ const UpdateProductModal = ({
     description: product?.description || "",
     category: product?.category || "",
     stocks: product?.stocks || 0,
+    logo: product.logo,
   });
 
   const handleChange = (e) => {
@@ -117,11 +118,7 @@ const UpdateProductModal = ({
                 </div>
 
                 <div className="modal-footer">
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    onClick={() => dispatch(updateProduct)}
-                  >
+                  <button type="submit" className="btn btn-primary">
                     Update Product
                   </button>
                   <button

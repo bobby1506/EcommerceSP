@@ -1,30 +1,10 @@
-const { ObjectId } = require("mongodb");
-const { resHandler } = require("../middlewares/errorHandler");
+const { client } = require("../config/db");
 
-const findUser = async (ctx, filter) => {
-  const userCollection = ctx.db.collection("users");
+const userCollection = client.db(process.env.DB_NAME).collection("users");
 
-  const user = await userCollection.findOne(filter);
-  console.log(user);
+const findUser = async (ctx, filter) => await userCollection.findOne(filter);
 
-  if (!user) return resHandler(ctx, false, "User exist", 401);
-
-  // const { password, ...safeUser } = user;
-
-  // return {
-  //   ...safeUser,
-  //   password,
-  // };
-  return user;
-};
-
-// Create a new user
-const createUser = async (db, userData) => {
-  const userCollection = db.collection("users");
-
-  const user = await userCollection.insertOne(userData);
-
-  return user;
-};
+const createUser = async (ctx, userData) =>
+  await userCollection.insertOne(userData);
 
 module.exports = { findUser, createUser };
