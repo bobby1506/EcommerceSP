@@ -1,16 +1,17 @@
+const { client } = require("../config/db");
 const { ObjectId } = require("mongodb");
 
-const findProductById = async (ctx, productId) => {
-  const productCollection = ctx.db.collection("products");
-  const foundProduct = await productCollection.findOne({
+const cartCollection = client.db(process.env.DB_NAME).collection("carts");
+
+const productCollection = client.db(process.env.DB_NAME).collection("products");
+
+const findProductById = async (ctx, productId) =>
+  await productCollection.findOne({
     _id: new ObjectId(productId),
   });
-  return foundProduct;
-};
 
-const updateCart = async (ctx, userId, product, quantity) => {
-  const cartCollection = ctx.db.collection("carts");
-  const updatedCart = await cartCollection.updateOne(
+const updateCart = async (ctx, userId, product, quantity) =>
+  await cartCollection.updateOne(
     { userId },
     {
       $push: {
@@ -24,44 +25,29 @@ const updateCart = async (ctx, userId, product, quantity) => {
     },
     { upsert: true }
   );
-  return updatedCart;
-};
 
-const removeProductFromCart = async (ctx, userId, productId) => {
-  console.log("hello");
-  const collection = ctx.db.collection("carts");
-  console.log(userId, "userId");
-  const result = await collection.updateOne(
+const removeProductFromCart = async (ctx, userId, productId) =>
+  await cartCollection.updateOne(
     { userId: userId },
     { $pull: { items: { productId } } }
   );
-  return result;
-};
 
-const updateCartProduct = async (ctx, cartId, productId, updatedFields) => {
-  const collection = ctx.db.collection("carts");
-  const result = await collection.updateOne(
+const updateCartProduct = async (ctx, cartId, productId, updatedFields) =>
+  await cartCollection.updateOne(
     { _id: cartId, "items.productId": productId },
     { $set: updatedFields }
   );
-  return result;
-};
 
 const findCartByUserId = async (ctx) => {
   const userId = ctx.state.user?.id;
   if (!userId) {
     return resHandler(ctx, false, "Unauthorized user", 403);
   }
-  const cartCollection = ctx.db.collection("carts");
-  const cart = await cartCollection.findOne({ userId });
-  return cart;
+  return await cartCollection.findOne({ userId });
 };
 
-const updateCartPrice = async (ctx) => {
-  const cartCollection = ctx.db.collection("carts");
-  const updateCart = await cartCollection.updateOne(filterone, filtertwo);
-  return updateCart;
-};
+const updateCartPrice = async (ctx) =>
+  await cartCollection.updateOne(filterone, filtertwo);
 
 module.exports = {
   findProductById,

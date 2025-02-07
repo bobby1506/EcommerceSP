@@ -100,7 +100,7 @@ const Products = ({ getProduct, productsList, isLoadings }) => {
                 price={product.price}
                 productId={product._id}
                 description={product.description}
-                url={product.logo.url}
+                url={product.logo?.url}
               />
             </div>
           ))}

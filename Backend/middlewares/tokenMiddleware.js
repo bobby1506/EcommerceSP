@@ -6,10 +6,12 @@ const { findUser } = require("../queries/userQueries");
 const verifyToken = async (ctx, next) => {
   try {
     const token = ctx.cookies.get("authToken");
+    console.log("token", token);
     if (!token) {
       return resHandler(ctx, false, "Access denied, no token provided", 401);
     }
     const verifiedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(verifiedToken, "verifiedToken");
     ctx.state.user = verifiedToken;
     await next();
   } catch (err) {
@@ -33,6 +35,7 @@ const sellerAuth = async (ctx, next) => {
     if (!user || !user.isSeller) {
       return resHandler(ctx, false, "you are not a seller", 403);
     }
+    console.log(verifiedToken);
     ctx.state.user = verifiedToken;
     await next();
   } catch (err) {

@@ -15,6 +15,7 @@ const productNameValidator = async (ctx) => {
 
 const productIdValidator = async (ctx) => {
   const { productId } = ctx.request.body;
+  console.log("productId", productId);
   const emptyError = isEmpty(productId, "productId");
   if (emptyError) return emptyError;
   if (!ObjectId.isValid(productId)) {

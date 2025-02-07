@@ -46,7 +46,9 @@ export const sellerReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: false,
-        ordersArray: [...action.payload.data.orderss],
+        ordersArray: Array.isArray(action.payload.data?.orderss)
+          ? [...action.payload.data.orderss]
+          : [],
         // flag: !state.flag,
         // message: response.data.message,
       };

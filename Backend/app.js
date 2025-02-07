@@ -3,12 +3,11 @@ const cors = require("@koa/cors");
 const Router = require("koa-router");
 const koaHelmet = require("koa-helmet");
 const { koaBody } = require("koa-body");
-const connectDB = require("./config/db");
+const { connectDB } = require("./config/db");
 require("dotenv").config();
 
 const cloudinary = require("cloudinary");
-const dbMiddleware = require("./middlewares/dbMiddleware");
-const { cronScheduler } = require("./controllers/cronController");
+// const { cronScheduler } = require("./controllers/cronController");
 const { socketSetup } = require("./utils/socket");
 
 const authRoute = require("./routes/authRoutes");
@@ -30,7 +29,7 @@ const routes = [
 const app = new koa();
 const router = new Router();
 
-app.use(dbMiddleware);
+// app.use(dbMiddleware);
 app.use(koaHelmet());
 app.use(
   koaBody({
@@ -73,7 +72,7 @@ const startServer = async () => {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    cronScheduler();
+    // cronScheduler();
 
     const server = app.listen(process.env.PORT, () => {
       console.log(`Server running on http://localhost:${process.env.PORT}`);

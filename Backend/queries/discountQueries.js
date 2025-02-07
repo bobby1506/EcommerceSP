@@ -1,41 +1,70 @@
-const createDiscountCoupon = async (ctx, newDiscount) => {
-  const discountCollection = ctx.db.collection("discounts");
-  const discount = await discountCollection.insertOne(newDiscount);
-  return discount;
-};
+const { client } = require("../config/db");
+const { ObjectId } = require("mongodb");
+const discountCollection = client
+  .db(process.env.DB_NAME)
+  .collection("discounts");
 
-const findDiscountCouponById = async (ctx, discountId) => {
-  const discountCollection = ctx.db.collection("discounts");
-  const discount = await discountCollection.findOne({ _id: discountId });
-  return discount;
-};
+const productCollection = client.db(process.env.DB_NAME).collection("products");
+const cartCollection = client.db(process.env.DAB_NAME).collection("carts");
+
+const createDiscountCoupon = async (ctx, newDiscount) =>
+  await discountCollection.insertOne(newDiscount);
+
+const findDiscountCouponById = async (ctx, discountId) =>
+  await discountCollection.findOne({ _id: discountId });
 
 const findDiscountCouponByProductId = async (ctx) => {
-  const { productId } = ctx.request.shared;
-  const discountCollection = ctx.db.collection("discounts");
-  const discountDoc = await discountCollection.findOne({
+  const { productId } = ctx.state.shared;
+  console.log(productId, "productId");
+  return await discountCollection.findOne({
     productId: productId,
   });
-  return discountDoc;
 };
 
+// const updateProductDiscountDetails = async (ctx) => {
+//   // const productCollection = ctx.db.collection("products");
+//   const { productId } = ctx.state.shared;
+//   console.log(ctx.state.shared);
+//   console.log("hello");
+//   const updatedProduct = await productCollection.updateOne(
+//     {
+//       _id: new ObjectId(productId),
+//     },
+//     {
+//       $set: { isDiscount: false, couponCode: "", discountedPrice: 0 },
+//     }
+//   );
+//   console.log(updatedProduct, "updatedProduct");
+//   return updatedProduct;
+// };
+
 const updateProductDiscountDetails = async (ctx) => {
-  const productCollection = ctx.db.collection("products");
+  // const productCollection = ctx.db.collection("products"); // Ensure this line is not commented out
+  const { productId } = ctx.state.shared;
+
+  console.log("Shared State:", ctx.state.shared);
+  console.log("Product ID:", productId);
+
+  if (!ObjectId.isValid(productId)) {
+    console.error("Invalid ObjectId:", productId);
+    return;
+  }
+
   const updatedProduct = await productCollection.updateOne(
-    {
-      _id: new ObjectId(productId),
-    },
-    {
-      $set: { isDiscount: false, couponCode: "", discountedPrice: 0 },
-    }
+    { _id: new ObjectId(productId) },
+    { $set: { isDiscount: false, couponCode: "", discountedPrice: 0 } }
   );
+
+  console.log("Updated Product:", updatedProduct);
+  console.log("Matched Count:", updatedProduct.matchedCount);
+  console.log("Modified Count:", updatedProduct.modifiedCount);
+
   return updatedProduct;
 };
 
 const updateDiscountOnProduct = async (ctx) => {
   const { productId, couponCode, discountedPrice } = ctx.state.shared;
-  const productCollection = ctx.db.collection("products");
-  const updateDiscount = await productCollection.updateOne(
+  return await productCollection.updateOne(
     {
       _id: new ObjectId(productId),
     },
@@ -46,12 +75,13 @@ const updateDiscountOnProduct = async (ctx) => {
       },
     }
   );
-  return updateDiscount;
 };
 
 const updateDiscountOnCart = async (ctx, finalDiscount, storeId, productId) => {
-  const cartCollection = await ctx.db.collection("carts");
-  const updatedCart = await cartCollection.updateOne(
+  const userId = ctx.state.user.id;
+  console.log(userId);
+
+  const result = await cartCollection.updateOne(
     {
       userId,
       "items.productId": productId,
@@ -61,20 +91,17 @@ const updateDiscountOnCart = async (ctx, finalDiscount, storeId, productId) => {
       $mul: { "items.$.totalPrice": 1 - finalDiscount },
     }
   );
-  return updatedCart;
+  console.log(result);
+  return result;
 };
 
-const deleteCoupons = async (ctx, discountId) => {
-  const discountCollection = ctx.db.collection("discounts");
-  const deleteCoupon = await discountCollection.deleteOne({
+const deleteCoupons = async (ctx, discountId) =>
+  await discountCollection.deleteOne({
     _id: discountId,
   });
-  return deleteCoupon;
-};
 
-const updateDiscounts = async (ctx, discountId, updatedData) => {
-  const discountCollection = ctx.db.collection("discounts");
-  const updatedDiscount = await discountCollection.updateOne(
+const updateDiscounts = async (ctx, discountId, updatedData) =>
+  await discountCollection.updateOne(
     {
       _id: discountId,
     },
@@ -85,22 +112,15 @@ const updateDiscounts = async (ctx, discountId, updatedData) => {
     }
   );
 
-  return updatedDiscount;
-};
-
 const findCouponByCouponCode = async (ctx) => {
   const { couponCode } = ctx.state.shared;
-  const discountCollection = ctx.db.collection("discounts");
-  const discountCoupon = await discountCollection.findOne({
+  return await discountCollection.findOne({
     couponCode: couponCode,
   });
-  return discountCoupon;
 };
 
-const claimUserUpdate = async (ctx, filterone, filtertwo) => {
-  const discountCollection = ctx.db.collection("discounts");
-  return await discountCollection.updateOne(filterone, filtertwo);
-};
+const claimUserUpdate = async (ctx, filterone, filtertwo) =>
+  await discountCollection.updateOne(filterone, filtertwo);
 
 module.exports = {
   createDiscountCoupon,

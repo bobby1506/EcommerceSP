@@ -42,7 +42,6 @@ router.post(
     categoryValidator,
     openTimeValidator,
     closeTimeValidator,
-    mediaLinksValidator,
     gstNumberValidator,
     isBranchValidator,
     upiIdValidator,

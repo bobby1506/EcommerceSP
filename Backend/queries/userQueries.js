@@ -1,13 +1,10 @@
-const findUser = async (ctx, filter) => {
-  const userCollection = ctx.db.collection("users");
-  const user = await userCollection.findOne(filter);
-  return user;
-};
+const { client } = require("../config/db");
 
-const createUser = async (ctx, userData) => {
-  const userCollection = ctx.db.collection("users");
-  const user = await userCollection.insertOne(userData);
-  return user;
-};
+const userCollection = client.db(process.env.DB_NAME).collection("users");
+
+const findUser = async (ctx, filter) => await userCollection.findOne(filter);
+
+const createUser = async (ctx, userData) =>
+  await userCollection.insertOne(userData);
 
 module.exports = { findUser, createUser };

@@ -87,7 +87,10 @@ export const orderReducer = (state = initialState, action) => {
     case "GETORDERSSELLER_FULFILLED":
       return {
         ...state,
-        orderList: [...response.orderss],
+        orderList:
+          Array.isArray(response.orderss) && response.orderss.length > 0
+            ? [...response.orderss]
+            : [],
         isLoading: false,
         orderFetch: true,
         flag: !state.flag,

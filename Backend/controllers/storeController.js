@@ -1,7 +1,7 @@
 const { ObjectId } = require("mongodb");
 const { resHandler } = require("../middlewares/errorHandler");
 const { eventEmitter } = require("../utils/socket");
-const { uploadProductLogo } = require("../queries/productQueries");
+// const { uploadProductLogo } = require("../queries/productQueries");
 const {
   deleteStoreById,
   insertNewStore,
@@ -11,6 +11,8 @@ const {
   updatedStore,
 } = require("../queries/storeQueries");
 const { findUser } = require("../queries/userQueries");
+const { client } = require("../config/db");
+const storeCollection = client.db(process.env.DB_NAME).collection("store");
 // const { getData, setData, close, deleteCache } = require("../utils/redisUtils");
 
 const createStore = async (ctx) => {
@@ -35,7 +37,7 @@ const createStore = async (ctx) => {
   }, TIME);
 
   try {
-    const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
+    // const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
 
     const {
       storeName,
@@ -45,11 +47,12 @@ const createStore = async (ctx) => {
       category,
       openTime,
       closeTime,
-      mediaLinks,
       gstNumber,
       isBranch,
       upiId,
     } = ctx.state.shared;
+
+    const { logo } = ctx.request.body;
 
     const store = await findStoreByGstNumber(ctx, gstNumber);
     // if (storeExisting) {
@@ -84,11 +87,7 @@ const createStore = async (ctx) => {
       ownerName,
       address,
       description,
-      logo: {
-        public_id: myCloud.public_id,
-        url: myCloud.secure_url,
-      },
-      mediaLinks,
+      logo,
       category,
       openTime,
       closeTime,
@@ -158,8 +157,7 @@ const storeList = async (ctx) => {
     //   };
     //   return;
     // }
-    const collectionStore = ctx.db.collection("store");
-    const store = await collectionStore.find().toArray();
+    const store = await storeCollection.find().toArray();
     // await setData(redisKey, store, 3600);
     resHandler(ctx, true, "Store list fetch successfully", 200);
     ctx.body = {

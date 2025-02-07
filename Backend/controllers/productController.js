@@ -1,7 +1,7 @@
 const { ObjectId } = require("mongodb");
 const { resHandler } = require("../middlewares/errorHandler");
 const {
-  uploadProductLogo,
+  // uploadProductLogo,
   findUserById,
   findProductByName,
   createProductInDB,
@@ -10,13 +10,16 @@ const {
   deleteProductById,
   updateProductById,
 } = require("../queries/productQueries");
+
 const { findUser } = require("../queries/userQueries");
 
 const createProduct = async (ctx) => {
   try {
     const { productName, category, description, price, stocks } =
       ctx.state.shared;
-    const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
+    const { logo } = ctx.request.body;
+    console.log("logo", logo);
+    // const myCloud = await uploadProductLogo(ctx.request.files.logo.filepath);
     const userId = ctx.state.user?.id;
     const seller = await findUserById(ctx, userId);
     if (!seller || !seller.isSeller) {
@@ -44,16 +47,14 @@ const createProduct = async (ctx) => {
       price: parseInt(price),
       stocks: parseInt(stocks),
       storeId,
-      logo: {
-        public_id: myCloud.public_id,
-        url: myCloud.secure_url,
-      },
+      logo,
       createdAt: new Date(),
       updatedAt: new Date(),
       isDiscount: false,
       discountPrice: 0,
       couponCode: "",
     };
+    console.log(newProduct, "newProduct");
     const result = await createProductInDB(ctx, newProduct);
     resHandler(ctx, true, "Product created successfully", 201, {
       productId: result.insertedId,

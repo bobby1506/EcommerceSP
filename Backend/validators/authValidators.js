@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const { findUser } = require("../queries/userQueries");
+const { client } = require("../config/db");
+const userCollection = client.db(process.env.DB_NAME).collection("users");
 
 const {
   isEmpty,
@@ -18,7 +20,6 @@ const emailValidator = (ctx) => {
       message: "Enter a valid email address",
     };
   }
-  console.log("good");
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     email,
@@ -37,7 +38,6 @@ const emailValidatorSignIn = (ctx) => {
       message: "Enter a valid email address",
     };
   }
-  console.log("good");
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     email,
@@ -47,7 +47,6 @@ const emailValidatorSignIn = (ctx) => {
 
 const isSellerValidator = (ctx) => {
   const { isSeller } = ctx.request.body;
-  console.log(isSeller, "isSeller");
   ctx.state.shared = {
     ...(ctx.state.shared || {}),
     isSeller,
@@ -104,7 +103,6 @@ const usernameValidator = (ctx) => {
 
 const isuserExistValidator = async (ctx) => {
   const { email } = ctx.state.user;
-  const userCollection = ctx.db.collection("users");
   const user = await userCollection.findOne({ email });
   if (!user) {
     return {
@@ -121,7 +119,6 @@ const isuserExistValidator = async (ctx) => {
 
 const isuserExistValidatorSignIn = async (ctx) => {
   const { email } = ctx.request.body;
-  const userCollection = ctx.db.collection("users");
   const user = await userCollection.findOne({ email: email });
   if (!user) {
     return {
@@ -138,7 +135,6 @@ const isuserExistValidatorSignIn = async (ctx) => {
 
 const userExist = async (ctx) => {
   const { email } = ctx.request.body;
-  const userCollection = ctx.db.collection("users");
   const user = await userCollection.findOne({ email });
   if (user) {
     return {

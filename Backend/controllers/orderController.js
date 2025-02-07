@@ -62,8 +62,10 @@ const orderDetails = async (ctx) => {
 const orderDetailOwner = async (ctx) => {
   try {
     const { user } = ctx.state.shared;
+    console.log(user);
     const storeId = user.storeId.toString();
     const orders = await findOrdersByStoreId(ctx);
+    console.log(orders);
     const filteredItems = orders?.map((order) => {
       const filteredItem = order.orderedItems.filter((item) => {
         return item.productDetails.storeId == storeId;
@@ -76,10 +78,11 @@ const orderDetailOwner = async (ctx) => {
       };
     });
     const orderss = filteredItems ? filteredItems : [];
+    console.log(filteredItems);
+    resHandler(ctx, true, "Order detail fetched for owner", 200);
     ctx.body = {
       orderss,
     };
-    resHandler(ctx, true, "Order detail fetched for owner", 200);
   } catch (err) {
     resHandler(ctx, false, "Order not fetched", 403);
   }
