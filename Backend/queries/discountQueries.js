@@ -64,7 +64,7 @@ const updateProductDiscountDetails = async (ctx) => {
 
 const updateDiscountOnProduct = async (ctx) => {
   const { productId, couponCode, discountedPrice } = ctx.state.shared;
-  return await productCollection.updateOne(
+  const res = await productCollection.updateOne(
     {
       _id: new ObjectId(productId),
     },
@@ -75,6 +75,7 @@ const updateDiscountOnProduct = async (ctx) => {
       },
     }
   );
+  console.log(res);
 };
 
 const updateDiscountOnCart = async (ctx, finalDiscount, storeId, productId) => {

@@ -60,7 +60,8 @@ const findProductByName = async (ctx, productName, storeId) =>
 
 const createProductInDB = async (ctx, product) => {
   const res = await productCollection.insertOne(product);
-  console.log(res, "resulted product");
+  return res;
+  // console.log(res, "resulted product");
 };
 
 const getProductsByStoreId = async (ctx, storeId) =>

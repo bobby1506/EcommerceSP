@@ -93,8 +93,10 @@ const deleteDiscount = async (ctx) => {
 const updateDiscount = async (ctx) => {
   try {
     const { couponCode, discountedPrice } = ctx.state.shared;
-    console.log(ctx.state.shared);
+    console.log(couponCode, discountedPrice);
+    console.log(ctx.state.shared, "CTX.STATE.SHARED");
     const discountDoc = await findDiscountCouponByProductId(ctx);
+    console.log(discountDoc);
     const updatedData = {
       couponCode,
       discountedPrice,
@@ -106,6 +108,7 @@ const updateDiscount = async (ctx) => {
     }
     const storeId = user.storeId;
     const discount = await findDiscountCouponById(ctx, discountDoc._id);
+    console.log(discount);
     if (!discount) {
       return resHandler(ctx, false, "Coupon not found", 404);
     }
@@ -118,11 +121,13 @@ const updateDiscount = async (ctx) => {
       discountDoc._id,
       updatedData
     );
+    console.log(updatedDiscount);
     if (updatedDiscount.matchedCount == 0) {
       resHandler(ctx, false, "Dicount not found", 404);
     }
 
-    await updateDiscountOnProduct(ctx);
+    const ans = await updateDiscountOnProduct(ctx, couponCode);
+    console.log(ans);
 
     resHandler(ctx, true, "Discount updated successfully", 200);
   } catch (err) {

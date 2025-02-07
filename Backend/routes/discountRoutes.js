@@ -33,7 +33,11 @@ router.post(
 router.post(
   "/updateCoupon",
   verifyToken,
-  validateAll([productIdValidator, discountedPriceValidator]),
+  validateAll([
+    productIdValidator,
+    discountedPriceValidator,
+    couponCodeValidator,
+  ]),
   sellerAuth,
   updateDiscount
 );
