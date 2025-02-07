@@ -12,13 +12,13 @@ const SellerStore = ({
   sUpdateStore,
   sDeleteStore,
   sisDeleted,
-  sisLoading,
+  // sisLoading,
   emptyStoreMsg,
 }) => {
   const [errors, setErrors] = useState({});
-  const [socialMediaLinks, setSocialMediaLinks] = useState([
-    { platform: "", link: "" },
-  ]);
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
   const [formData, setFormData] = useState({
     _id: "",
     storeName: "",
@@ -33,14 +33,15 @@ const SellerStore = ({
     isBranch: "",
     logo: { url: "" },
   });
-
+  const [logo, setLogo] = useState(null);
   useEffect(() => {
     sGetStore();
   }, []);
 
   useEffect(() => {
-    setSocialMediaLinks(sStoreData.mediaLinks);
+    // setSocialMediaLinks(sStoreData.mediaLinks);
     setFormData(sStoreData);
+    setLogo(sStoreData.logo);
   }, [sStoreData]);
 
   useEffect(() => {
@@ -58,16 +59,15 @@ const SellerStore = ({
 
   const navigate = useNavigate();
 
-  const addSocialMediaField = () => {
-    setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
-  };
-  const [logo, setLogo] = useState(null);
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
 
-  const handleSocialMediaChange = (index, field, value) => {
-    const updatedLinks = [...socialMediaLinks];
-    updatedLinks[index][field] = value;
-    setSocialMediaLinks(updatedLinks);
-  };
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
 
@@ -106,15 +106,15 @@ const SellerStore = ({
       errors.isBranch = "Please select if it's a branch";
     }
 
-    socialMediaLinks.forEach((link, index) => {
-      if (!link.platform?.trim() || !link.link?.trim()) {
-        errors[
-          `socialMediaLinks_${index}`
-        ] = `Both platform and link are required`;
-      } else if (!/^https?:\/\/\S+$/.test(link.link)) {
-        errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
-      }
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform?.trim() || !link.link?.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
     return errors;
   };
@@ -135,7 +135,7 @@ const SellerStore = ({
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData, socialMediaLinks);
+    const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -158,10 +158,10 @@ const SellerStore = ({
     for (const [key, value] of formDataToSend.entries()) {
       console.log("check", key, value);
     }
-    socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
-      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
     sUpdateStore(formData._id, formDataToSend);
   };
   return (
@@ -295,7 +295,7 @@ const SellerStore = ({
             </div>
           </div>
         </div>
-
+        {/* 
         <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks?.map((socialMedia, index) => (
@@ -328,15 +328,15 @@ const SellerStore = ({
                 />
               </div>
             </div>
-          ))}
-          <button
+          ))} */}
+        {/* <button
             type="button"
             className="btn btn-primary btn-sm"
             onClick={addSocialMediaField}
           >
             Add Another
           </button>
-        </div>
+        </div> */}
 
         <div className="mb-3">
           <label htmlFor="gstNumber" className="form-label">

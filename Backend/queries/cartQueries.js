@@ -1,24 +1,23 @@
+const { client } = require("../config/db");
 const { ObjectId } = require("mongodb");
 
-const findProductById = async (db, productId) => {
-  const productCollection = db.collection("products");
-  const foundProduct = await productCollection.findOne({
+const cartCollection = client.db(process.env.DB_NAME).collection("carts");
+
+const productCollection = client.db(process.env.DB_NAME).collection("products");
+
+const findProductById = async (ctx, productId) =>
+  await productCollection.findOne({
     _id: new ObjectId(productId),
   });
-  return foundProduct;
-};
 
-//update or create a cart
-const updateCart = async (db, userId, product) => {
-  const cartCollection = db.collection("carts");
-
-  const updatedCart = await cartCollection.updateOne(
+const updateCart = async (ctx, userId, product, quantity) =>
+  await cartCollection.updateOne(
     { userId },
     {
       $push: {
         items: {
           productId: product._id.toString(),
-          quantity: 1,
+          quantity,
           productDetails: product,
           totalPrice: product.price,
         },
@@ -26,36 +25,29 @@ const updateCart = async (db, userId, product) => {
     },
     { upsert: true }
   );
-  return updatedCart;
-};
 
-//remove a product from cart
-const removeProductFromCart = async (db, userId, productId) => {
-  const collection = db.collection("carts");
-  const result = await collection.updateOne(
-    { userId },
+const removeProductFromCart = async (ctx, userId, productId) =>
+  await cartCollection.updateOne(
+    { userId: userId },
     { $pull: { items: { productId } } }
   );
-  return result;
-};
 
-// Update a specific product in the cart
-const updateCartProduct = async (db, cartId, productId, updatedFields) => {
-  const collection = db.collection("carts");
-  const result = await collection.updateOne(
+const updateCartProduct = async (ctx, cartId, productId, updatedFields) =>
+  await cartCollection.updateOne(
     { _id: cartId, "items.productId": productId },
     { $set: updatedFields }
   );
-  return result;
+
+const findCartByUserId = async (ctx) => {
+  const userId = ctx.state.user?.id;
+  if (!userId) {
+    return resHandler(ctx, false, "Unauthorized user", 403);
+  }
+  return await cartCollection.findOne({ userId });
 };
 
-// Query to find the user's cart
-const findCartByUserId = async (db, userId) => {
-  const cartCollection = db.collection("carts");
-
-  const cart = await cartCollection.findOne({ userId });
-  return cart;
-};
+const updateCartPrice = async (ctx) =>
+  await cartCollection.updateOne(filterone, filtertwo);
 
 module.exports = {
   findProductById,
@@ -63,4 +55,5 @@ module.exports = {
   removeProductFromCart,
   updateCartProduct,
   findCartByUserId,
+  updateCartPrice,
 };

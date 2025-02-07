@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { useDispatch, useSelector } from "react-redux";
-import { socket } from "../../socket";
+// import { useDispatch, useSelector } from "react-redux";
+// import { socket } from "../../socket";
 import { loginContext } from "../../context/ContextProvider";
 import { toast } from "react-toastify";
 const StoreForm = ({
@@ -17,7 +17,7 @@ const StoreForm = ({
   // const { email } = useSelector((state) => {
   //   return state?.user?.userData;
   // });
-   
+
   // useEffect(() => {
   //   console.log("email", { email, socket });
 
@@ -54,22 +54,22 @@ const StoreForm = ({
     gstNumber: "",
     upiId: "",
     isBranch: "",
+    logo: "",
   });
   const navigate = useNavigate();
-  const dispatch=useDispatch();
+  // const dispatch = useDispatch();
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
   // alert(loginToken);
   const nameRef = useRef(null);
 
   useEffect(() => {
-    if(smessage){
-      if(sisCreated){
-        toast.success(smessage)
-        // navigate('/sellerdashboard/sellerprofile')
-      }
-      else{
-        toast.error(smessage)
+    if (smessage) {
+      if (sisCreated) {
+        toast.success(smessage);
+        navigate("/sellerdashboard/sellerprofile");
+      } else {
+        toast.error(smessage);
       }
     }
   }, [sflag]);
@@ -81,23 +81,22 @@ const StoreForm = ({
         ? Cookies.set("authToken", jwttoken, { expires: 7 })
         : Cookies.set("authToken", loginToken, { expires: 7 });
     }
-    
   }, []);
 
-  const [socialMediaLinks, setSocialMediaLinks] = useState([
-    { platform: "", link: "" },
-  ]);
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
 
-  const addSocialMediaField = () => {
-    setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
-  };
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
   const [logo, setLogo] = useState(null);
 
-  const handleSocialMediaChange = (index, field, value) => {
-    const updatedLinks = [...socialMediaLinks];
-    updatedLinks[index][field] = value;
-    setSocialMediaLinks(updatedLinks);
-  };
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
 
@@ -136,15 +135,15 @@ const StoreForm = ({
       errors.isBranch = "Please select if it's a branch";
     }
 
-    socialMediaLinks.forEach((link, index) => {
-      if (!link.platform.trim() || !link.link.trim()) {
-        errors[
-          `socialMediaLinks_${index}`
-        ] = `Both platform and link are required`;
-      } else if (!/^https?:\/\/\S+$/.test(link.link)) {
-        errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
-      }
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform.trim() || !link.link.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
     return errors;
   };
@@ -157,7 +156,7 @@ const StoreForm = ({
   };
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData, socialMediaLinks);
+    const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -175,15 +174,14 @@ const StoreForm = ({
     formDataToSend.append("gstNumber", formData.gstNumber);
     formDataToSend.append("upiId", formData.upiId);
     formDataToSend.append("isBranch", formData.isBranch);
-    formDataToSend.append("logo", logo); // Add the image file
+    formDataToSend.append("logo", formData.logo); // Add the image file
 
-    socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
-      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
 
     screateStore(formDataToSend);
-
   };
   return (
     <div className="container mt-5">
@@ -318,7 +316,7 @@ const StoreForm = ({
           </div>
         </div>
 
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks.map((socialMedia, index) => (
             <div className="row mb-2" key={index}>
@@ -358,7 +356,7 @@ const StoreForm = ({
           >
             Add Another
           </button>
-        </div>
+        </div> */}
 
         <div className="mb-3">
           <label htmlFor="gstNumber" className="form-label">

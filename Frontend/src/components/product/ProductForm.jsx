@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../.././App.css";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const ProductForm = ({
   addProduct,
   smessage,
   sproductCreated,
   sflag,
-  sisLoading,
   emptymsg,
 }) => {
   const [formData, setFormData] = useState({
@@ -17,16 +17,18 @@ const ProductForm = ({
     description: "",
     price: "",
     stocks: "",
+    logo: "",
   });
 
   const [errors, setErrors] = useState({});
   const [pimage, setPimage] = useState(null);
+  const [imgUrl, setImgUrl] = useState("");
   const navigate = useNavigate();
   const nameRef = useRef(null);
 
-  useEffect(()=>{
-  nameRef.current.focus();
-  },[])
+  useEffect(() => {
+    nameRef.current.focus();
+  }, []);
 
   useEffect(() => {
     if (smessage) {
@@ -66,19 +68,37 @@ const ProductForm = ({
     return Object.keys(validationErrors).length === 0;
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit = async (e) => {
+    let logo = "";
     e.preventDefault();
-    if (validateForm()) {
-      const formDataToSend = new FormData();
-      formDataToSend.append("productName", formData.productName);
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("price", Number(formData.price));
-      formDataToSend.append("stocks", Number(formData.stocks));
-      if (pimage) formDataToSend.append("logo", pimage);
-      console.log("Product FORM DATA", formData);
-      addProduct(formDataToSend);
+    console.log("hello first");
+    if (validateForm() || true) {
+      console.log("hello second");
+      let file = pimage;
+      if (file && file.size <= 1 * 1024 * 1024) {
+        let data = new FormData();
+        data.append("file", file);
+        data.append("upload_preset", "ecommSocialPilot");
+        data.append("cloud_name", "dd3fbotqv");
+        try {
+          let res = await axios.post(
+            "https://api.cloudinary.com/v1_1/dd3fbotqv/image/upload",
+            data
+          );
+          console.log(res.data.secure_url);
+          setImgUrl("res.data.secure_url");
+          logo = res.data.secure_url;
+        } catch (error) {
+          alert(error);
+          toast.error(error?.response?.data?.error?.message);
+        }
+      } else {
+        if (!file) return;
+        toast.error("file should be less than 1MB");
+      }
     }
+    console.log({ ...formData, logo });
+    addProduct({ ...formData, logo });
   };
 
   return (
@@ -189,7 +209,6 @@ const ProductForm = ({
           {errors.stocks && <p className="text-danger">{errors.stocks}</p>}
         </div>
 
-        {/* Product Image */}
         <div className="mb-3">
           <label htmlFor="image" className="form-label">
             Product Image

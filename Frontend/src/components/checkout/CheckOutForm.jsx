@@ -2,7 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const CheckoutForm = ({cmessage,orderedItems,cflag,corderCreated,postOrders,productInfo, emptyOrderMsg}) => {
+const CheckoutForm = ({
+  cmessage,
+  orderedItems,
+  cflag,
+  corderCreated,
+  postOrders,
+  productInfo,
+  emptyOrderMsg,
+}) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -13,33 +21,29 @@ const CheckoutForm = ({cmessage,orderedItems,cflag,corderCreated,postOrders,prod
     expiryDate: "",
     cvv: "",
   });
-  const [orderItems,setOrderItems]=useState([])
+  const [orderItems, setOrderItems] = useState([]);
   const [errors, setErrors] = useState({});
-  const [isCart,setIsCart]=useState(false);
-  const {isCartStatus}=useParams();
-  useEffect(()=>{
-   if(isCartStatus=="1"){
-    setIsCart(true)
-    setOrderItems(orderedItems);
-   }
-   else{
-    setOrderItems([productInfo])
-   }
-  },[])
-
-  useEffect(()=>{
-    if(cmessage){
-      if(corderCreated){
-        toast.success(cmessage)
-      }
-      else{
-        toast.error(cmessage)
-      }
-      emptyOrderMsg()
+  const [isCart, setIsCart] = useState(false);
+  const { isCartStatus } = useParams();
+  useEffect(() => {
+    if (isCartStatus == "1") {
+      setIsCart(true);
+      setOrderItems(orderedItems);
+    } else {
+      setOrderItems([productInfo]);
     }
-   
-  },[cflag])
-  
+  }, []);
+
+  useEffect(() => {
+    if (cmessage) {
+      if (corderCreated) {
+        toast.success(cmessage);
+      } else {
+        toast.error(cmessage);
+      }
+      emptyOrderMsg();
+    }
+  }, [cflag]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -49,33 +53,54 @@ const CheckoutForm = ({cmessage,orderedItems,cflag,corderCreated,postOrders,prod
   const validateForm = () => {
     let newErrors = {};
     if (!formData.fullName.trim()) newErrors.fullName = "Full Name is required";
-    if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = "Invalid email";
+    if (!formData.email.match(/^\S+@\S+\.\S+$/))
+      newErrors.email = "Invalid email";
     if (!formData.address.trim()) newErrors.address = "Address is required";
     if (!formData.city.trim()) newErrors.city = "City is required";
-    if (!formData.zip.match(/^\d{6}$/)) newErrors.zip = "ZIP Code must be 6 digits";
-    if (!formData.cardNumber.match(/^\d{16}$/)) newErrors.cardNumber = "Card number must be 16 digits";
-    if (!formData.expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) newErrors.expiryDate = "Expiry format MM/YY";
+    if (!formData.zip.match(/^\d{6}$/))
+      newErrors.zip = "ZIP Code must be 6 digits";
+    if (!formData.cardNumber.match(/^\d{16}$/))
+      newErrors.cardNumber = "Card number must be 16 digits";
+    if (!formData.expiryDate.match(/^(0[1-9]|1[0-2])\/\d{2}$/))
+      newErrors.expiryDate = "Expiry format MM/YY";
     if (!formData.cvv.match(/^\d{3}$/)) newErrors.cvv = "CVV must be 3 digits";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-   const navigate=useNavigate();
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     let orderData;
     e.preventDefault();
     if (validateForm()) {
-      if(isCart=="1"){
-        const updatedOrderItems=orderItems.map((order)=>{let newOrder={...order,deliveryStatus:"pending"}; return newOrder})
-        console.log("updated_productData" ,updatedOrderItems)
-        orderData={shippingInformation:formData,isCart,orderedItems:updatedOrderItems}
+      if (isCart == "1") {
+        const updatedOrderItems = orderItems.map((order) => {
+          let newOrder = { ...order, deliveryStatus: "pending" };
+          return newOrder;
+        });
+        console.log("updated_productData", updatedOrderItems);
+        orderData = {
+          shippingInformation: formData,
+          isCart,
+          orderedItems: updatedOrderItems,
+        };
+      } else {
+        orderData = {
+          shippingInformation: formData,
+          isCart,
+          orderedItems: [
+            {
+              productId: productInfo._id,
+              quantity: 1,
+              productDetails: productInfo,
+              deliveryStatus: "pending",
+            },
+          ],
+        };
       }
-      else{
-        orderData={shippingInformation:formData,isCart,orderedItems:[{productId:productInfo._id,quantity:1,productDetails:productInfo,deliveryStatus:"pending"}]}
-      }
-      console.log(orderData)
+      console.log(orderData);
       postOrders(orderData);
-      
+      navigate("/");
     }
   };
 

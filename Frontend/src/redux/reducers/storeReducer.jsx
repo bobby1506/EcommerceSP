@@ -1,58 +1,56 @@
 const initialState = {
   error: "",
-  message: "",
+  //message: "",
   flag: false,
   isLoading: false,
-  isCreated:false,
+  isCreated: false,
   storesArray: [],
-  storeData:{}
+  storeData: {},
 };
 
 export const storeReducer = (state = initialState, action) => {
-  let response=action.payload;
+  let response = action.payload;
   switch (action.type) {
     case "CREATESTORE_PENDING":
       return { ...state, isLoading: true };
     case "CREATESTORE_FULFILLED":
-
-    if(!response.data.isSocket){
-      return {
-        ...state,
-        isLoading: false,
-        flag: !state.flag,
-        isCreated:true,
-        message: "store created sucessfully",
-      };
-    }
-    else{
-      return{
-        ...state
+      if (!response.data.isSocket) {
+        return {
+          ...state,
+          isLoading: false,
+          flag: !state.flag,
+          isCreated: true,
+          message: "store created sucessfully",
+        };
+      } else {
+        return {
+          ...state,
+        };
       }
-    }
-    
+
     case "CREATESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
         flag: !state.flag,
-        message: response.data.message,
+        //message: response.data.//message,
       };
 
     case "SOCKETDELAY":
-      return{
+      return {
         ...state,
         message: "it is taking too much time msg:Socket",
-        flag:!state.flag
-      }
+        flag: !state.flag,
+      };
     case "SOCKETRESULT":
-        return{
-          ...state,
-          isLoading: false,
-          flag: !state.flag,
-          isCreated:true,
-          message: "store created sucessfully  message by Socket",
-        }
-     
+      return {
+        ...state,
+        isLoading: false,
+        flag: !state.flag,
+        isCreated: true,
+        message: "store created sucessfully  message by Socket",
+      };
+
     case "GETSTORES_PENDING":
       return { ...state, isLoading: true };
     case "GETSTORES_FULFILLED":
@@ -80,13 +78,13 @@ export const storeReducer = (state = initialState, action) => {
         storeData: {},
         storesArray: deletedStores,
         flag: !state.flag,
-        message: response.data.message,
+        //message: response.data.//message,
       };
     case "DELETESTORE_REJECTED":
       return {
         ...state,
         isLoading: false,
-        message: response.data.message,
+        //message: response.data.//message,
         flag: !state.flag,
       };
 
@@ -94,4 +92,3 @@ export const storeReducer = (state = initialState, action) => {
       return state;
   }
 };
-
