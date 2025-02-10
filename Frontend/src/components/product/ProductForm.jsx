@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import "../.././App.css";
 import { toast } from "react-toastify";
 import axios from "axios";
-import Input from "../common/Input";
-import SelectInput from "../common/SelectInput";
-import TextInput from "../common/TextInput";
 
-const ProductForm = ({ addProduct, emptymsg, seller }) => {
-  const { message, productCreated, flag, isLoading } = seller;
+const ProductForm = ({
+  addProduct,
+  smessage,
+  sproductCreated,
+  sflag,
+  emptymsg,
+}) => {
   const [formData, setFormData] = useState({
     productName: "",
     category: "",
@@ -25,9 +27,7 @@ const ProductForm = ({ addProduct, emptymsg, seller }) => {
   const nameRef = useRef(null);
 
   useEffect(() => {
-   
-      nameRef.current.focus();
-    
+    nameRef.current.focus();
   }, []);
 
   useEffect(() => {
@@ -76,7 +76,9 @@ const ProductForm = ({ addProduct, emptymsg, seller }) => {
   const handleOnSubmit = async (e) => {
     let logo = "";
     e.preventDefault();
-    if (validateForm()) {
+    console.log("hello first");
+    if (validateForm() || true) {
+      console.log("hello second");
       let file = pimage;
       if (file && file.size <= 1 * 1024 * 1024) {
         let data = new FormData();
@@ -99,9 +101,9 @@ const ProductForm = ({ addProduct, emptymsg, seller }) => {
         if (!file) return;
         toast.error("file should be less than 1MB");
       }
-      console.log({ ...formData, logo });
-      addProduct({ ...formData, logo });
     }
+    console.log({ ...formData, logo });
+    addProduct({ ...formData, logo });
   };
   const option = [
     { value: "", text: "select Category" },
@@ -189,17 +191,19 @@ const ProductForm = ({ addProduct, emptymsg, seller }) => {
           }}
         />
 
-        {/* Product Image */}
-        <Input
-          label="Product Image"
-          type="file"
-          className="form-control"
-          id="image"
-          placeholder="Enter available Stocks"
-          onChange={(e) => setPimage(e.target.files[0])}
-          name="pimage"
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="image" className="form-label">
+            Product Image
+          </label>
+          <input
+            type="file"
+            className="form-control"
+            id="image"
+            name="pimage"
+            onChange={(e) => setPimage(e.target.files[0])}
+          />
+          {errors.pimage && <p className="text-danger">{errors.pimage}</p>}
+        </div>
 
         {/* Submit Button */}
         <button type="submit" className="btn btn-primary">

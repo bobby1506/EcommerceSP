@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { useDispatch, useSelector } from "react-redux";
+// import { useDispatch, useSelector } from "react-redux";
+// import { socket } from "../../socket";
 import { loginContext } from "../../context/ContextProvider";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -18,20 +19,35 @@ const StoreForm = ({
   deleteStore,
   emptyStoreMsg,
 }) => {
-  const {
-    storeData,
-    isUpdated,
-    message: sellerMessage,
-    isDeleted,
-    isLoading: sellerLoading,
-    flag: sellerFlag,
-  } = seller;
-  const { message, isLoading, isCreated, flag } = store;
-  const { token } = user;
-  const [storeImage, setStoreImage] = useState(null);
-  const [isChange, setIsChange] = useState(false);
-  const [page, setPage] = useState("create");
-  const [imgUrl, setImgUrl] = useState(null);
+  // const dispatch = useDispatch();
+  // const { email } = useSelector((state) => {
+  //   return state?.user?.userData;
+  // });
+
+  // useEffect(() => {
+  //   console.log("email", { email, socket });
+
+  //   socket.on("connect", () => {
+  //     console.log("socket connected");
+  //     socket.emit("register", { key: email });
+  //   });
+
+  //   socket.on("resultRes", (payload) => {
+  //     //action call socket ke liye
+  //     dispatch({ type: "SOCKETRESULT", payload });
+  //     console.log("socket data", payload);
+  //   });
+
+  //   socket.on("delayRes", (payload) => {
+  //     dispatch({ type: "SOCKETDELAY", payload });
+  //     //action call socket delay ke liye
+  //     console.log("socket delay data", payload);
+  //   });
+  //   // return () => {
+  //   //   socket.disconnect();
+  //   // };
+  // }, [socket.connected]);
+
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     storeName: "",
@@ -43,39 +59,22 @@ const StoreForm = ({
     closeTime: "",
     gstNumber: "",
     upiId: "",
+    isBranch: "",
+    logo: "",
   });
   const navigate = useNavigate();
+  // const dispatch = useDispatch();
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
   const nameRef = useRef(null);
 
   useEffect(() => {
-    getStore();
-  }, []);
-  useEffect(() => {
-    if (storeData) {
-      console.log("storedata", storeData);
-      setFormData(storeData);
-      setImgUrl(storeData.logo);
-      setPage("update");
-    }
-  }, [storeData]);
-
-  useEffect(() => {
-    if (sellerMessage) {
-      if (isUpdated || isDeleted) toast.success(sellerMessage);
-      else toast.error(sellerMessage);
-      emptyStoreMsg();
-    }
-  }, [sellerFlag]);
-
-  useEffect(() => {
-    if (message) {
-      if (isCreated) {
-        toast.success(message);
+    if (smessage) {
+      if (sisCreated) {
+        toast.success(smessage);
         navigate("/sellerdashboard/sellerprofile");
       } else {
-        toast.error(message);
+        toast.error(smessage);
       }
     }
   }, [flag]);
@@ -89,9 +88,21 @@ const StoreForm = ({
     }
   }, []);
 
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
+
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
   const [logo, setLogo] = useState(null);
-  console.log("first", formData);
-  const validateForm = (formData) => {
+
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
+  const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
     console.log(formData);
 
@@ -132,10 +143,15 @@ const StoreForm = ({
     else if (!/^\w+@\w+$/.test(formData.upiId))
       errors.upiId = "Invalid UPI ID format";
 
-    setErrors(errors);
-    console.log("dff", errors);
-    return Object.keys(errors).length === 0;
-  };
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform.trim() || !link.link.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
   const handleOnDelete = () => {
     const isConfirmed = window.confirm("are you sure to delet your store");
@@ -151,37 +167,32 @@ const StoreForm = ({
   const handleOnSubmit = async (e) => {
     let logo = "";
     e.preventDefault();
-    if (validateForm(formData)) {
-      if (storeImage) {
-        let file = storeImage;
-        if (file && file.size <= 1 * 1024 * 1024) {
-          let data = new FormData();
-          data.append("file", file);
-          data.append("upload_preset", "ecommSocialPilot");
-          data.append("cloud_name", "dd3fbotqv");
-          try {
-            let res = await axios.post(
-              "https://api.cloudinary.com/v1_1/dd3fbotqv/image/upload",
-              data
-            );
-            console.log(res.data.secure_url);
-            setImgUrl("res.data.secure_url");
-            logo = res.data.secure_url;
-          } catch (error) {
-            alert(error);
-            toast.error(error?.response?.data?.error?.message);
-          }
-        } else if (!file) return;
-        toast.error("file should be less than 1MB");
-      }
-      if (isChange)
-        page === "create"
-          ? createStore({ ...formData, logo })
-          : updateStore(formData._id, { ...formData, logo });
-      else toast("make some change first");
-      setIsChange(false);
-      if (isCreated) navigate("sellerdashboard/sellerprofile");
+    const validationErrors = validateForm(formData);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
     }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("storeName", formData.storeName);
+    formDataToSend.append("ownerName", formData.ownerName);
+    formDataToSend.append("address", formData.address);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("openTime", formData.openTime);
+    formDataToSend.append("closeTime", formData.closeTime);
+    formDataToSend.append("gstNumber", formData.gstNumber);
+    formDataToSend.append("upiId", formData.upiId);
+    formDataToSend.append("isBranch", formData.isBranch);
+    formDataToSend.append("logo", formData.logo); // Add the image file
+
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
+
+    screateStore(formDataToSend);
   };
   const option = [
     { value: "", text: "select Category" },
@@ -292,18 +303,47 @@ const StoreForm = ({
           </div>
         </div>
 
-        {/* gst */}
-        <Input
-          label="GST NUMBER"
-          type="number"
-          className="form-control"
-          id="gstNumber"
-          placeholder="Enter GST number"
-          name="gstNumber"
-          value={formData.gstNumber}
-          onChange={handleOnChange}
-          errors={errors}
-        />
+        {/* <div className="mb-3">
+          <label className="form-label">Social Media Links</label>
+          {socialMediaLinks.map((socialMedia, index) => (
+            <div className="row mb-2" key={index}>
+              <div className="col">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Social Media Name"
+                  value={socialMedia.platform}
+                  onChange={(e) =>
+                    handleSocialMediaChange(index, "platform", e.target.value)
+                  }
+                />
+                {errors[`socialMediaLinks_${index}`] && (
+                  <p className="text-danger">
+                    {errors[`socialMediaLinks_${index}`]}
+                  </p>
+                )}
+              </div>
+              <div className="col">
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="Link"
+                  value={socialMedia.link}
+                  onChange={(e) =>
+                    handleSocialMediaChange(index, "link", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={addSocialMediaField}
+          >
+            Add Another
+          </button>
+        </div> */}
 
         {/* UPI id */}
         <Input
@@ -349,6 +389,6 @@ const StoreForm = ({
       )}
     </div>
   );
-};
+}};
 
 export default StoreForm;

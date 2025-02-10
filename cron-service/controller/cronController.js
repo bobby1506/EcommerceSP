@@ -1,6 +1,5 @@
-const cron = require("node-cron");
 const { client } = require("../config/db");
-const resHandler = require("../middlewares/errorHandler");
+const cron = require("node-cron");
 
 const storeCollection = client.db(process.env.DB_NAME).collection("store");
 
@@ -23,8 +22,9 @@ const updateCreditAndBalance = async () => {
       },
     }));
     await storeCollection.bulkWrite(updateCredits);
+    console.log("done");
   } catch (err) {
-    return resHandler(ctx, false, "Error updating balance", 500);
+    // return resHandler(ctx, false, "Error updating balance", 500);
   }
 };
 

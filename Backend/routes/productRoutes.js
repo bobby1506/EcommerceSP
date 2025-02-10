@@ -7,16 +7,72 @@ const {
   updatedProductOwner,
   deleteProductOwner,
 } = require("../controllers/productController");
+const { validateAll } = require("../middlewares/ValidatorsAll");
 
-const { sellerAuth, verifyToken } = require("../middlewares/tokenMiddleware");
+const {
+  sellerAuth,
+  verifyToken,
+  userAuth,
+} = require("../middlewares/tokenMiddleware");
+const {
+  productNameValidator,
+  descriptionValidator,
+  priceValidator,
+  stocksValidator,
+  categoryValidator,
+  productIdValidatorByParams,
+} = require("../validators/productValidators");
+const { storeIdValidatorByParams } = require("../validators/storeValidators");
 
 const router = new Router();
 
-router.post("/createProduct", sellerAuth, createProduct);
-router.get("/getstoreproductAdmin", sellerAuth, getstoreProductAdmin);
-router.get("/getProductsOfStore/:storeId", verifyToken, getProductsOfStore);
-router.get("/productDetails/:productId", verifyToken, getProductsDetails);
-router.patch("/productUpdate/:productId", sellerAuth, updatedProductOwner);
-router.delete("/deleteProduct/:productId", sellerAuth, deleteProductOwner);
+router.post(
+  "/createProduct",
+  verifyToken,
+  validateAll([
+    productNameValidator,
+    descriptionValidator,
+    priceValidator,
+    stocksValidator,
+    categoryValidator,
+  ]),
+  sellerAuth,
+  createProduct
+);
+router.get(
+  "/getstoreproductAdmin",
+  verifyToken,
+  validateAll([]),
+  sellerAuth,
+  getstoreProductAdmin
+);
+router.get(
+  "/getProductsOfStore/:storeId",
+  verifyToken,
+  validateAll([storeIdValidatorByParams]),
+  userAuth,
+  getProductsOfStore
+);
+router.get(
+  "/productDetails/:productId",
+  verifyToken,
+  validateAll([productIdValidatorByParams]),
+  userAuth,
+  getProductsDetails
+);
+router.post(
+  "/productUpdate/:productId",
+  verifyToken,
+  sellerAuth,
+  validateAll([productIdValidatorByParams]),
+  updatedProductOwner
+);
+router.post(
+  "/deleteProduct/:productId",
+  verifyToken,
+  validateAll([productIdValidatorByParams]),
+  sellerAuth,
+  deleteProductOwner
+);
 
 module.exports = router;

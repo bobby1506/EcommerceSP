@@ -1,25 +1,10 @@
-const findUser = async (db, filter) => {
-  const userCollection = db.collection("users");
+const { client } = require("../config/db");
 
-  const user = await userCollection.findOne(filter);
+const userCollection = client.db(process.env.DB_NAME).collection("users");
 
-  if (!user) return null;
+const findUser = async (ctx, filter) => await userCollection.findOne(filter);
 
-  const { password, ...safeUser } = user;
-
-  return {
-    ...safeUser,
-    password,
-  };
-};
-
-// Create a new user
-const createUser = async (db, userData) => {
-  const userCollection = db.collection("users");
-
-  const user = await userCollection.insertOne(userData);
-
-  return user;
-};
+const createUser = async (ctx, userData) =>
+  await userCollection.insertOne(userData);
 
 module.exports = { findUser, createUser };

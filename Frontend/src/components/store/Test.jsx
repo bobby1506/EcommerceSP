@@ -12,14 +12,13 @@ const Test = ({
   sUpdateStore,
   sDeleteStore,
   sisDeleted,
-  sisLoading,
-  screateStore,
+  // sisLoading,
   emptyStoreMsg,
 }) => {
   const [errors, setErrors] = useState({});
-  const [socialMediaLinks, setSocialMediaLinks] = useState([
-    { platform: "", link: "" },
-  ]);
+  // const [socialMediaLinks, setSocialMediaLinks] = useState([
+  //   { platform: "", link: "" },
+  // ]);
   const [formData, setFormData] = useState({
     _id: "",
     storeName: "",
@@ -37,17 +36,15 @@ const Test = ({
       url: "",
     },
   });
-
+  const [logo, setLogo] = useState(null);
   useEffect(() => {
     sGetStore();
   }, []);
 
   useEffect(() => {
-    if (sStoreData) {
-      setSocialMediaLinks(sStoreData.mediaLinks);
-      setFormData(sStoreData);
-      console.log("boat", sStoreData);
-    }
+    // setSocialMediaLinks(sStoreData.mediaLinks);
+    setFormData(sStoreData);
+    setLogo(sStoreData.logo);
   }, [sStoreData]);
 
   useEffect(() => {
@@ -65,16 +62,15 @@ const Test = ({
 
   const navigate = useNavigate();
 
-  const addSocialMediaField = () => {
-    setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
-  };
-  const [logo, setLogo] = useState(null);
+  // const addSocialMediaField = () => {
+  //   setSocialMediaLinks([...socialMediaLinks, { platform: "", link: "" }]);
+  // };
 
-  const handleSocialMediaChange = (index, field, value) => {
-    const updatedLinks = [...socialMediaLinks];
-    updatedLinks[index][field] = value;
-    setSocialMediaLinks(updatedLinks);
-  };
+  // const handleSocialMediaChange = (index, field, value) => {
+  //   const updatedLinks = [...socialMediaLinks];
+  //   updatedLinks[index][field] = value;
+  //   setSocialMediaLinks(updatedLinks);
+  // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
 
@@ -113,15 +109,15 @@ const Test = ({
       errors.isBranch = "Please select if it's a branch";
     }
 
-    socialMediaLinks.forEach((link, index) => {
-      if (!link.platform?.trim() || !link.link?.trim()) {
-        errors[
-          `socialMediaLinks_${index}`
-        ] = `Both platform and link are required`;
-      } else if (!/^https?:\/\/\S+$/.test(link.link)) {
-        errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
-      }
-    });
+    // socialMediaLinks.forEach((link, index) => {
+    //   if (!link.platform?.trim() || !link.link?.trim()) {
+    //     errors[
+    //       `socialMediaLinks_${index}`
+    //     ] = `Both platform and link are required`;
+    //   } else if (!/^https?:\/\/\S+$/.test(link.link)) {
+    //     errors[`socialMediaLinks_${index}`] = `Invalid URL format`;
+    //   }
+    // });
 
     return errors;
   };
@@ -140,7 +136,7 @@ const Test = ({
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData, socialMediaLinks);
+    const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) return;
@@ -161,16 +157,11 @@ const Test = ({
     for (const [key, value] of formDataToSend.entries()) {
       console.log("check", key, value);
     }
-    socialMediaLinks.forEach((link, index) => {
-      formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
-      formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
-    });
-
-    if (sStoreData) {
-      sUpdateStore(formData._id, formDataToSend);
-    } else {
-      screateStore(formDataToSend);
-    }
+    // socialMediaLinks.forEach((link, index) => {
+    //   formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
+    //   formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
+    // });
+    sUpdateStore(formData._id, formDataToSend);
   };
 
   return (
@@ -304,49 +295,48 @@ const Test = ({
             </div>
           </div>
         </div>
-
+        {/* 
         <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks?.map((socialMedia, index) => (
-            <h1>hello</h1>
-            // <div className="row mb-2" key={index}>
-            //   <div className="col">
-            //     <input
-            //       type="text"
-            //       className="form-control"
-            //       placeholder="Social Media Name"
-            //       value={socialMedia.platform}
-            //       onChange={(e) =>
-            //         handleSocialMediaChange(index, "platform", e.target.value)
-            //       }
-            //     />
-            //     {errors[`socialMediaLinks_${index}`] && (
-            //       <p className="text-danger">
-            //         {errors[`socialMediaLinks_${index}`]}
-            //       </p>
-            //     )}
-            //   </div>
-            //   <div className="col">
-            //     <input
-            //       type="url"
-            //       className="form-control"
-            //       placeholder="Link"
-            //       value={socialMedia.link}
-            //       onChange={(e) =>
-            //         handleSocialMediaChange(index, "link", e.target.value)
-            //       }
-            //     />
-            //   </div>
-            // </div>
-          ))}
-          <button
+            <div className="row mb-2" key={index}>
+              <div className="col">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Social Media Name"
+                  value={socialMedia.platform}
+                  onChange={(e) =>
+                    handleSocialMediaChange(index, "platform", e.target.value)
+                  }
+                />
+                {errors[`socialMediaLinks_${index}`] && (
+                  <p className="text-danger">
+                    {errors[`socialMediaLinks_${index}`]}
+                  </p>
+                )}
+              </div>
+              <div className="col">
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="Link"
+                  value={socialMedia.link}
+                  onChange={(e) =>
+                    handleSocialMediaChange(index, "link", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+          ))} */}
+        {/* <button
             type="button"
             className="btn btn-primary btn-sm"
             onClick={addSocialMediaField}
           >
             Add Another
           </button>
-        </div>
+        </div> */}
 
         <div className="mb-3">
           <label htmlFor="gstNumber" className="form-label">

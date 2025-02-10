@@ -1,0 +1,19 @@
+{
+  "name": "cron-service",
+  "version": "1.0.0",
+  "description": "cron-service for ecommerce",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "koa": "^2.15.3",
+    "koa-body": "^6.0.1",
+    "mongodb": "^6.13.0",
+    "node-cron": "^3.0.3"
+  }
+}

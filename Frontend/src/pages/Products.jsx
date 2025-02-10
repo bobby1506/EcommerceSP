@@ -101,7 +101,7 @@ const Products = ({ getProduct, product }) => {
                 price={product.price}
                 productId={product._id}
                 description={product.description}
-                url={product.logo}
+                url={product.logo?.url}
               />
             </div>
           ))}
