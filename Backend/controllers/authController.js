@@ -25,12 +25,12 @@ const registerUser = async (ctx) => {
 
     const token = generateToken(userNew);
 
-    ctx.cookies.set("authToken", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // ctx.cookies.set("authToken", token, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: "none",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
     resHandler(ctx, true, "User retrieved successfully", 200, {
       token,
@@ -67,12 +67,12 @@ const login = async (ctx) => {
       resHandler(ctx, false, "Invalid details", 400);
     }
     const token = generateToken(user);
-    ctx.cookies.set("authToken", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // ctx.cookies.set("authToken", token, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: "none",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
     resHandler(ctx, true, "Login successfully", 200, {
       token,
       data: {

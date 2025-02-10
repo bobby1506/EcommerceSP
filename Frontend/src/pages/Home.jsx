@@ -23,10 +23,19 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
   useEffect(() => {
     if (token || loginToken)
       token
-        ? Cookies.set("authToken", token, { expires: 7 })
-        : Cookies.set("authToken", loginToken, { expires: 7 });
+        ? Cookies.set("authToken", token, {
+            expires: 7,
+            secure: true,
+            sameSite: "Strict",
+          })
+        : Cookies.set("authToken", loginToken, {
+            expires: 7,
+            secure: true,
+            sameSite: "Strict",
+          });
 
     const usertoken = Cookies.get("authToken");
+    console.log(usertoken, "userToken");
     if (!usertoken) navigate("/login");
     else getStores();
   }, []);
