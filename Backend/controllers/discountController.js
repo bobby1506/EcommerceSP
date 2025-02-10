@@ -1,47 +1,39 @@
 const { ObjectId } = require("mongodb");
+const { findUser } = require("../queries/userQueries");
+const { getProductByIDStoreId } = require("../queries/productQueries");
+const { resHandler } = require("../middlewares/errorHandler");
+const {
+  createDiscountCoupon,
+  findDiscountCouponById,
+  updateDiscounts,
+  findCouponByCouponCode,
+  deleteCoupons,
+  claimUserUpdate,
+  updateProductDiscountDetails,
+  updateDiscountOnProduct,
+  findDiscountCouponByProductId,
+  updateDiscountOnCart,
+} = require("../queries/discountQueries");
+
+const { updateProductDisocunt } = require("../queries/productQueries");
+const { findCartByUserId } = require("../queries/cartQueries");
+const { client } = require("../config/db");
+const cartCollection = client.db(process.env.DB_NAME).collection("carts");
+const discountCollection = client
+  .db(process.env.DB_NAME)
+  .collection("discounts");
 
 const createDiscount = async (ctx) => {
   try {
-    const { couponCode, discountedPrice, productId } = ctx.request.body;
-
-    if (!couponCode || !discountedPrice) {
-      console.log("Invalid details");
-      ctx.body = {
-        status: 400,
-        message: "Invalid details",
-      };
-      return;
-    }
-
-    const userId = ctx.state.user?.id;
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-    console.log(user, "user");
+    const { couponCode, discountedPrice, productId } = ctx.state.shared;
+    console.log(ctx.state.shared);
+    const { email } = ctx.state.user;
+    const user = await findUser(ctx, { email });
+    console.log(user);
     const storeId = user.storeId;
-    console.log("storeId", storeId);
-
-    const productCollection = ctx.db.collection("products");
-    const product = await productCollection.findOne({
-      _id: new ObjectId(productId),
-      storeId: storeId,
-    });
-
-    if (!product) {
-      console.log("This i snot yours product");
-      return;
-    }
-    //iss storeid ko
-
-    if (typeof discountedPrice != "number" || discountedPrice < 0) {
-      console.log("Invalid details");
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Invalid details",
-      };
-      return;
-    }
-
+    const product = await getProductByIDStoreId(ctx, storeId);
+    if (!product)
+      return resHandler(ctx, false, "Product is not of correct owner", 401);
     const newDiscount = {
       couponCode: couponCode,
       discountedPrice,
@@ -49,294 +41,148 @@ const createDiscount = async (ctx) => {
       productId,
       storeId,
     };
-
-    const discountCollection = ctx.db.collection("discounts");
-    const newCoupon = await discountCollection.insertOne(newDiscount);
-
-    ctx.status = 201;
-    ctx.body = {
-      success: true,
-      message: "Dicount coupon created",
-      newCoupon,
-    };
+    const discountCoupon = await createDiscountCoupon(ctx, newDiscount);
+    if (!discountCoupon.acknowledged) {
+      return resHandler(ctx, false, "Disount coupon not created", 500);
+    }
+    const productUpdated = await updateProductDisocunt(ctx);
+    if (!productUpdated.acknowledged)
+      return resHandler(ctx, false, "Discount not updated", 500);
+    resHandler(ctx, true, "Discount coupon created", 201);
   } catch (err) {
-    console.log("Error in creating the discount coupon", err);
+    return resHandler(ctx, false, "Error in creating discount", 500);
   }
 };
-
-//delete coupon
 
 const deleteDiscount = async (ctx) => {
   try {
-    const { discountId } = ctx.request.body;
-
-    if (!discountId) {
-      console.log("Give a valid dicountId");
-      ctx.status = 403;
-      return;
-    }
+    const discountDoc = await findDiscountCouponByProductId(ctx);
+    console.log(discountDoc, "discountDoc");
+    const res = await updateProductDiscountDetails(ctx);
+    console.log(res, "res");
 
     const userId = ctx.state.user?.id;
-    const userCollection = ctx.db.collection("users");
-    const user = userCollection.findOne({ _id: new ObjectId(userId) });
-
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
-      return;
+      return resHandler(ctx, false, "User not found", 403);
     }
     const storeId = user.storeId;
-
-    const discountCollection = ctx.db.collection("discounts");
-
-    const discount = await discountCollection.findOne({
-      _id: new ObjectId(discountId),
-    });
+    const discount = await findDiscountCouponById(ctx, discountDoc._id);
+    console.log("discount", discount);
     if (!discount) {
-      return;
+      return resHandler(ctx, false, "Coupon not found", 404);
     }
-
     const ownerStoreId = discount.storeId;
-
-    if (storeId != ownerStoreId) {
-      console.log("you are a hacker");
-      return;
+    if (storeId.toString() != ownerStoreId.toString()) {
+      return resHandler(ctx, false, "You dont have an access for this", 403);
     }
-
-    const deleteCoupon = await discountCollection.deleteOne({
-      _id: new ObjectId(discountId),
-    });
-
-    if (deleteCoupon.deletedCount === 0) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Coupon not found",
-      };
-      return;
+    const deletedCoupon = await deleteCoupons(ctx, discountDoc._id);
+    if (deletedCoupon.deletedCount === 0) {
+      return resHandler(ctx, false, "Coupon not found", 404);
     }
-
-    ctx.status = 200;
-    ctx.body = {
-      message: "Discount coupon deleted",
-      success: true,
-      deleteCoupon,
-    };
+    if (!deletedCoupon.acknowledged) {
+      return resHandler(ctx, false, "Error in deletion", 500);
+    }
+    resHandler(ctx, true, "Discount coupon deleted", 200);
   } catch (err) {
-    console.log("Error in deleting the disocunt creation", err);
-    ctx.status = 500;
+    console.log(err);
+    return resHandler(ctx, false, "Error in deletion", 500);
   }
 };
 
-//update discount
 const updateDiscount = async (ctx) => {
   try {
-    const { discountId, discountPrice } = ctx.request.body;
-
-    if (!discountId || discountPrice == undefined) {
-      console.log("Invalid details");
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Invalid input",
-      };
-      return;
-    }
-
-    if (typeof discountPrice !== "number" || discountPrice <= 0) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Invalid 'discountPrice'. It must be a positive number.",
-      };
-      return;
-    }
-
-    const discountCollection = ctx.db.collection("discounts");
-
+    const { couponCode, discountedPrice } = ctx.state.shared;
+    console.log(couponCode, discountedPrice);
+    console.log(ctx.state.shared, "CTX.STATE.SHARED");
+    const discountDoc = await findDiscountCouponByProductId(ctx);
+    console.log(discountDoc);
+    const updatedData = {
+      couponCode,
+      discountedPrice,
+    };
     const userId = ctx.state.user?.id;
-    const userCollection = ctx.db.collection("users");
-    const user = userCollection.findOne({ _id: new ObjectId(userId) });
-
+    const user = await findUser(ctx, { _id: new ObjectId(userId) });
     if (!user) {
-      return;
+      return resHandler(ctx, false, "User not found", 403);
     }
     const storeId = user.storeId;
-
-    const discount = await discountCollection.findOne({
-      _id: new ObjectId(discountId),
-    });
+    const discount = await findDiscountCouponById(ctx, discountDoc._id);
+    console.log(discount);
     if (!discount) {
-      return;
+      return resHandler(ctx, false, "Coupon not found", 404);
     }
-
-    const ownerStoreId = discount.storeId;
-
-    if (storeId != ownerStoreId) {
-      console.log("you are a hacker");
-      return;
+    const ownerStoreId = discount.storeId.toString();
+    if (storeId.toString() != ownerStoreId) {
+      return resHandler(ctx, false, "You dont have an access for this", 403);
     }
-
-    const updatedDiscount = await discountCollection.updateOne(
-      {
-        _id: new ObjectId(discountId),
-      },
-      {
-        $set: {
-          discountedprice: discountPrice,
-        },
-      }
+    const updatedDiscount = await updateDiscounts(
+      ctx,
+      discountDoc._id,
+      updatedData
     );
-
+    console.log(updatedDiscount);
     if (updatedDiscount.matchedCount == 0) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Discount not found. Please check the 'discountId'.",
-      };
-      return;
+      resHandler(ctx, false, "Dicount not found", 404);
     }
 
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Discount updated successfully",
-    };
+    const ans = await updateDiscountOnProduct(ctx, couponCode);
+    console.log(ans);
+
+    resHandler(ctx, true, "Discount updated successfully", 200);
   } catch (err) {
-    console.log("Error in updating the discount");
-    ctx.staus = 500;
-    ctx.body = {
-      success: false,
-      message: err,
-    };
+    resHandler(ctx, false, "Discount coupon not updated", 500);
   }
 };
-
-//apply discount
-//step-1 mujhe coupon name milegaa
-//step-2 mujhe vo dicount collection check karna hai exist karta hai ya nahi
-//step-3 agar exist karta hai to storeid or product uthaalo or discount bhi uthaalo
-//step-4 ab cart mein user ka cart nikaalo or storeid, product id match karo, agar kuch milaa to uspe
-//total price pe utna discount dede
 
 const applyCoupon = async (ctx) => {
   const { couponCode } = ctx.request.body;
-
   const userId = ctx.state.user?.id;
-
   if (!userId) {
     ctx.status = 401;
     ctx.body = { success: false, message: "Unauthorized user" };
     return;
   }
-
-  const discountCollection = ctx.db.collection("discounts");
-  const cartCollection = ctx.db.collection("carts");
-
   const discountCoupon = await discountCollection.findOne({
     couponCode: couponCode,
   });
   console.log(discountCoupon, "discountcoupon");
-
   if (!discountCoupon) {
     ctx.status = 404;
     ctx.body = { success: false, message: "Coupon does not exist" };
     return;
   }
-
-  //if exist then check user already used it or not
   if (discountCoupon.claimedUser.includes(userId)) {
     ctx.status = 400;
     ctx.body = { success: false, message: "Coupon already used by the user" };
     return;
   }
-
-  //if not then coupon se storeid or productid lo
   const { storeId, productId, discountedPrice } = discountCoupon;
-
   console.log(discountedPrice);
-
   const finalDiscount = discountedPrice / 100;
-
-  //ab user ki cart mein jaoo and check karo if uss store kaa vo product ho to uska total price pe utna discount lagaa do
   const cart = await cartCollection.findOne({ userId });
-
   console.log(cart, "cart");
-
   if (!cart) {
     ctx.status = 404;
     ctx.body = { success: false, message: "User's cart not found" };
     return;
   }
-
-  const cartItems = cart.items.map(
-    (item) =>
-      item.productId === productId && item.productDetails.storeId === storeId
+  const updatedCart = await cartCollection.updateOne(
+    {
+      userId,
+      "items.productId": productId,
+      "items.productDetails.storeId": storeId,
+    },
+    {
+      $mul: { "items.$.totalPrice": 1 - finalDiscount },
+    }
   );
-
-  if (!cartItems) {
-    ctx.status = 400;
-    ctx.body = {
-      success: false,
-      message: "not applicable for any product in cart",
-    };
-    return;
-  }
-
-  const aggregatedCart = await cartCollection
-    .aggregate([
-      {
-        $match: {
-          userId,
-          "items.productId": productId,
-        },
-      },
-      {
-        $unwind: "$items",
-      },
-      {
-        $match: {
-          "items.productId": productId,
-        },
-      },
-      {
-        $set: {
-          "items.totalPrice": {
-            $subtract: [
-              "$items.totalPrice",
-              { $multiply: ["$items.totalPrice", finalDiscount] },
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          items: { $push: "$items" },
-        },
-      },
-    ])
-    .toArray();
-
-  if (aggregatedCart.length > 0) {
-    const updatedCart = await cartCollection.updateOne(
-      { userId, _id: aggregatedCart[0]._id },
-      { $set: { items: aggregatedCart[0].items } }
-    );
-
-    console.log("Cart updated successfully:", updatedCart);
-  } else {
-    console.log("Cart not found for the user or product not in cart.");
-  }
-
-  await discountCollection.updateOne(
-    { couponCode },
-    { $push: { claimedUser: userId } }
-  );
-
+  const newCart = await cartCollection.findOne({ userId: userId });
   ctx.status = 200;
   ctx.body = {
     success: true,
     message: "Discount applied successfully",
-    aggregatedCart,
+    newCart,
   };
 };
 

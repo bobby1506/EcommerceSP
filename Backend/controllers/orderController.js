@@ -1,246 +1,75 @@
 const { ObjectId } = require("mongodb");
+const {
+  insertOrder,
+  deleteCart,
+  updateStoreBalance,
+  calculateStoreBalance,
+  findOrdersByUserId,
+  findOrdersByStoreId,
+  updateOrderDeliveryStatus,
+  decreaseStock,
+} = require("../queries/orderQueries");
+
+const { getProductById } = require("../queries/productQueries");
+
+const { resHandler } = require("../middlewares/errorHandler");
 
 const createOrder = async (ctx) => {
   try {
-    const {
-      shippingInformation,
-      orderedItems,
-      shippingPrice,
-      paidAt,
-      paymentStatus,
-      isCart,
-    } = ctx.request.body;
-
-    if (
-      !shippingInformation ||
-      orderedItems.length === 0 ||
-      !shippingPrice || // Fixed spelling here
-      !paymentStatus
-    ) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Invalid input data",
-      };
-      return;
-    }
+    const { isCart } = ctx.request.body;
     const userId = ctx.state.user?.id;
-    const productCollection = ctx.db.collection("products");
-    console.log("Step1");
-
-    //check if the stock is avaivlable or not
-    for (const item of orderedItems) {
-      console.log(item.productId);
-      const product = await productCollection.findOne({
-        _id: new ObjectId(item.productId),
-      });
-
-      if (!product) {
-        ctx.status = 404;
-        ctx.body = {
-          success: false,
-          message: `Product with ID ${item.productId} not found`,
-        };
-        return;
-      }
-
-      if (product.stocks < item.quantity) {
-        ctx.status = 400;
-        ctx.body = {
-          success: false,
-          message: "Not enough stock",
-        };
-        return;
-      }
-
-      //decrease stock
-      for (const item of orderedItems) {
-        const product = await productCollection.updateOne(
-          {
-            _id: new ObjectId(item.productId),
-          },
-          { $inc: { stocks: -item.quantity } }
-        );
-      }
+    const result = await decreaseStock(ctx);
+    if (!result) {
+      return resHandler(ctx, false, "Not enough stocks", 400);
     }
-
-    const newOrder = {
-      shippingInformation,
-      orderedItems,
-      userId,
-      shippingPrice: shippingPrice || 50,
-      paidAt,
-      paymentStatus: paymentStatus || "Pending",
-    };
-
-    const orderCollection = ctx.db.collection("orders");
-
-    const Order = await orderCollection.insertOne(newOrder);
-    console.log("Step 2");
-
-    const storeCollection = ctx.db.collection("store");
-
-    const newBalance = await orderCollection
-      .aggregate([
-        {
-          $match: { _id: Order.insertedId },
-        },
-
-        {
-          $unwind: "$orderedItems",
-        },
-        {
-          $group: {
-            _id: "$orderedItems.storeId",
-            totalAmount: {
-              $sum: {
-                $multiply: ["$orderedItems.price", "$orderedItems.quantity"],
-              },
-            },
-          },
-        },
-      ])
-      .toArray();
-
-    console.log("newBalance", newBalance);
-
-    console.log("Step-3");
-
-    const balanceUpdate = newBalance.map((data) => ({
+    const insertedOrder = await insertOrder(ctx);
+    console.log(insertedOrder);
+    if (!insertedOrder.acknowledged) {
+      return resHandler(ctx, false, "Error in order creation", 400);
+    }
+    const newBalance = await calculateStoreBalance(
+      ctx,
+      insertedOrder.insertedId
+    );
+    const balanceUpdate = newBalance?.map((data) => ({
       updateOne: {
-        filter: {
-          _id: new ObjectId(data._id),
-        },
-        update: {
-          $inc: {
-            Credits: data.totalAmount,
-          },
-        },
+        filter: { _id: new ObjectId(data._id) },
+        update: { $inc: { Credits: data.totalAmount } },
       },
     }));
-    console.log(balanceUpdate);
-
-    console.log("Step-4");
-
-    const bulkResult = await storeCollection.bulkWrite(balanceUpdate);
-    console.log(bulkResult);
-    console.log("Step-5");
-
-    // if (bulkResult.modifiedCount === 0) {
-    // }
-
-    if (Order.insertedCount === 0) {
-      ctx.status = 400;
-      ctx.body = {
-        success: false,
-        message: "Error in order creation",
-      };
-      return;
-    }
-
-    //cart delete karni hai
-    const cartCollection = ctx.db.collection("carts");
+    await updateStoreBalance(ctx, balanceUpdate);
     if (isCart) {
-      const cart = await cartCollection.deleteOne({ userId: userId });
-      console.log("cart", cart);
+      await deleteCart(ctx, userId);
     }
-
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Order created Successfully",
-    };
+    resHandler(ctx, true, "Order created successfully", 200);
   } catch (err) {
-    console.log("Order creation failed", err);
-    (ctx.status = 500),
-      (ctx.body = {
-        success: false,
-        message: "Order creation failed",
-      });
+    resHandler(ctx, false, "Order creation denied", 500);
   }
 };
 
-//fetch all order details for users
 const orderDetails = async (ctx) => {
   try {
-    const userId = ctx.state.user?.id;
-    console.log("userId", userId);
-
-    if (!userId) {
-      console.log("User id not fetched from token");
-    }
-
-    const orderCollection = ctx.db.collection("orders");
-    // console.log(orderCollection);
-    const orders = await orderCollection
-      .find({
-        userId,
-      })
-      .toArray();
-
-    console.log("orders", orders);
-    (ctx.status = 200),
-      (ctx.body = {
-        success: true,
-        message: "Order fetched",
-        orders,
-      });
+    const orders = await findOrdersByUserId(ctx);
+    resHandler(ctx, true, "Order fetched successfully", 200);
+    ctx.body = {
+      orders,
+    };
   } catch (err) {
-    console.log("Orderdetail not fetched", err);
-    (ctx.status = 404), (ctx.message = "Orderdetails not fetched");
+    resHandler(ctx, false, "Orders not fetched", 500);
   }
 };
 
-//orders fetched for owner
 const orderDetailOwner = async (ctx) => {
   try {
-    const ownerId = ctx.state.user?.id;
-
-    console.log(ownerId);
-
-    if (!ownerId) {
-      (ctx.status = 404),
-        (ctx.body = {
-          success: false,
-          message: "Sellerid is invalid",
-        });
-    }
-
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(ownerId) });
-    console.log(user, "user");
+    const { user } = ctx.state.shared;
+    console.log(user);
     const storeId = user.storeId.toString();
-    console.log("storeId", storeId);
-
-    const orderCollection = ctx.db.collection("orders");
-    // console.log("orderCollection", orderCollection);
-    const orders = await orderCollection
-      .find({
-        "orderedItems.storeId": storeId,
-      })
-      .toArray();
-
-    // console.log("orders", orders);
-
-    if (!orders.length) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "No orders found for your store.",
-      };
-      return;
-    }
-
-    const filteredItems = orders.map((order) => {
-      console.log("order", order);
+    const orders = await findOrdersByStoreId(ctx);
+    console.log(orders);
+    const filteredItems = orders?.map((order) => {
       const filteredItem = order.orderedItems.filter((item) => {
-        // console.log(item);
-        console.log("storeId", item.storeId);
-        console.log("storeId", storeId);
-        return item.storeId == storeId;
-        // console.log(item.orderedItems.storeId);
+        return item.productDetails.storeId == storeId;
       });
-      console.log("filterItems", filteredItem);
       return {
         shippingInformation: order.shippingInformation,
         orderedItems: filteredItem,
@@ -248,114 +77,43 @@ const orderDetailOwner = async (ctx) => {
         createdAt: new Date(),
       };
     });
-
-    // console.log("orderedItems", orderedItems);
-    ctx.status = 200;
+    const orderss = filteredItems ? filteredItems : [];
+    console.log(filteredItems);
+    resHandler(ctx, true, "Order detail fetched for owner", 200);
     ctx.body = {
-      success: true,
-      message: "Orders fetched successfully",
-      filteredItems,
+      orderss,
     };
   } catch (err) {
-    console.log("Order fetch error of owner", err);
-    ctx.status = 403;
-    ctx.body = {
-      success: false,
-      message: "Order not fetched successfully",
-    };
+    resHandler(ctx, false, "Order not fetched", 403);
   }
 };
 
-//onwer changing status of orders for admin
 const orderStatusChange = async (ctx) => {
   try {
-    console.log("Hello owner");
-    const { orderId, productId, deliveryStatus } = ctx.request.body;
-
-    if (!orderId || !deliveryStatus || !productId) {
-      console.log("Invalid input");
-      ctx.status = 400;
-      ctx.body = {
-        message: "Invalid input",
-        success: false,
-      };
-    }
-
-    const userId = ctx.state.user?.id;
-
-    const userCollection = ctx.db.collection("users");
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
-
+    const { orderId, productId, deliveryStatus } = ctx.state.shared;
+    const { user } = ctx.state.shared;
     const storeId = user.storeId.toString();
-    const productCollection = ctx.db.collection("products");
-    const product = await productCollection.findOne({
-      _id: new Object(productId),
-    });
-    if (!product) {
+    const product = await getProductById(ctx);
+    if (!product || product.storeId !== storeId) {
+      resHandler(ctx, false, "Unauthorized access", 403);
       return;
     }
     const storeOwner = product.storeId;
-
     if (storeOwner != storeId) {
       console.log("You are a hacker");
       return;
     }
-    console.log("storeId", storeId);
-
-    const orderCollection = ctx.db.collection("orders");
-
-    const order = await orderCollection.updateOne(
-      {
-        _id: new ObjectId(orderId),
-        "orderedItems.storeId": storeId,
-        "orderedItems.productId": productId.toString(),
-      },
-      {
-        $set: {
-          "orderedItems.$[elem].deliveryStatus": deliveryStatus,
-        },
-      },
-      {
-        arrayFilters: [
-          {
-            "elem.storeId": storeId,
-            "elem.productId": productId.toString(),
-          },
-        ],
-      }
+    await updateOrderDeliveryStatus(
+      ctx.db,
+      orderId,
+      user.storeId,
+      productId,
+      deliveryStatus
     );
-    console.log("order", order);
-
-    if (!order) {
-      console.log("Order not found");
-      ctx.status = 404;
-      ctx.body = {
-        success: true,
-        message: "Order not found",
-      };
-    }
-
-    if (order.modifiedCount === 0) {
-      ctx.status = 404;
-      ctx.body = {
-        success: false,
-        message: "Order or product not found for the given storeId.",
-      };
-      return;
-    }
-
-    ctx.status = 200;
-    ctx.body = {
-      success: true,
-      message: "Order delivery status updated successfully",
-    };
+    resHandler(ctx, true, "Order deliever status updated successfully", 200);
   } catch (err) {
     console.log(err);
-    ctx.status = 500;
-    ctx.body = {
-      success: false,
-      message: err,
-    };
+    resHandler(ctx, false, "Internal server error", 500);
   }
 };
 

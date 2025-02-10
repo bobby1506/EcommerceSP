@@ -1,56 +1,35 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/jwtUtils");
-const { ObjectId } = require("mongodb");
 const { createUser, findUser } = require("../queries/userQueries");
 const { resHandler } = require("../middlewares/errorHandler");
 
-// const { close, getData, setData, deleteCache } = require("../utils/redisUtils");
-
-//Registration API
 const registerUser = async (ctx) => {
   try {
-    console.log("Hello");
-    const { username, email, password } = ctx.state.shared;
-
-    const userExist = await findUser(ctx.db, { email });
-    if (userExist) {
-      resHandler(
-        ctx,
-        false,
-        "User already exists",
-        400,
-        null,
-        "Duplicate user in register."
-      );
-      return;
-    }
-
+    const { username, email, password, isSeller } = ctx.state.shared;
     const salt = 10;
     const hashed = await bcrypt.hash(password, salt);
-
     const newUser = {
       username,
       email,
-      isSeller: false,
+      isSeller,
       storeId: null,
       password: hashed,
       createdAt: new Date(),
     };
-    const user = await createUser(ctx.db, newUser);
+    const user = await createUser(ctx, newUser);
+    if (!user.acknowledged)
+      return resHandler(ctx, false, "User creation failed", 500);
 
-    console.log("User", user);
-
-    const userNew = await findUser(ctx.db, { email });
+    const userNew = await findUser(ctx, { email });
+    if (!userNew) return resHandler(ctx, false, "User exist", 409);
 
     const token = generateToken(userNew);
 
     ctx.cookies.set("authToken", token, {
-      httpOnly: true, // Makes it inaccessible to client-side JavaScript
-      // eslint-disable-next-line no-undef
-      // secure: process.env.NODE_ENV === "production", // Ensures it's sent over HTTPS in production
+      httpOnly: true,
       secure: false,
-      sameSite: "none", // Protects against CSRF attacks
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     resHandler(ctx, true, "User retrieved successfully", 200, {
@@ -64,61 +43,36 @@ const registerUser = async (ctx) => {
       },
     });
   } catch (err) {
-    console.log("Registration Failed", err.message);
-    resHandler(ctx, false, "Internal server error", 500, null, err.message);
+    return resHandler(
+      ctx,
+      false,
+      "Internal server error",
+      500,
+      null,
+      err.message
+    );
   }
 };
 
-//login api
 const login = async (ctx) => {
   try {
-    console.log(ctx.request.body);
-    const { email, password } = ctx.state.shared;
-
-    console.log("Hello2");
-
-    const user = await findUser(ctx.db, { email });
+    let { password, email } = ctx.state.shared;
+    const user = await findUser(ctx, { email });
+    console.log(user);
     if (!user) {
-      resHandler(
-        ctx,
-        false,
-        "User not found",
-        404,
-        null,
-        "User not found in login."
-      );
-      return;
+      return resHandler(ctx, false, "User doesn't exist", 404);
     }
-
-    console.log("Hello3");
-
     const ismatchPassword = await bcrypt.compare(password, user.password);
-
-    console.log("Hello4");
-
     if (!ismatchPassword) {
-      resHandler(
-        ctx,
-        false,
-        "Incorrect password",
-        401,
-        null,
-        "Password mismatch in login."
-      );
-      return;
+      resHandler(ctx, false, "Invalid details", 400);
     }
-
     const token = generateToken(user);
-
     ctx.cookies.set("authToken", token, {
       httpOnly: true,
-      // eslint-disable-next-line no-undef
-      // secure: process.env.NODE_ENV === "production",
       secure: false,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
     resHandler(ctx, true, "Login successfully", 200, {
       token,
       data: {
@@ -130,41 +84,21 @@ const login = async (ctx) => {
       },
     });
   } catch (err) {
-    console.error("Login error:", err.message);
-    resHandler(ctx, false, "Internal server error", 500, null, err.message);
+    return resHandler(
+      ctx,
+      false,
+      "Internal server error",
+      500,
+      null,
+      err.message
+    );
   }
 };
 
-//logout
-const logout = async (ctx) => {
-  ctx.status = 200;
-  ctx.body = {
-    success: true,
-    message: "User logout successfully",
-  };
-};
-
-//getUser
-
 const getUser = async (ctx) => {
   try {
-    console.log("Hello");
-
-    const { userId } = ctx.state.shared;
-
-    const user = await findUser(ctx.db, { _id: new ObjectId(userId) });
-    if (!user) {
-      resHandler(
-        ctx,
-        false,
-        "User not found",
-        404,
-        null,
-        "User not found in getUser."
-      );
-      return;
-    }
-
+    const { user } = ctx.state.shared;
+    console.log(user, "user");
     resHandler(ctx, true, "User fetched", 200, {
       user: {
         username: user.username,
@@ -173,9 +107,15 @@ const getUser = async (ctx) => {
       },
     });
   } catch (err) {
-    console.log("User fetched error", err);
-    resHandler(ctx, false, "Internal server error", 500, null, err.message);
+    return resHandler(
+      ctx,
+      false,
+      "Internal server error",
+      500,
+      null,
+      err.message
+    );
   }
 };
 
-module.exports = { registerUser, login, logout, getUser };
+module.exports = { registerUser, login, getUser };
