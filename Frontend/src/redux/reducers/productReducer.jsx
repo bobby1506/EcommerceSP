@@ -13,7 +13,7 @@ const initialState = {
 };
 
 export const ProductReducer = (state = initialState, action) => {
-  let response=action.payload;
+  let response = action.payload;
   switch (action.type) {
     case "GETPRODUCTS_PENDING":
       return { ...state, isLoading: true };
@@ -34,11 +34,10 @@ export const ProductReducer = (state = initialState, action) => {
     case "GETPRODUCT_PENDING":
       return { ...state, isLoading: true };
     case "GETPRODUCT_FULFILLED":
-    
       return {
         ...state,
         isLoading: false,
-        productData: {...action.payload.data.productDetails},
+        productData: { ...action.payload.data.productDetails },
         flag: !state.flag,
       };
     case "GETPRODUCT_REJECTED":
@@ -97,4 +96,3 @@ export const ProductReducer = (state = initialState, action) => {
       return state;
   }
 };
-

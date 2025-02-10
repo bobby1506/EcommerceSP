@@ -1,17 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import StoreCard from "./StoreCard";
-import Button from "./Button";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { loginContext } from "../../context/ContextProvider";
 
 const StoreContainer = ({
-  storeList,
-  isLoadings,
-  getStores,
-  isOwner,
-  getUser,
+  store,
+  isOwner
 }) => {
+  const {storesArray,isLoading}=store
   const { contextUserData } = useContext(loginContext);
   const isSeller = contextUserData.isSeller;
   const navigate = useNavigate();
@@ -27,19 +23,19 @@ const StoreContainer = ({
 
   const lastIndex = currentPage * itemsPerPage;
   const firstIndex = lastIndex - itemsPerPage;
-  const currentStores = storeList.slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(storeList.length / itemsPerPage);
+  const currentStores = storesArray.slice(firstIndex, lastIndex);
+  const totalPages = Math.ceil(storesArray.length / itemsPerPage);
 
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  if (isLoadings) {
+  if (isLoading) {
     return <div>Loading.....</div>;
   }
 
-  if (storeList.length === 0) {
+  if (storesArray.length === 0) {
     return <div>No stores yet</div>;
   }
 
@@ -53,14 +49,14 @@ const StoreContainer = ({
                 storeName={store?.storeName}
                 description={store?.description}
                 storeId={store._id}
-                url={store?.logo?.url}
+                url={store?.logo}
               />
             </div>
           ))}
         </div>
 
        
-        <nav>
+        {currentPage!=totalPages && <nav>
           <ul className="pagination justify-content-center">
             <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
               <button
@@ -95,7 +91,7 @@ const StoreContainer = ({
               </button>
             </li>
           </ul>
-        </nav>
+        </nav>}
       </div>
     </>
   );

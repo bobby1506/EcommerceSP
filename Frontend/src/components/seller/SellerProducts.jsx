@@ -20,25 +20,17 @@ const SellerProducts = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-
   const navigate = useNavigate();
 
   useEffect(() => {
     getProduct();
- 
   }, []);
 
   useEffect(() => {
     if (smessage) {
-      if (sproductUpdated) {
-        toast.success(smessage)
-      }
-      else if(sproductDeleted){
-        toast.success(smessage)
-      }
-      else{
-        toast(smessage)
-      }
+      if (sproductUpdated || sproductDeleted) toast.success(smessage);
+      else toast(smessage);
+
       emptyStoreMsg();
     }
   }, [sflag]);
@@ -102,7 +94,6 @@ const SellerProducts = ({
             placeholder="Search products"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-          
           />
           <select
             className="form-select"

@@ -1,42 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserStatus } from "../../redux/actions/userActions";
-import { getStore } from "../../redux/actions/storeActions";
-import Cookies from "js-cookie"
 
 const SellerProfile = () => {
   const [userData, setUserData] = useState({
     username: "",
     email: "",
-    upiId: "",
-    gstNumber: "",
   });
 
   const dispatch = useDispatch();
   const data = useSelector((state) => state.user.userData);
- 
-  const token=Cookies.get("authToken")
   useEffect(() => {
-    
-    if(token){
-      dispatch(getUserStatus());
-    }
-    
-  }, [token]);
+    dispatch(getUserStatus());
+  }, []);
   useEffect(() => {
     setUserData(data);
   }, [data]);
-
-  const [errors, setErrors] = useState({});
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUserData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = () => {
-    console.log("Updated Profile Data:", userData);
-  };
 
   return (
     <>
@@ -47,9 +26,8 @@ const SellerProfile = () => {
           <input
             type="text"
             className="form-control"
-            name="name"
+            name="username"
             value={userData.username || ""}
-            onChange={handleChange}
           />
         </div>
         <div className="mb-3">
@@ -59,13 +37,8 @@ const SellerProfile = () => {
             className="form-control"
             name="email"
             value={userData.email || ""}
-            onChange={handleChange}
           />
         </div>
-
-        {/* <button className="btn btn-primary mt-5" onClick={handleSubmit}>
-          Update Profile
-        </button> */}
       </div>
     </>
   );

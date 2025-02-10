@@ -5,7 +5,7 @@ const initialState = {
   isLoading: false,
   isCreated:false,
   storesArray: [],
-  storeData:{}
+  storeData:null
 };
 
 export const storeReducer = (state = initialState, action) => {

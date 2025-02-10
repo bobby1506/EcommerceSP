@@ -5,8 +5,7 @@ import SellerOrders from "../components/seller/SellerOrders";
 import { getOrdersSeller } from "../redux/actions/orders";
 
 const mapStateToProps = (state) => ({
-    orderItems:state.seller.ordersArray,
-    oisLoading:state.seller.isLoading,
+    seller:state.seller
 });
 const mapDispatchToProps = (dispatch) => ({
     getOrdersSeller:()=>dispatch(getOrdersSeller())

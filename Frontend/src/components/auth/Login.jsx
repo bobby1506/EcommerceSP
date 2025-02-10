@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { loginContext } from "../../context/ContextProvider";
 import axios from "axios";
 import { url } from "../../apiConfig";
+import Input from "../common/Input";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -18,9 +19,7 @@ const Login = () => {
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      return { ...prev, [name]: value };
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // const dispatch = useDispatch();
@@ -31,19 +30,17 @@ const Login = () => {
 
   useEffect(() => {
     if (message) {
-      if (isAuthenticated) {
-        toast.success(message);
-      } else {
-        toast.error(message);
-      }
-      loginDispatch({type:"emptyMsg"})
+      if (isAuthenticated) toast.success(message);
+      else toast.error(message);
+
+      loginDispatch({ type: "emptyMsg" });
     }
 
     if (isAuthenticated && !isSeller) {
       navigate("/");
     }
     if (isAuthenticated && isSeller) {
-      navigate("/sellerdashboard/sellerprofile");
+      navigate("/sellerdashboard/");
     }
   }, [flag]);
 
@@ -71,38 +68,33 @@ const Login = () => {
   }
   return (
     <>
-      <ToastContainer />
+      <h1 className="container">LOGIN</h1>
       <div
         className="container mt-3 shadow p-5 rounded"
         style={{ maxWidth: "400px" }}
       >
         <form onSubmit={handleOnSubmit}>
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              name="email"
-              value={formData.email}
-              onChange={handleOnChange}
-            />
-            <p className="text-danger fs-9">{error.email}</p>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              className="form-control"
-              name="password"
-              value={formData.password}
-              onChange={handleOnChange}
-            />
-            <p className="text-danger fs-9">{error.password}</p>
-          </div>
+          <Input
+            label="Email"
+            type="text"
+            className="form-control"
+            id="email"
+            placeholder="Enter your emil Id"
+            name="email"
+            value={formData.email}
+            onChange={handleOnChange}
+          />
+          <Input
+            label="Password"
+            type="password"
+            className="form-control"
+            id="password"
+            placeholder="Enter your password"
+            name="password"
+            value={formData.password}
+            onChange={handleOnChange}
+          />
+
           <button className="btn btn-primary" type="submit">
             Login
           </button>

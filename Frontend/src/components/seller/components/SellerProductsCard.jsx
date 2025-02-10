@@ -40,7 +40,7 @@ const SellerProductCard = ({ product}) => {
         {/* Image container */}
         <div className="me-3">
           <img
-            src={product?.logo?.url}
+            src={product?.logo}
             className="rounded"
             alt={productName}
             style={{ width: "100px", height: "100px", objectFit: "cover" }}

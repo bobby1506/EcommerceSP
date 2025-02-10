@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-const SellerStore = ({
+const Test = ({
   sStoreData,
   sGetStore,
   smessage,
@@ -13,6 +13,7 @@ const SellerStore = ({
   sDeleteStore,
   sisDeleted,
   sisLoading,
+  screateStore,
   emptyStoreMsg,
 }) => {
   const [errors, setErrors] = useState({});
@@ -31,7 +32,10 @@ const SellerStore = ({
     gstNumber: "",
     upiId: "",
     isBranch: "",
-    logo: { url: "" },
+    logo: {
+      public_id: "",
+      url: "",
+    },
   });
 
   useEffect(() => {
@@ -39,8 +43,11 @@ const SellerStore = ({
   }, []);
 
   useEffect(() => {
-    setSocialMediaLinks(sStoreData.mediaLinks);
-    setFormData(sStoreData);
+    if (sStoreData) {
+      setSocialMediaLinks(sStoreData.mediaLinks);
+      setFormData(sStoreData);
+      console.log("boat", sStoreData);
+    }
   }, [sStoreData]);
 
   useEffect(() => {
@@ -128,9 +135,7 @@ const SellerStore = ({
   };
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      return { ...prev, [name]: value };
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleOnSubmit = (e) => {
@@ -138,9 +143,7 @@ const SellerStore = ({
     const validationErrors = validateForm(formData, socialMediaLinks);
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) return;
 
     const formDataToSend = new FormData();
     formDataToSend.append("storeName", formData.storeName);
@@ -162,8 +165,14 @@ const SellerStore = ({
       formDataToSend.append(`mediaLinks[${index}][platform]`, link.platform);
       formDataToSend.append(`mediaLinks[${index}][link]`, link.link);
     });
-    sUpdateStore(formData._id, formDataToSend);
+
+    if (sStoreData) {
+      sUpdateStore(formData._id, formDataToSend);
+    } else {
+      screateStore(formDataToSend);
+    }
   };
+
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Store Information Form</h2>
@@ -299,35 +308,36 @@ const SellerStore = ({
         <div className="mb-3">
           <label className="form-label">Social Media Links</label>
           {socialMediaLinks?.map((socialMedia, index) => (
-            <div className="row mb-2" key={index}>
-              <div className="col">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Social Media Name"
-                  value={socialMedia.platform}
-                  onChange={(e) =>
-                    handleSocialMediaChange(index, "platform", e.target.value)
-                  }
-                />
-                {errors[`socialMediaLinks_${index}`] && (
-                  <p className="text-danger">
-                    {errors[`socialMediaLinks_${index}`]}
-                  </p>
-                )}
-              </div>
-              <div className="col">
-                <input
-                  type="url"
-                  className="form-control"
-                  placeholder="Link"
-                  value={socialMedia.link}
-                  onChange={(e) =>
-                    handleSocialMediaChange(index, "link", e.target.value)
-                  }
-                />
-              </div>
-            </div>
+            <h1>hello</h1>
+            // <div className="row mb-2" key={index}>
+            //   <div className="col">
+            //     <input
+            //       type="text"
+            //       className="form-control"
+            //       placeholder="Social Media Name"
+            //       value={socialMedia.platform}
+            //       onChange={(e) =>
+            //         handleSocialMediaChange(index, "platform", e.target.value)
+            //       }
+            //     />
+            //     {errors[`socialMediaLinks_${index}`] && (
+            //       <p className="text-danger">
+            //         {errors[`socialMediaLinks_${index}`]}
+            //       </p>
+            //     )}
+            //   </div>
+            //   <div className="col">
+            //     <input
+            //       type="url"
+            //       className="form-control"
+            //       placeholder="Link"
+            //       value={socialMedia.link}
+            //       onChange={(e) =>
+            //         handleSocialMediaChange(index, "link", e.target.value)
+            //       }
+            //     />
+            //   </div>
+            // </div>
           ))}
           <button
             type="button"
@@ -389,14 +399,16 @@ const SellerStore = ({
         </div>
 
         <button type="submit" className="btn btn-primary me-3">
-          update
+          {sStoreData ? "update" : "Create"}
         </button>
       </form>
-      <button onClick={handleOnDelete} className="btn btn-danger">
-        Delete
-      </button>
+      {sStoreData && (
+        <button onClick={handleOnDelete} className="btn btn-danger">
+          Delete
+        </button>
+      )}
     </div>
   );
 };
 
-export default SellerStore;
+export default Test;

@@ -1,44 +1,37 @@
-import React, { useContext, useEffect, useState } from "react";
-import CartCard from "../components/cart/CartCard";
-import StoreCard from "../components/store/StoreCard";
-import SignUp from "../components/auth/SignUp";
-import Login from "../components/auth/Login";
-import ProductForm from "../components/product/ProductForm";
-import StoreForm from "../components/store/StoreForm";
-import ProductCard from "../components/product/ProductCard";
-import ProductDetail from "./productDetail";
+import React, { useContext, useEffect } from "react";
 import Cookies from "js-cookie";
-import AdminSidebar from "./Admin";
 import { useNavigate } from "react-router-dom";
 import StoreContainerContainer from "../container/StoreContainerContainer";
 import { loginContext } from "../context/ContextProvider";
+import { toast } from "react-toastify";
 
-const Home = ({ jwttoken,getStores}) => {
+const Home = ({ getStores, emptyOrderMsg, user, order }) => {
+  const { token } = user;
+  const { message, flag, orderCreated } = order;
   const navigate = useNavigate();
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
-  // let [token,setToken]=useState()
   useEffect(() => {
-    if (jwttoken || loginToken) {
-      jwttoken
-        ? Cookies.set("authToken", jwttoken, { expires: 7 })
-        : Cookies.set("authToken", loginToken, { expires: 7 });
-    }
+    if (message) {
+      if (orderCreated) toast.success(message);
+      else toast.error(message);
 
-    const token = Cookies.get("authToken");
-    if (!token) {
-      navigate("/login");
+      emptyOrderMsg();
     }
-    else{
-      getStores();
-    }
+  }, [flag]);
+
+  useEffect(() => {
+    if (token || loginToken)
+      token
+        ? Cookies.set("authToken", token, { expires: 7 })
+        : Cookies.set("authToken", loginToken, { expires: 7 });
+
+    const usertoken = Cookies.get("authToken");
+    if (!usertoken) navigate("/login");
+    else getStores();
   }, []);
 
-  return (
-    <>
-      {<StoreContainerContainer />}
-    </>
-  );
+  return <>{<StoreContainerContainer />}</>;
 };
 
 export default Home;

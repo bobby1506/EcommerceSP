@@ -6,7 +6,7 @@ import { deleteStore, getSellerStore, updateStore } from "../redux/actions/selle
 const mapStateToProps = (state) => ({
     sStoreData:state.seller.storeData,
     sisUpdated:state.seller.isUpdated,                            
-    smessage:state.seller.message,
+    smessage:state.seller.message, 
     sisDeleted:state.seller.isDeleted,
     sisLoading:state.seller.sisLoading,
     sflag:state.seller.flag,
