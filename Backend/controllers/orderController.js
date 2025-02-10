@@ -17,6 +17,7 @@ const { resHandler } = require("../middlewares/errorHandler");
 const createOrder = async (ctx) => {
   try {
     const { isCart } = ctx.request.body;
+
     const userId = ctx.state.user?.id;
     const result = await decreaseStock(ctx);
     if (!result) {
@@ -43,6 +44,7 @@ const createOrder = async (ctx) => {
     }
     resHandler(ctx, true, "Order created successfully", 200);
   } catch (err) {
+    console.log(err);
     resHandler(ctx, false, "Order creation denied", 500);
   }
 };

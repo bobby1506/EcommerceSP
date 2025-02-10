@@ -58,13 +58,16 @@ const StoreForm = ({
       setFormData(storeData);
       setImgUrl(storeData.logo);
       setPage("update");
-    }
+   
+    } 
+    // else navigate("/createStore");
   }, [storeData]);
 
   useEffect(() => {
     if (sellerMessage) {
-      if (isUpdated || isDeleted) toast.success(sellerMessage);
-      else toast.error(sellerMessage);
+      if (isUpdated || isDeleted) {
+        toast.success(sellerMessage);
+      } else toast.error(sellerMessage);
       emptyStoreMsg();
     }
   }, [sellerFlag]);
@@ -96,12 +99,12 @@ const StoreForm = ({
     console.log(formData);
 
     if (!formData.storeName.trim()) errors.storeName = "Store Name is required";
-    else if (formData.storeName.length < 3 || formData.storeName.length > 10)
-      errors.storeName = "Store Name length should be between 3 & 10";
+    else if (formData.storeName.length < 3 || formData.storeName.length > 15)
+      errors.storeName = "Store Name length should be between 3 & 15";
 
     if (!formData.ownerName.trim()) errors.ownerName = "Owner Name is required";
-    else if (formData.ownerName.length < 3 || formData.ownerName.length > 10)
-      errors.ownerName = "Owner Name length should be between 3 & 10";
+    else if (formData.ownerName.length < 3 || formData.ownerName.length > 15)
+      errors.ownerName = "Owner Name length should be between 3 & 15";
 
     if (!formData.address.trim()) errors.address = "Address is required";
     else if (formData.address.length < 5 || formData.address.length > 30)
@@ -139,8 +142,9 @@ const StoreForm = ({
 
   const handleOnDelete = () => {
     const isConfirmed = window.confirm("are you sure to delet your store");
-    if (isConfirmed) deleteStore(formData._id);
-    else toast.success("store deleted canceled");
+    if (isConfirmed) {
+      deleteStore(formData._id);
+    } else toast.success("store deleted canceled");
   };
 
   const handleOnChange = (e) => {
@@ -172,7 +176,7 @@ const StoreForm = ({
             toast.error(error?.response?.data?.error?.message);
           }
         } else if (!file) return;
-        toast.error("file should be less than 1MB");
+        else toast.error("file should be less than 1MB");
       }
       if (isChange)
         page === "create"

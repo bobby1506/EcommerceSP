@@ -8,7 +8,7 @@ import {
 
 const mapStateToProps = (state) => {
   return {
-    productsList: state.seller.productsArray,
+    productsList: state.seller.productsArray, 
     sisLoading: state.seller.isLoading,
     sproductCreated: state.seller.productCreated,
     sproductDeleted: state.seller.productDeleted,

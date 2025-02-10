@@ -48,7 +48,6 @@ const createStore = async (ctx) => {
       openTime,
       closeTime,
       gstNumber,
-      isBranch,
       upiId,
     } = ctx.state.shared;
 
@@ -93,7 +92,6 @@ const createStore = async (ctx) => {
       closeTime,
       gstNumber,
       upiId,
-      isBranch: isBranch || false,
       createdAt: new Date(),
       Balance: 0,
       Credits: 0,
@@ -217,7 +215,7 @@ const updateStore = async (ctx) => {
     if (!storeId) {
       return resHandler(ctx, false, "store id required", 404);
     }
-    const updatedData = ctx.request.body;
+    const {_id, ...updatedData} = ctx.request.body;
     const updatedDoc = await updatedStore(ctx, updatedData, storeId);
 
     if (updatedDoc.modifiedCount === 0) {

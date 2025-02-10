@@ -6,17 +6,30 @@ import { useDispatch } from "react-redux";
 import Logout from "../components/auth/Logout";
 import { loginContext } from "../context/ContextProvider";
 import { sidebarConfig } from "../components/constant/sidebarConfig";
+import { getSellerStore } from "../redux/actions/sellerActions";
 
 const Seller = ({ children }) => {
   const navigate = useNavigate();
   const jwttoken = useSelector((state) => state.user.token);
+  const storeData = useSelector((state) => state.store.storeData);
+  const dispatch = useDispatch();
 
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
   let contextStoreId = contextUserData.storeId;
 
   useEffect(() => {
+    dispatch(getSellerStore());
+  }, []);
 
+  useEffect(() => {
+    if (!storeData) {
+      console.log("firDDst",storeData)
+      // navigate("/createStore");
+    }
+  }, [storeData]);
+
+  useEffect(() => {
     if (jwttoken || loginToken)
       jwttoken
         ? Cookies.set("authToken", jwttoken, { expires: 7 })

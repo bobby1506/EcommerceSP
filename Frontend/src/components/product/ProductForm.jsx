@@ -8,7 +8,7 @@ import SelectInput from "../common/SelectInput";
 import TextInput from "../common/TextInput";
 
 const ProductForm = ({ addProduct, emptymsg, seller }) => {
-  const { message, productCreated, flag, isLoading } = seller;
+  const { message, productCreated, flag, isLoading} = seller; 
   const [formData, setFormData] = useState({
     productName: "",
     category: "",
@@ -17,7 +17,6 @@ const ProductForm = ({ addProduct, emptymsg, seller }) => {
     stocks: "",
     logo: "",
   });
-
   const [errors, setErrors] = useState({});
   const [pimage, setPimage] = useState(null);
   const [imgUrl, setImgUrl] = useState("");

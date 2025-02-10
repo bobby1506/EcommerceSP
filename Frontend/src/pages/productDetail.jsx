@@ -29,13 +29,13 @@ const ProductDetail = ({
     getProduct(productId);
   }, [productId]);
 
-  useEffect(() => {
-    getItem()
-    console.log("ccartItems", cartItems, productId);
-    if (cartItems.find((cproduct) => cproduct.productId === productId)) {
-      setInCart(true);
-    }
-  }, [getItem]);
+  // useEffect(() => {
+  //   getItem()
+  //   console.log("cartItems", cartItems, productId);
+  //   if (cartItems.find((cproduct) => cproduct.productId === productId)) {
+  //     setInCart(true);
+  //   }
+  // }, [getItem]);
 
   useEffect(() => {
     setProduct( productData);
