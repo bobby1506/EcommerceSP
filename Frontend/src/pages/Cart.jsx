@@ -5,21 +5,23 @@ import useCart from "../customHooks/useCart";
 import { toast } from "react-toastify";
 
 const Cart = ({
-  ccartList,
-  cisLoading,
-  ctotalItems,
   getItem,
   emptyMsg,
-  cmessage,
-  ccouponApplied,
-  caddedToCart,
+  cart,
   updateCart,
   removeFromCart,
-  ctotalPrice,
   applyCoupon,
-  cflag,
 }) => {
-  // const [cartItems,setCartItems]=useState([])
+  const {
+    cartItems,
+    isLoading,
+    totalItems,
+    message,
+    couponApplied,
+    removedFromCart,
+    totalPrice,
+    flag,
+  } = cart;
   useEffect(() => {
     getItem();
     emptyMsg();
@@ -27,41 +29,28 @@ const Cart = ({
 
   const [couponCode, setCouponCode] = useState("");
 
-  const { message, totalPrice } = useCart(ctotalItems, ctotalPrice);
- 
-
   useEffect(() => {
     if (message) {
-      toast(message);
-    }
-  }, [message]);
-
-  useEffect(() => {
-    if (cmessage) {
-      if (removeFromCart) {
-        toast.success(cmessage);
-      } else if (ccouponApplied) {
-        toast.success(cmessage);
+      if (removedFromCart || couponApplied) {
+        toast.success(message);
       } else {
-        toast.error(cmessage);
+        toast.error(message);
       }
       emptyMsg();
     }
-  }, [cflag]);
+  }, [flag]);
 
-  if (cisLoading) {
+  if (isLoading) {
     return <div>isloading....</div>;
   }
-  const price = parseFloat(totalPrice).toFixed(2);
-  const cctotalPrice=parseFloat(ctotalPrice).toFixed(2);
-  // if(ccartList.length==)
+  
   return (
     <div className="container mt-5">
       <div className="row">
         <div className="col-md-8">
           <h2 className="mb-4">Your Cart</h2>
-          {ccartList?.length > 0 ? (
-            ccartList.map((product, index) =>
+          {cartItems?.length > 0 ? (
+            cartItems.map((product, index) =>
               product?.quantity !== undefined && product?.productDetails ? (
                 <CartCard
                   removeFromCart={removeFromCart}
@@ -82,15 +71,11 @@ const Cart = ({
         <div className="col-md-4">
           <h3 className="mb-4">Cart Summary</h3>
           <div className="card p-3">
-            <h5>Total Items:{ctotalItems}</h5>
-            {totalPrice == ctotalPrice ? (
-              <h5>Total Price: {totalPrice}</h5>
-            ) : (
-              <h5>
-                Total Price: <del>{cctotalPrice}</del> {price}
-              </h5>
-            )}
-            <Link to={ccartList.length > 0 ? "/checkout/1" : "/cart"}>
+            <h5>Total Items:{totalItems}</h5>
+
+            <h5>Total Price: {totalPrice}</h5>
+
+            <Link to={cartItems?.length > 0 ? "/checkout/1" : "/cart"}>
               <button className="btn btn-primary w-100 mt-3">
                 Proceed to Checkout
               </button>

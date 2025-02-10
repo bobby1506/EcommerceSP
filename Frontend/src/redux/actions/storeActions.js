@@ -23,13 +23,11 @@ export const getStores = () => {
   };
 };
 
-export const getStore = () => {
-  return async (dispatch) => {
-    dispatch({
-      type: "GETSTORE",
-      payload: axios.get(`${url + "getStore"}`),
-    });
-  };
+export const getStore = () => async (dispatch) => {
+  dispatch({
+    type: "GETSTORE",
+    payload: axios.get(`${url + "getStore"}`),
+  });
 };
 
 export const deleteStore = () => {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-const SellerStore = ({
+const Test = ({
   sStoreData,
   sGetStore,
   smessage,
@@ -31,7 +31,10 @@ const SellerStore = ({
     gstNumber: "",
     upiId: "",
     isBranch: "",
-    logo: { url: "" },
+    logo: {
+      public_id: "",
+      url: "",
+    },
   });
   const [logo, setLogo] = useState(null);
   useEffect(() => {
@@ -128,9 +131,7 @@ const SellerStore = ({
   };
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      return { ...prev, [name]: value };
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleOnSubmit = (e) => {
@@ -138,9 +139,7 @@ const SellerStore = ({
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) return;
 
     const formDataToSend = new FormData();
     formDataToSend.append("storeName", formData.storeName);
@@ -164,6 +163,7 @@ const SellerStore = ({
     // });
     sUpdateStore(formData._id, formDataToSend);
   };
+
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Store Information Form</h2>
@@ -389,14 +389,16 @@ const SellerStore = ({
         </div>
 
         <button type="submit" className="btn btn-primary me-3">
-          update
+          {sStoreData ? "update" : "Create"}
         </button>
       </form>
-      <button onClick={handleOnDelete} className="btn btn-danger">
-        Delete
-      </button>
+      {sStoreData && (
+        <button onClick={handleOnDelete} className="btn btn-danger">
+          Delete
+        </button>
+      )}
     </div>
   );
 };
 
-export default SellerStore;
+export default Test;

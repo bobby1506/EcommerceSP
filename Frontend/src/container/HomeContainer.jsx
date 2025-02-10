@@ -1,19 +1,16 @@
 import { connect } from "react-redux";
 import Home from "../pages/Home";
 import { getStores } from "../redux/actions/storeActions";
-import { getUserStatus } from "../redux/actions/userActions";
+import { emptyOrderMsg } from "../redux/actions/orders";
 
-const mapStateToProps = (state) =>{
-    return {
-         jwttoken:state.user.token,
-         isSeller:state.user.isSeller
-    }
-};
-const mapDispatchToProps = (dispatch) => {
-    return{
-        getStores:()=>dispatch(getStores()),
-        getUser:()=>dispatch(getUserStatus())
-    }
-};
+const mapStateToProps = (state) => ({
+  user: state.user,
+  order: state.order,
+ 
+});
+const mapDispatchToProps = (dispatch) => ({
+  getStores: () => dispatch(getStores()),
+  emptyOrderMsg: () => dispatch(emptyOrderMsg()),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

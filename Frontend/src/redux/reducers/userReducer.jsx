@@ -12,6 +12,7 @@ const initialState = {
   isLoading: false,
   message: "",
   isAuthenticated: false,
+  isLogOut:false,
   userData: {},
   isSeller: false,
   byLogin:false,
@@ -39,7 +40,7 @@ export const userReducer = (state = initialState, action) => {
     case REGISTER_FAIL:
       return {
         ...state,
-        message: action.payload.response?.data?.message,
+        message: action.payload.response?.data?.message ||"some error occured",
         flag: !state.flag,
         isLoading: false,
       };
@@ -68,7 +69,7 @@ export const userReducer = (state = initialState, action) => {
       console.log("fail",action.payload)
       return {
         ...state,
-        message: action.payload.message,
+        message: action.payload.message || action.payload.response.data.message,
         flag: !state.flag,
         isLoading: false,
       };
@@ -88,7 +89,8 @@ export const userReducer = (state = initialState, action) => {
           flag:!state.flag,
           isAuthenticated:false,
           message:"logout Sucessfully",
-          token:""
+          token:"",
+          isLogOut:true
 
         }
       case 'emptyMsg':

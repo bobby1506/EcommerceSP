@@ -7,12 +7,7 @@ const initialState = {
   ordersArray: [],
   isUpdated: false,
   isDeleted: false,
-  storeData: {
-    storeName: "",
-    storeId: "",
-    storeDescription: "",
-    storeAddress: "",
-  },
+  storeData: null,
   productCreated: false,
   productDeleted: false,
   productUpdated: false,
@@ -29,8 +24,7 @@ export const sellerReducer = (state = initialState, action) => {
         ...state,
         isLoading: false,
         productsArray: [...response.data.products],
-        // flag: !state.flag,
-        // message: response.data.message,
+        
       };
     case "GETSELLERPRODUCTS_REJECTED":
       return {
@@ -131,6 +125,7 @@ export const sellerReducer = (state = initialState, action) => {
     case "UPDATEPRODUCT_FULFILLED":
       let updated_produtId = action.meta.productId;
       let updated_productData = action.meta.productData;
+      console.log(updated_productData,"hhhh")
       const updatedProduct = state.productsArray.map((product) => {
         if (product._id == updated_produtId) {
           console.log("helloooo", updated_productData);
@@ -185,10 +180,10 @@ export const sellerReducer = (state = initialState, action) => {
       };
 
     case "GETSTORE_FULFILLED":
-      console.log("first", action.payload?.data?.store);
+      console.log("firsttttttttt", action.payload?.data?.store);
       return {
         ...state,
-        storeData: { ...action.payload?.data?.store },
+        storeData: action.payload?.data?.store?{ ...action.payload?.data?.store }:null,
         isLoading: false,
       };
     case "GETSTORE_REJECTED":
