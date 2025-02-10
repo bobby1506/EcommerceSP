@@ -43,7 +43,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: "https://ecommercesp.onrender.com/",
+    origin: "https://ecommercesp.onrender.com",
     credentials: true,
   })
 );
