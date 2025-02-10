@@ -11,11 +11,11 @@ import { orderReducer } from "./reducers/orderReducer";
 
 const rootReducer = combineReducers({
   user: userReducer,
-  store:storeReducer,
-  product:ProductReducer,
-  seller:sellerReducer,
-  cart:cartReducer,
-  order:orderReducer,
+  store: storeReducer,
+  product: ProductReducer,
+  seller: sellerReducer,
+  cart: cartReducer,
+  order: orderReducer,
 });
 // const middleware=[thunk,promise]
 export const store = createStore(rootReducer, applyMiddleware(thunk, promise));

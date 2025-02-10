@@ -3,15 +3,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Input from "../common/Input";
 
-
 const CheckoutForm = ({
-  order,
+  cmessage,
   orderedItems,
+  cflag,
+  corderCreated,
   postOrders,
   productInfo,
   emptyOrderMsg,
 }) => {
-  const { message, flag, orderCreated } = order;
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -26,7 +26,6 @@ const CheckoutForm = ({
   const [errors, setErrors] = useState({});
   const [isCart, setIsCart] = useState(false);
   const { isCartStatus } = useParams();
-
   useEffect(() => {
     if (isCartStatus == "1") {
       setIsCart(true);
@@ -37,15 +36,15 @@ const CheckoutForm = ({
   }, []);
 
   useEffect(() => {
-    if (message) {
-      if (orderCreated) {
-        navigate("/");
+    if (cmessage) {
+      if (corderCreated) {
+        toast.success(cmessage);
       } else {
-        toast.error(message);
-        emptyOrderMsg();
+        toast.error(cmessage);
       }
+      emptyOrderMsg();
     }
-  }, [flag]);
+  }, [cflag]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -70,9 +69,7 @@ const CheckoutForm = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const navigate = useNavigate();
-
   const handleSubmit = (e) => {
     let orderData;
     console.log(productInfo)
@@ -83,6 +80,7 @@ const CheckoutForm = ({
           let newOrder = { ...order, deliveryStatus: "pending" };
           return newOrder;
         });
+        console.log("updated_productData", updatedOrderItems);
         orderData = {
           shippingInformation: formData,
           isCart,
@@ -102,7 +100,9 @@ const CheckoutForm = ({
           ],
         };
       }
+      console.log(orderData);
       postOrders(orderData);
+      navigate("/");
     }
   };
 

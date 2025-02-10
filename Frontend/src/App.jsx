@@ -1,70 +1,59 @@
-
-import { BrowserRouter} from "react-router-dom";
-import Cookies from "js-cookie";
-import { useContext, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import logo from "./logo.svg";
+import "./App.css";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Navbar from "./components/layouts/Navbar";
+import Login from "./components/auth/Login";
+import SignUp from "./components/auth/SignUp";
+import Main from "./components/layouts/Main";
+import HomeContainer from "./container/HomeContainer";
+import Products from "./pages/Products";
+import ProductsContainer from "./container/ProductsContainer";
+import ProductDetailContainer from "./container/ProductDetailContainer";
+import SellerContainer from "./container/SellerContainer";
+import StoreFormContainer from "./container/StoreFormContainer";
+import SellerProducts from "./components/seller/SellerProducts";
+import SellerProductsContainer from "./container/SellerProductsContainer";
+import ProductFormContainer from "./container/productFormContainer";
+import Cart from "./pages/Cart";
+import CartContainer from "./container/CartContainer";
+import CheckoutForm from "./components/checkout/CheckOutForm";
+import CheckOutContainer from "./container/CheckOutContainer";
+import Orders from "./pages/Orders";
+import OrderContainer from "./container/OrderContainer";
+import SellerOrders from "./components/seller/SellerOrders";
+import SellerOrderContainer from "./container/SellerOrderContainer";
+import SellerProfile from "./components/seller/SellerProfile";
+import SellerStore from "./components/seller/SellerStore";
+import SellerStoreContainer from "./container/sellerStoreContainer";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import SellerBalance from "./components/seller/SellerBalance";
+import SellerBalanceContainer from "./container/SellerBalanceContainer";
+import { useEffect } from "react";
+import { socket } from "../src/socketFrontend.js";
 import PrivateRoute from "./components/layouts/PrivateRoute";
-import { loginContext } from "./context/ContextProvider";
-import { getUserStatus } from "./redux/actions/userActions";
-import { url } from "./apiConfig";
-import axios from "axios";
-import { socket } from "./socket";
-import RenderRoutes from "./components/routes/RenderRoutes";
-import { routeConfig } from "./components/routes/routeConfig";
+import SellerTotalCreditContainer from "./container/SellerTotalCreditContainer";
 
-
-const App = () => {
-  // const { userData } = useSelector((state) => state?.user);
-  // const email = userData?.email;
-  // useEffect(() => {
-  //   // alert(email);
-  //   // if (email) {
-  //     // alert("Abeyy hello");
-
-  //     socket.on("connect", () => {
-  //       console.log("socket connected");
-  //       socket.emit("register", { key: "milton@gmail.com" });
-  //     });
-
-  //       socket.on("resultRes", (payload) => {
-  //         //action call socket ke liye
-  //         dispatch({ type: "SOCKETRESULT", payload });
-  //         console.log("socket data", payload);
-  //       });
-
-  //       socket.on("delayRes", (payload) => {
-  //         dispatch({ type: "SOCKETDELAY", payload });
-  //         //action call socket delay ke liye
-  //         console.log("socket delay data", payload);
-  //       });
-  //     return () => {
-  //       socket.disconnect();
-  //     };
-  //   }
-  // // }
-  // , []);
-  const { loginDispatch } = useContext(loginContext);
-
-  const handleUserDetails = async () => {
-    try {
-      const response = await axios.get(`${url + "getuser"}`, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
-      loginDispatch({ type: "GETUSER_FULFILLED", payload: response });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const dispatch = useDispatch();
-
+function App() {
   useEffect(() => {
-    let token = Cookies.get("authToken");
-    if (token) {
-      dispatch(getUserStatus());
-    }
-  }, []);
+    socket.on("connect", () => {
+      console.log("Connected to server");
+      socket.emit("register", { key: "b@gmail.com" });
+    });
 
+    socket.on("resultRes", (data) => {
+      console.log("Received update from socket:", data);
+    });
+
+    socket.on("delayRes", (data) => {
+      console.log("Received delay notification via socket (delayRes):", data);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
   return (
     <BrowserRouter>
       <RenderRoutes routes={routeConfig} />
