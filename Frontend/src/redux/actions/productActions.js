@@ -1,32 +1,52 @@
 import axios from "axios";
 import { url } from "../../apiConfig";
 
-export const getProducts = (storeId) => async (dispatch) => {
-  dispatch({
-    type: "GETPRODUCTS",
-    payload: axios.get(`${url + "getProductsOfStore/" + storeId}`, {
-      withCredentials: true,
-    }),
-  });
+
+
+export const getProducts = (storeId) => {
+  return async (dispatch) => {
+    dispatch({
+      type: "GETPRODUCTS",
+      payload: axios.get(`${url + "getProductsOfStore/"+storeId}`,{withCredentials: true}),
+    });
+  };
 };
 
+// export const getSellerProducts = () => {
+//   return async (dispatch) => {
+//     dispatch({
+//       type: "GETSELLERPRODUCTS",
+//       payload: axios.get(`${url + "getAdminProducts"}`, {withCredentials: true}),
+//     });
+//   };
+// };
 
-export const getProduct = (productId) => async (dispatch) => {
-  dispatch({
-    type: "GETPRODUCT",
-    payload: axios.get(`${url + `productDetails/${productId}`}`, {
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true,
-    }),
-  });
-};
+export const getProduct = (productId) => {
+    return async (dispatch) => {
+      dispatch({
+        type: "GETPRODUCT",
+        payload: axios.get(`${url + `productDetails/${productId}`}`,{headers:{ "Content-Type": "application/json"},withCredentials:true}),
+      });
+    };
+  };
 
-export const deleteProduct = (productId) => async (dispatch) => {
-  dispatch({
-    type: "DELETEPRODUCT",
-    payload: axios.get(`${url + " deleteProduct" + productId}`),
-    meta: { productId },
-  });
-};
+export const deleteProduct = (productId) => {
+    return async (dispatch) => {
+      dispatch({
+        type: "DELETEPRODUCT",
+        payload: axios.get(`${url +" deleteProduct"+ productId}`),
+        meta:{productId}
 
+      });
+    };
+  };
+  
+  // export const updateStore = () => {
+  //   return async (dispatch) => {
+  //     dispatch({
+  //       type: "UPDATEPRODUCT",
+  //       payload: axios.get(`${url + "updateProduct"}`),
+  //     });
+  //   };
+  // };  
 

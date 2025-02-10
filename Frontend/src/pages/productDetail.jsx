@@ -1,59 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 const ProductDetail = ({
+  productInformation,
   getProduct,
   addToCart,
   emptyMsg,
-  productt,
-  cart,
-  getItem,
+  cmessage,
+  caddedToCart,
+  pisLoading,
+  cflag
 }) => {
-  const{ productData,isLoading}=productt
-  const{ flag,cartItems,message,addedToCart,}=cart
   const [product, setProduct] = useState({
     productName: "",
     price: "",
     description: "",
   });
-  const [inCart, setInCart] = useState(false);
-
   const { storeId, productId } = useParams();
 
   const addToCartfunc = () => {
     addToCart(productId);
-    setInCart(true);
   };
   useEffect(() => {
     getProduct(productId);
+ 
   }, [productId]);
 
   useEffect(() => {
-    getItem()
-    console.log("ccartItems", cartItems, productId);
-    if (cartItems.find((cproduct) => cproduct.productId === productId)) {
-      setInCart(true);
-    }
-  }, [getItem]);
+    setProduct(productInformation);
+  }, [productInformation]);
 
   useEffect(() => {
-    setProduct( productData);
-  }, [ productData]);
-
-  useEffect(() => {
-    console.log({ message });
-    if (message) {
-      if (addedToCart) {
-        toast.success(message);
+    console.log({ cmessage });
+    if (cmessage) {
+      if (caddedToCart) {
+        toast.success(cmessage);
       } else {
-        toast.error(message);
+        toast.error(cmessage);
       }
       emptyMsg();
     }
-  }, [flag]);
+  }, [cflag]);
 
-  if (isLoading) {
+  if (pisLoading) {
     return <h1>Loading....</h1>;
   }
 
@@ -63,7 +53,7 @@ const ProductDetail = ({
         {/* Product Image */}
         <div className="col-md-6">
           <img
-            src={ productData?.logo}
+            src={productInformation?.logo?.url}
             alt=""
             className="img-fluid rounded"
             style={{ maxHeight: "500px", objectFit: "contain" }}
@@ -80,20 +70,15 @@ const ProductDetail = ({
           </p>
           <div className="d-flex gap-3 mt-4">
             <Link to="/checkout/0">
-              
+              {" "}
               <button className="btn btn-primary">Buy Now</button>
             </Link>
-
-            {inCart ? (
-              <Link to={'/cart'}><button className="btn btn-outline-secondary">goToCart</button></Link>
-            ) : (
-              <button
-                className="btn btn-outline-secondary"
-                onClick={addToCartfunc}
-              >
-                Add to Cart
-              </button>
-            )}
+            <button
+              className="btn btn-outline-secondary"
+              onClick={addToCartfunc}
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       </div>

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import OrderCard from "../order/OrderCard";
 
-const SellerOrders = ({ seller, getOrdersSeller }) => {
-  const {isLoading,ordersArray}=seller
+const SellerOrders = ({ orderItems, oisLoading, getOrdersSeller }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
@@ -13,19 +12,19 @@ const SellerOrders = ({ seller, getOrdersSeller }) => {
  
   const lastIndex = currentPage * itemsPerPage;
   const firstIndex = lastIndex - itemsPerPage;
-  const currentOrders = ordersArray?.slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(ordersArray?.length / itemsPerPage);
+  const currentOrders = orderItems?.slice(firstIndex, lastIndex);
+  const totalPages = Math.ceil(orderItems?.length / itemsPerPage);
 
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
-  if (isLoading) {
+  if (oisLoading) {
     return <h1>Loading....</h1>;
   }
 
-  if (ordersArray?.length === 0) {
+  if (orderItems?.length === 0) {
     return <h1>No Orders Yet</h1>;
   }
 
@@ -37,7 +36,7 @@ const SellerOrders = ({ seller, getOrdersSeller }) => {
       ))}
       
       
-      {totalPages!=currentPage && <nav>
+      <nav>
         <ul className="pagination justify-content-center">
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <button
@@ -71,7 +70,7 @@ const SellerOrders = ({ seller, getOrdersSeller }) => {
             </button>
           </li>
         </ul>
-      </nav>}
+      </nav>
     </>
   );
 };

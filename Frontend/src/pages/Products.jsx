@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/product/ProductCard";
 
-const Products = ({ getProduct, product }) => {
-  const { productsArray, isLoading } = product;
+const Products = ({ getProduct, productsList, isLoadings }) => {
   const { storeId } = useParams();
 
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -19,24 +18,24 @@ const Products = ({ getProduct, product }) => {
   //debouncing
 
   const handleFilterSearch = useCallback(() => {
-    let filtered = productsArray;
+    let filtered = productsList;
     if (searchTerm) {
-      filtered = productsArray.filter((product) =>
+      filtered = productsList.filter((product) =>
         product.productName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     setFilteredProducts(filtered);
-  }, [productsArray, searchTerm]);
+  }, [productsList, searchTerm]);
 
   const handleFilter = useCallback(() => {
-    let filtered = productsArray;
+    let filtered = productsList;
     if (selectedCategory) {
       filtered = filtered.filter(
         (product) => product.category === selectedCategory
       );
     }
     setFilteredProducts(filtered);
-  }, [productsArray, selectedCategory]);
+  }, [productsList, selectedCategory]);
 
   useEffect(() => {
     const timeoutId = setTimeout(handleFilterSearch, 500);
@@ -47,7 +46,7 @@ const Products = ({ getProduct, product }) => {
     handleFilter();
   }, [handleFilter]);
 
-  if (isLoading) {
+  if (isLoadings) {
     return <h1>Loading...</h1>;
   }
 
@@ -108,27 +107,23 @@ const Products = ({ getProduct, product }) => {
         </div>
       )}
 
-      {currentPage != totalPages && (
-        <nav>
-          <ul className="pagination justify-content-center mt-4">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <li
-                key={index + 1}
-                className={`page-item ${
-                  currentPage === index + 1 ? "active" : ""
-                }`}
-              >
-                <button
-                  className="page-link"
-                  onClick={() => paginate(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
+      {/* Pagination */}
+      <nav>
+        <ul className="pagination justify-content-center mt-4">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <li
+              key={index + 1}
+              className={`page-item ${
+                currentPage === index + 1 ? "active" : ""
+              }`}
+            >
+              <button className="page-link" onClick={() => paginate(index + 1)}>
+                {index + 1}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 };

@@ -4,7 +4,8 @@ import { getOrders } from "../redux/actions/orders";
 import Orders from "../pages/Orders";
 
 const mapStateToProps = (state) => ({
-    order:state.order
+    orderItems:state.order.orderList,
+    oisLoading:state.order.isLoading,
 });
 const mapDispatchToProps = (dispatch) => ({
     getOrders:()=>{dispatch(getOrders())}

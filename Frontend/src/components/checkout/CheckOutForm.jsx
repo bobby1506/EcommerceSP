@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import Input from "../common/Input";
 
 const CheckoutForm = ({
   cmessage,
@@ -72,7 +71,6 @@ const CheckoutForm = ({
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     let orderData;
-    console.log(productInfo)
     e.preventDefault();
     if (validateForm()) {
       if (isCart == "1") {
@@ -111,95 +109,103 @@ const CheckoutForm = ({
       <h2 className="mb-4 text-center">Proceed to Checkout</h2>
       <form onSubmit={handleSubmit} className="shadow p-4 rounded">
         <h4>Billing Information</h4>
-        <Input
-          label="Full Name"
-          type="text"
-          className={`form-control ${errors.fullName && "is-invalid"}`}
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleChange}
-          errors={errors}
-        />
-        
-        <Input
-          label="Email"
-          type="email"
-          className={`form-control ${errors.email && "is-invalid"}`}
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label className="form-label">Full Name</label>
+          <input
+            type="text"
+            className={`form-control ${errors.fullName && "is-invalid"}`}
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+          />
+          <div className="invalid-feedback">{errors.fullName}</div>
+        </div>
 
-        <Input
-          label="Address"
-          type="text"
-          className={`form-control ${errors.address && "is-invalid"}`}
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label className="form-label">Email</label>
+          <input
+            type="email"
+            className={`form-control ${errors.email && "is-invalid"}`}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <div className="invalid-feedback">{errors.email}</div>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Address</label>
+          <input
+            type="text"
+            className={`form-control ${errors.address && "is-invalid"}`}
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+          />
+          <div className="invalid-feedback">{errors.address}</div>
+        </div>
 
         <div className="row">
           <div className="col-md-6 mb-3">
-            <Input
-              label="City"
+            <label className="form-label">City</label>
+            <input
               type="text"
               className={`form-control ${errors.city && "is-invalid"}`}
               name="city"
               value={formData.city}
               onChange={handleChange}
-              errors={errors}
             />
+            <div className="invalid-feedback">{errors.city}</div>
           </div>
           <div className="col-md-6 mb-3">
-            <Input
-              label="ZIP Code"
+            <label className="form-label">ZIP Code</label>
+            <input
               type="text"
               className={`form-control ${errors.zip && "is-invalid"}`}
               name="zip"
               value={formData.zip}
               onChange={handleChange}
-              errors={errors}
             />
+            <div className="invalid-feedback">{errors.zip}</div>
           </div>
         </div>
 
         <h4>Payment Details</h4>
-        <Input
-          label="Card Number"
-          type="text"
-          className={`form-control ${errors.cardNumber && "is-invalid"}`}
-          name="cardNumber"
-          value={formData.cardNumber}
-          onChange={handleChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label className="form-label">Card Number</label>
+          <input
+            type="text"
+            className={`form-control ${errors.cardNumber && "is-invalid"}`}
+            name="cardNumber"
+            value={formData.cardNumber}
+            onChange={handleChange}
+          />
+          <div className="invalid-feedback">{errors.cardNumber}</div>
+        </div>
 
         <div className="row">
           <div className="col-md-6 mb-3">
-            <Input
-              label="Expiry Date"
+            <label className="form-label">Expiry Date</label>
+            <input
               type="text"
               className={`form-control ${errors.expiryDate && "is-invalid"}`}
               placeholder="MM/YY"
               name="expiryDate"
               value={formData.expiryDate}
               onChange={handleChange}
-              errors={errors}
             />
+            <div className="invalid-feedback">{errors.expiryDate}</div>
           </div>
           <div className="col-md-6 mb-3">
-            <Input
-              label="CVV"
+            <label className="form-label">CVV</label>
+            <input
               type="text"
               className={`form-control ${errors.cvv && "is-invalid"}`}
               name="cvv"
               value={formData.cvv}
               onChange={handleChange}
-              errors={errors}
             />
+            <div className="invalid-feedback">{errors.cvv}</div>
           </div>
         </div>
 

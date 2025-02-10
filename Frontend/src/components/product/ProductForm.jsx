@@ -31,16 +31,16 @@ const ProductForm = ({
   }, []);
 
   useEffect(() => {
-    if (message) {
-      if (productCreated) {
-        toast.success(message);
+    if (smessage) {
+      if (sproductCreated) {
+        toast.success(smessage);
         navigate("/sellerdashboard/sellerproducts");
       } else {
-        toast.error(message);
+        toast.error(smessage);
       }
       emptymsg();
     }
-  }, [flag]);
+  }, [sflag]);
 
   const handleOnChange = (e) => {
     const { name, value, type } = e.target;
@@ -55,13 +55,9 @@ const ProductForm = ({
     let validationErrors = {};
     if (!formData.productName.trim())
       validationErrors.productName = "Product name is required";
-    else if(formData.productName<3 || formData.productName>15) 
-      validationErrors.productName = "Product name length should between 3 & 15";
     if (!formData.category) validationErrors.category = "Category is required";
     if (!formData.description.trim())
       validationErrors.description = "Description is required";
-    else if(formData.description<5 || formData.description>25) 
-      validationErrors.description = "Product name length should between 5 & 25";
     if (!formData.price || formData.price <= 0)
       validationErrors.price = "Price must be greater than zero";
     if (!formData.stocks || formData.stocks < 0)
@@ -69,7 +65,6 @@ const ProductForm = ({
     if (!pimage) validationErrors.pimage = "Product image is required";
 
     setErrors(validationErrors);
-    console.log(Object.keys(validationErrors).length === 0);
     return Object.keys(validationErrors).length === 0;
   };
 
@@ -105,91 +100,114 @@ const ProductForm = ({
     console.log({ ...formData, logo });
     addProduct({ ...formData, logo });
   };
-  const option = [
-    { value: "", text: "select Category" },
-    { value: "fashion", text: "Fashion" },
-    { value: "electronics", text: "Electronics" },
-    { value: "grocery", text: "Grocery" },
-    { value: "home-appliances", text: "Home-appliances" },
-    { value: "other", text: "Other" },
-  ];
 
   return (
     <div className="container mt-5">
       <h2 className="mb-4">Add Product</h2>
       <form onSubmit={handleOnSubmit}>
-        <Input
-          label="product Name"
-          type="text"
-          className="form-control"
-          id="productName"
-          placeholder="Enter Product name"
-          value={formData.productName}
-          onChange={handleOnChange}
-          name="productName"
-          errors={errors}
-          ref={nameRef}
-        />
+        {/* Product Name */}
+        <div className="mb-3">
+          <label htmlFor="productName" className="form-label">
+            Product Name
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="productName"
+            placeholder="Enter product name"
+            name="productName"
+            value={formData.productName}
+            onChange={handleOnChange}
+            ref={nameRef}
+          />
+          {errors.productName && (
+            <p className="text-danger">{errors.productName}</p>
+          )}
+        </div>
+
         {/* Category */}
-        <SelectInput
-          label="Category"
-          className="form-select"
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleOnChange}
-          options={option}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="category" className="form-label">
+            Category
+          </label>
+          <select
+            className="form-select"
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleOnChange}
+          >
+            <option value="">Select category</option>
+            <option value="electronics">Electronics</option>
+            <option value="fashion">Fashion</option>
+            <option value="grocery">Grocery</option>
+            <option value="home-appliances">Home Appliances</option>
+            <option value="other">other</option>
+          </select>
+          {errors.category && <p className="text-danger">{errors.category}</p>}
+        </div>
 
         {/* Description */}
-        <TextInput
-          label="Description"
-          className="form-control w-100"
-          id="description"
-          rows="3"
-          placeholder="Enter Products Description"
-          name="description"
-          value={formData.description}
-          onChange={handleOnChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
+          <textarea
+            className="form-control"
+            id="description"
+            rows="3"
+            placeholder="Enter product description"
+            name="description"
+            value={formData.description}
+            onChange={handleOnChange}
+          ></textarea>
+          {errors.description && (
+            <p className="text-danger">{errors.description}</p>
+          )}
+        </div>
 
         {/* Price */}
-        <Input
-          label="Price"
-          type="number"
-          className="form-control"
-          id="price"
-          placeholder="Enter Product price"
-          value={formData.price}
-          onChange={handleOnChange}
-          name="price"
-          errors={errors}
-          style={{
-            appearance: "textfield",
-            WebkitAppearance: "none",
-            MozAppearance: "textfield",
-          }}
-        />
+        <div className="mb-3">
+          <label htmlFor="price" className="form-label">
+            Price
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            style={{
+              appearance: "textfield",
+              WebkitAppearance: "none",
+              MozAppearance: "textfield",
+            }}
+            id="price"
+            placeholder="Enter product price"
+            name="price"
+            value={formData.price}
+            onChange={handleOnChange}
+          />
+          {errors.price && <p className="text-danger">{errors.price}</p>}
+        </div>
 
         {/* Stocks */}
-        <Input
-          label="Stocks/Inventory"
-          type="number"
-          className="form-control"
-          id="stocks"
-          placeholder="Enter available Stocks"
-          value={formData.stocks}
-          onChange={handleOnChange}
-          name="stocks"
-          errors={errors}
-          style={{
-            appearance: "textfield",
-            WebkitAppearance: "none",
-            MozAppearance: "textfield",
-          }}
-        />
+        <div className="mb-3">
+          <label htmlFor="stocks" className="form-label">
+            Stocks/Inventory
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            style={{
+              appearance: "textfield",
+              WebkitAppearance: "none",
+              MozAppearance: "textfield",
+            }}
+            placeholder="Enter available stocks"
+            name="stocks"
+            value={formData.stocks}
+            onChange={handleOnChange}
+          />
+          {errors.stocks && <p className="text-danger">{errors.stocks}</p>}
+        </div>
 
         <div className="mb-3">
           <label htmlFor="image" className="form-label">

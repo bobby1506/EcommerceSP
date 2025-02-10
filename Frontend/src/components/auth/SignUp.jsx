@@ -3,46 +3,51 @@ import { Link, useNavigate } from "react-router-dom";
 import { userRegister } from "../../redux/actions/userActions";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import Input from "../common/Input";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    isSeller: false,
+    isSeller:false
   });
 
-  const navigate = useNavigate();
+  const navigate=useNavigate();
   const [error, setError] = useState({});
   const dispatch = useDispatch();
-  const { message, flag, isAuthenticated, isSeller } = useSelector(
-    (state) => state.user
-  );
+  const { message,flag,isAuthenticated,isSeller} = useSelector((state) => state.user);
   useEffect(() => {
+   
     if (message) {
-      if (isAuthenticated) {
-        toast.success(message);
-      } else {
-        toast.error(message);
+     
+      if(isAuthenticated){
+        toast.success(message)
       }
-      dispatch({ type: "emptyMsg" });
+      else{
+        toast.error(message)
+      }
+      dispatch({type:"emptyMsg"})
+    
     }
-    if (isAuthenticated && !isSeller) {
-      navigate("/");
-    }
-    if (isAuthenticated && isSeller) {
-      navigate("/createstore");
-    }
+      if(isAuthenticated && !isSeller){
+         navigate('/')
+      }
+      if(isAuthenticated && isSeller){
+        navigate('/createstore')
+      }
+   
   }, [flag]);
+  
 
-  const handleOnChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
+const handleOnChange = (e) => {
+  const { name, value, type } = e.target;
+  setFormData((prev) => {
+    return {
       ...prev,
       [name]: type === "radio" ? value === "true" : value,
-    }));
-  };
+    };
+  });
+};
 
   const handleValidation = (values) => {
     let error = {};
@@ -85,12 +90,20 @@ const SignUp = () => {
     return error;
   };
 
-  const handleOnSubmit = async (e) => {
+  const handleOnSubmit = async(e) => {
     e.preventDefault();
     const validateError = handleValidation(formData);
     setError(validateError);
-    if (Object.keys(validateError).length === 0)
-      dispatch(userRegister(formData));
+    if (Object.keys(validateError).length === 0) {
+      console.log(formData)
+      // try{
+        dispatch(userRegister(formData));
+      // }catch(error){
+
+      // }
+
+      
+    } 
   };
   // if(isLoading){
   //   return <h1>Loading......</h1>
@@ -102,19 +115,20 @@ const SignUp = () => {
         style={{ maxWidth: "400px" }}
       >
         <form onSubmit={handleOnSubmit}>
-          <Input
-            label="Name"
-            type="text"
-            className="form-control"
-            id="name"
-            placeholder="Enter your name"
-            name="username"
-            value={formData.username}
-            onChange={handleOnChange}
-            errors={error}
-          />
-
-          {/* <div className="mb-3">
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              name="username"
+              value={formData.username}
+              onChange={handleOnChange}
+            />
+            <p className="text-danger fs-9">{error.username}</p>
+          </div>
+          <div className="mb-3">
             <label htmlFor="email" className="form-label">
               Email
             </label>
@@ -126,20 +140,8 @@ const SignUp = () => {
               onChange={handleOnChange}
             />
             <p className="text-danger fs-9">{error.email}</p>
-          </div> */}
-          <Input
-            label="Email"
-            type="text"
-            className="form-control"
-            id="email"
-            placeholder="Enter your email"
-            name="email"
-            value={formData.email}
-            onChange={handleOnChange}
-            errors={error}
-          />
-
-          {/* <div className="mb-3">
+          </div>
+          <div className="mb-3">
             <label htmlFor="name" className="form-label">
               Password
             </label>
@@ -151,37 +153,15 @@ const SignUp = () => {
               onChange={handleOnChange}
             />
             <p className="text-danger fs-9">{error.password}</p>
-          </div> */}
-          <Input
-            label="Password"
-            type="password"
-            className="form-control"
-            id="password"
-            placeholder="Enter your password"
-            name="password"
-            value={formData.password}
-            onChange={handleOnChange}
-            errors={error}
-          />
-
+          </div>
           <div className="mb-3">
             <div>isSeller</div>
             <label className="me-3">
-              <input
-                type="radio"
-                name="isSeller"
-                value={true}
-                onChange={handleOnChange}
-              />
-              yes
+              <input type="radio" name="isSeller" value={true}  onChange={handleOnChange} />
+               yes
             </label>
-            <label>
-              <input
-                type="radio"
-                name="isSeller"
-                value={false}
-                onChange={handleOnChange}
-              />
+            <label >
+              <input type="radio" name="isSeller" value={false}  onChange={handleOnChange} />
               no
             </label>
           </div>
@@ -200,5 +180,8 @@ const SignUp = () => {
     </>
   );
 };
+
+
+
 
 export default SignUp;

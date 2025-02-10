@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { updateProduct } from "../../redux/actions/sellerActions";
 import { useDispatch } from "react-redux";
-import Input from "../common/Input";
 
 const DiscountProductModal = ({
   product,
@@ -15,7 +14,7 @@ const DiscountProductModal = ({
     couponCode: "",
     discountedPrice: null,
   });
-  const [error, setError] = useState({});
+  const [error,setError]=useState({})
   useEffect(() => {
     if (product.isDiscount) {
       setFormData((prev) => ({
@@ -34,16 +33,16 @@ const DiscountProductModal = ({
     });
   };
 
-  const handleValidation = (formData) => {
-    let error = {};
-    if (!formData.couponCode) {
-      error.couponCode = "enter the couponCode";
+  const handleValidation=(formData)=>{
+    let error={}
+    if(!formData.couponCode){
+      error.couponCode="enter the couponCode"
     }
-    if (formData.discountedPrice <= 0) {
-      error.discountedPrice = "please enter valid price";
+    if(formData.discountedPrice<=0){
+      error.discountedPrice="please enter valid price"
     }
     return error;
-  };
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     const validationErrors = handleValidation(formData);
@@ -53,19 +52,19 @@ const DiscountProductModal = ({
       return;
     }
 
-    if (product.isDiscount) {
-      onUpdate({ ...formData, productId: product._id });
-    } else {
-      onCoupon({ ...formData, productId: product._id });
+    if(product.isDiscount){
+      onUpdate({...formData,productId:product._id})
+    }else{
+        onCoupon({...formData,productId:product._id});
     }
 
     onClose();
   };
 
-  const handleDelete = () => {
-    onDelete(product._id);
-    onClose();
-  };
+  const handleDelete=()=>{
+    onDelete(product._id)
+    onClose()
+  }
 
   return (
     <>
@@ -85,32 +84,39 @@ const DiscountProductModal = ({
             </div>
             <div className="modal-body">
               <form onSubmit={handleSubmit}>
-                <Input
-                  label="Coupon Name"
-                  type="text"
-                  className="form-control"
-                  id="couponCode"
-                  placeholder="Enter Coupon name"
-                  name="couponCode"
-                  value={formData.couponCode}
-                  onChange={handleChange}
-                  errors={error}
-                />
+                <div className="mb-3">
+                  <label className="form-label">Coupon Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="couponCode"
+                    value={formData.couponCode}
+                    onChange={handleChange}
+                  />
+                   {error.couponCode && (
+            <p className="text-danger">{error.couponCode}</p>
+          )}
+                </div>
 
-                   <Input
-                  label="Discount percent"
-                  type="number"
-                  className="form-control"
-                  id="discountedPercent"
-                  placeholder="Enter the discounted percent"
-                  name="discountedPrice"
-                  value={formData.discountedPrice}
-                  onChange={handleChange}
-                  errors={error}
-                />
+                <div className="mb-3">
+                  <label className="form-label">Discount percent</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="discountedPrice"
+                    value={formData.discountedPrice}
+                    onChange={handleChange}
+                  />
+                         {error.discountedPrice && (
+            <p className="text-danger">{error.discountedPrice}</p>
+          )}
+                </div>
 
                 <div className="modal-footer">
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                  >
                     {product.isDiscount ? "update" : "Create Discount"}
                   </button>
                   {product.isDiscount && (

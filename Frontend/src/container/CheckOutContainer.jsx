@@ -1,11 +1,13 @@
 import { connect } from "react-redux";
 import CheckoutForm from "../components/checkout/CheckOutForm";
-import {emptyOrderMsg, postOrders } from "../redux/actions/orders";
+import { emptyMsg, emptyOrderMsg, postOrders } from "../redux/actions/orders";
 
 const mapStateToProps = (state) => {      
     return{
-     order:state.order,
+     cmessage:state.order.message,
      orderedItems:state.cart.cartItems,
+     cflag:state.order.flag,
+     corderCreated:state.order.orderCreated,
      productInfo:state.product.productData,
     }
 };

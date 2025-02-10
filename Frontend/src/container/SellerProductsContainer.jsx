@@ -17,14 +17,16 @@ const mapStateToProps = (state) => {
     smessage: state.seller.message,
   };
 };
-const mapDispatchToProps = (dispatch) => ({
-  getProduct: () => {
-    dispatch(getSellerProducts());
-  },
-  deleteProduct: (productId) => {
-    dispatch(deleteProduct(productId));
-  },
-  emptyStoreMsg: () => dispatch({ type: "emptyStoreMsg" }),
-});
+const mapDispatchToProps = (dispatch) => {
+  return {
+    getProduct: () => {
+      dispatch(getSellerProducts());
+    },
+    deleteProduct: (productId) => {
+      dispatch(deleteProduct(productId));
+    },
+    emptyStoreMsg: () => dispatch({ type: "emptyStoreMsg" }),
+  };
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(SellerProducts);

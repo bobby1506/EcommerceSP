@@ -5,19 +5,13 @@ import Cookies from "js-cookie";
 // import { socket } from "../../socket";
 import { loginContext } from "../../context/ContextProvider";
 import { toast } from "react-toastify";
-import axios from "axios";
-import Input from "../common/Input";
-import TextInput from "../common/TextInput";
-import SelectInput from "../common/SelectInput";
 const StoreForm = ({
-  store,
-  user,
-  createStore,
-  seller,
-  getStore,
-  updateStore,
-  deleteStore,
-  emptyStoreMsg,
+  smessage,
+  sisLoading,
+  sisCreated,
+  screateStore,
+  sflag,
+  jwttoken,
 }) => {
   // const dispatch = useDispatch();
   // const { email } = useSelector((state) => {
@@ -66,6 +60,7 @@ const StoreForm = ({
   // const dispatch = useDispatch();
   const { contextUserData } = useContext(loginContext);
   let loginToken = contextUserData.token;
+  // alert(loginToken);
   const nameRef = useRef(null);
 
   useEffect(() => {
@@ -77,13 +72,13 @@ const StoreForm = ({
         toast.error(smessage);
       }
     }
-  }, [flag]);
+  }, [sflag]);
   useEffect(() => {
     nameRef.current.focus();
-    console.log(token);
-    if (token || loginToken) {
-      token
-        ? Cookies.set("authToken", token, { expires: 7 })
+    console.log("jwttoken", jwttoken);
+    if (jwttoken || loginToken) {
+      jwttoken
+        ? Cookies.set("authToken", jwttoken, { expires: 7 })
         : Cookies.set("authToken", loginToken, { expires: 7 });
     }
   }, []);
@@ -104,44 +99,41 @@ const StoreForm = ({
   // };
   const validateForm = (formData, socialMediaLinks) => {
     let errors = {};
-    console.log(formData);
 
-    if (!formData.storeName.trim()) errors.storeName = "Store Name is required";
-    else if (formData.storeName.length < 3 || formData.storeName.length > 10)
-      errors.storeName = "Store Name length should be between 3 & 10";
-
-    if (!formData.ownerName.trim()) errors.ownerName = "Owner Name is required";
-    else if (formData.ownerName.length < 3 || formData.ownerName.length > 10)
-      errors.ownerName = "Owner Name length should be between 3 & 10";
-
-    if (!formData.address.trim()) errors.address = "Address is required";
-    else if (formData.address.length < 5 || formData.address.length > 30)
-      errors.address = "Address length should be between 5 & 30";
-
-    if (!formData.description.trim())
+    if (!formData.storeName.trim()) {
+      errors.storeName = "Store Name is required";
+    }
+    if (!formData.ownerName.trim()) {
+      errors.ownerName = "Owner Name is required";
+    }
+    if (!formData.address.trim()) {
+      errors.address = "Address is required";
+    }
+    if (!formData.description.trim()) {
       errors.description = "Description is required";
-    else if (
-      formData.description.length < 3 ||
-      formData.description.length > 25
-    )
-      errors.description = "Description length should be between 3 & 25";
-
-    if (!formData.category) errors.category = "Category is required";
-
-    if (!formData.openTime) errors.openTime = "Open Time is required";
-
-    if (!formData.closeTime) errors.closeTime = "Close Time is required";
-
-    if (!storeImage && page == "create")
-      errors.storeImage = "store Image is required";
-
-    if (!formData.gstNumber.trim()) errors.gstNumber = "GST Number is required";
-    else if (!/^\d{15}$/.test(formData.gstNumber))
+    }
+    if (!formData.category) {
+      errors.category = "Category is required";
+    }
+    if (!formData.openTime) {
+      errors.openTime = "Open Time is required";
+    }
+    if (!formData.closeTime) {
+      errors.closeTime = "Close Time is required";
+    }
+    if (!formData.gstNumber.trim()) {
+      errors.gstNumber = "GST Number is required";
+    } else if (!/^\d{15}$/.test(formData.gstNumber)) {
       errors.gstNumber = "GST Number must be 15 digits";
-
-    if (!formData.upiId.trim()) errors.upiId = "UPI ID is required";
-    else if (!/^\w+@\w+$/.test(formData.upiId))
+    }
+    if (!formData.upiId.trim()) {
+      errors.upiId = "UPI ID is required";
+    } else if (!/^\w+@\w+$/.test(formData.upiId)) {
       errors.upiId = "Invalid UPI ID format";
+    }
+    if (!formData.isBranch) {
+      errors.isBranch = "Please select if it's a branch";
+    }
 
     // socialMediaLinks.forEach((link, index) => {
     //   if (!link.platform.trim() || !link.link.trim()) {
@@ -153,19 +145,16 @@ const StoreForm = ({
     //   }
     // });
 
-  const handleOnDelete = () => {
-    const isConfirmed = window.confirm("are you sure to delet your store");
-    if (isConfirmed) deleteStore(formData._id);
-    else toast.success("store deleted canceled");
+    return errors;
   };
 
   const handleOnChange = (e) => {
-    setIsChange(true);
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      return { ...prev, [name]: value };
+    });
   };
-  const handleOnSubmit = async (e) => {
-    let logo = "";
+  const handleOnSubmit = (e) => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
@@ -194,111 +183,135 @@ const StoreForm = ({
 
     screateStore(formDataToSend);
   };
-  const option = [
-    { value: "", text: "select Category" },
-    { value: "retail", text: "Retail" },
-    { value: "electronics", text: "Electronics" },
-    { value: "grocery", text: "Grocery" },
-    { value: "home-appliances", text: "Home-appliances" },
-    { value: "other", text: "Other" },
-  ];
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Store Information Form</h2>
       <form onSubmit={handleOnSubmit}>
-        {/* StoreName */}
-        <Input
-          label="Store Name"
-          type="text"
-          className="form-control"
-          id="storeName"
-          placeholder="Enter store name"
-          name="storeName"
-          value={formData.storeName}
-          onChange={handleOnChange}
-          ref={nameRef}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="storeName" className="form-label">
+            Store Name
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="storeName"
+            placeholder="Enter store name"
+            name="storeName"
+            value={formData.storeName}
+            onChange={handleOnChange}
+            ref={nameRef}
+          />
+          {errors.storeName && (
+            <p className="text-danger">{errors.storeName}</p>
+          )}
+        </div>
 
-        {/*Owner Name*/}
-        <Input
-          label="Owner Name"
-          type="text"
-          className="form-control"
-          id="ownerName"
-          placeholder="Enter store name"
-          name="ownerName"
-          value={formData.ownerName}
-          onChange={handleOnChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="ownerName" className="form-label">
+            Owner Name
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="ownerName"
+            placeholder="Enter owner name"
+            name="ownerName"
+            value={formData.ownerName}
+            onChange={handleOnChange}
+          />
+          {errors.ownerName && (
+            <p className="text-danger">{errors.ownerName}</p>
+          )}
+        </div>
 
-        {/* Address */}
-        <TextInput
-          label="Address"
-          className="form-control"
-          id="address"
-          rows="3"
-          placeholder="Enter address"
-          name="address"
-          value={formData.address}
-          onChange={handleOnChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="address" className="form-label">
+            Address
+          </label>
+          <textarea
+            className="form-control"
+            id="address"
+            rows="3"
+            placeholder="Enter address"
+            name="address"
+            value={formData.address}
+            onChange={handleOnChange}
+          ></textarea>
+          {errors.address && <p className="text-danger">{errors.address}</p>}
+        </div>
 
-        {/* Description */}
-        <TextInput
-          label="Description"
-          className="form-control"
-          id="description"
-          rows="3"
-          placeholder="Enter description"
-          name="description"
-          value={formData.description}
-          onChange={handleOnChange}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
+          <textarea
+            className="form-control"
+            id="description"
+            rows="3"
+            placeholder="Enter description"
+            name="description"
+            value={formData.description}
+            onChange={handleOnChange}
+          ></textarea>
+          {errors.description && (
+            <p className="text-danger">{errors.description}</p>
+          )}
+        </div>
 
-        {/* Category */}
-        <SelectInput
-          label="Category"
-          className="form-select"
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleOnChange}
-          options={option}
-          errors={errors}
-        />
+        <div className="mb-3">
+          <label htmlFor="category" className="form-label">
+            Category
+          </label>
+          <select
+            className="form-select"
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleOnChange}
+          >
+            <option value="">Select category</option>
+            <option value="Retail">Retail</option>
+            <option value="Food">Food</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Other">Other</option>
+          </select>
+          {errors.category && <p className="text-danger">{errors.category}</p>}
+        </div>
 
         <div className="mb-3">
           <label className="form-label">Timing</label>
           <div className="row">
             <div className="col">
-              <Input
-                label="Open Time"
+              <label htmlFor="openTime" className="form-label">
+                Open Time
+              </label>
+              <input
                 type="time"
                 className="form-control"
-                id="openTime"
                 placeholder="Open Time"
                 name="openTime"
                 value={formData.openTime}
                 onChange={handleOnChange}
-                errors={errors}
               />
+              {errors.openTime && (
+                <p className="text-danger">{errors.openTime}</p>
+              )}
             </div>
             <div className="col">
-              <Input
-                label="Close Time"
+              <label htmlFor="closeTime" className="form-label">
+                Close Time
+              </label>
+              <input
                 type="time"
                 className="form-control"
-                id="closeTime"
                 placeholder="Close Time"
                 name="closeTime"
                 value={formData.closeTime}
                 onChange={handleOnChange}
-                errors={errors}
               />
+              {errors.closeTime && (
+                <p className="text-danger">{errors.closeTime}</p>
+              )}
             </div>
           </div>
         </div>
@@ -345,50 +358,93 @@ const StoreForm = ({
           </button>
         </div> */}
 
-        {/* UPI id */}
-        <Input
-          label="UPI ID"
-          type="text"
-          className="form-control"
-          id="upiId"
-          placeholder="Enter UPI ID"
-          name="upiId"
-          value={formData.upiId}
-          onChange={handleOnChange}
-          errors={errors}
-        />
-        {imgUrl && (
-          <img
-            src={imgUrl}
-            className="img-fluid rounded-start"
-            style={{ objectFit: "cover", height: "150px" }}
+        <div className="mb-3">
+          <label htmlFor="gstNumber" className="form-label">
+            GST Number
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="gstNumber"
+            placeholder="Enter GST number"
+            name="gstNumber"
+            value={formData.gstNumber}
+            onChange={handleOnChange}
           />
-        )}
-        {/* IMAGE */}
-        <Input
-          label="UPLOAD LOGO"
-          type="file"
-          className="form-control"
-          name="storeImage"
-          id="uploadLogo"
-          onChange={(e) => {
-            setIsChange(true);
-            setStoreImage(e.target.files[0]);
-          }}
-          errors={errors}
-        />
+          {errors.gstNumber && (
+            <p className="text-danger">{errors.gstNumber}</p>
+          )}
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Is Branch?</label>
+          <div>
+            <div className="form-check form-check-inline">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isBranch"
+                id="isBranchYes"
+                value="yes"
+                onChange={handleOnChange}
+              />
+              <label className="form-check-label" htmlFor="isBranchYes">
+                Yes
+              </label>
+            </div>
+            <div className="form-check form-check-inline">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="isBranch"
+                id="isBranchNo"
+                value="no"
+                onChange={handleOnChange}
+              />
+              <label className="form-check-label" htmlFor="isBranchNo">
+                No
+              </label>
+            </div>
+          </div>
+          {errors.isBranch && <p className="text-danger">{errors.isBranch}</p>}
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="upiId" className="form-label">
+            UPI ID
+          </label>
+          <input
+            type="text"
+            className="form-control"
+            id="upiId"
+            placeholder="Enter UPI ID"
+            name="upiId"
+            value={formData.upiId}
+            onChange={handleOnChange}
+          />
+          {errors.upiId && <p className="text-danger">{errors.upiId}</p>}
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="uploadLogo" className="form-label">
+            UPLOAD LOGO
+          </label>
+          <input
+            type="file"
+            className="form-control"
+            id="uploadLogo"
+            onChange={(e) => {
+              setLogo(e.target.files[0]);
+            }}
+          />
+        </div>
 
         <button type="submit" className="btn btn-success">
-          {page == "update" ? "update" : "Submit"}
+          Submit
         </button>
       </form>
-      {storeData && (
-        <button onClick={handleOnDelete} className="btn btn-danger">
-          Delete
-        </button>
-      )}
     </div>
   );
-}};
+};
 
 export default StoreForm;

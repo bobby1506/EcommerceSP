@@ -5,7 +5,6 @@ const initialState = {
   isLoading: false,
   cardLoading: false,
   addedToCart: false,
-  removedFromCart:false,
   totalItems: 0,
   totalPrice: 0,
   couponApplied: false,
@@ -106,7 +105,6 @@ export const cartReducer = (state = initialState, action) => {
         totalPrice: RemovedTotalPrice,
         cardLoading: false,
         flag: !state.flag,
-        removedFromCart:true,
       };
 
     case "REMOVEFROMCART_REJECTED":
@@ -116,7 +114,6 @@ export const cartReducer = (state = initialState, action) => {
         message:
           action.payload?.response?.data?.message || "Failed to remove item",
         flag: !state.flag,
-        removedFromCart:false,
       };
 
     case "UPDATECART_PENDING":
@@ -169,6 +166,7 @@ export const cartReducer = (state = initialState, action) => {
         },
         0
       );
+      console.log("agg", action.payload?.data?.newCart?.items );
       return {
         ...state,
         isLoading: false,
@@ -184,7 +182,6 @@ export const cartReducer = (state = initialState, action) => {
         flag: !state.flag,
         message: action.payload.response.data.message || "some error occured",
         isLoading: false,
-        couponApplied: false,
       };
 
     case "EMPTYMSG":
@@ -192,9 +189,6 @@ export const cartReducer = (state = initialState, action) => {
         ...state,
         message: "",
         addedToCart: false,
-        removedFromCart:false,
-        couponApplied:false,
-        
       };
 
     default:

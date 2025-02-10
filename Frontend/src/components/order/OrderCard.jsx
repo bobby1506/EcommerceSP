@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useDebugValue, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserStatus } from "../../redux/actions/userActions";
 
@@ -25,7 +25,7 @@ const OrderCard = ({ order }) => {
               <div className="row align-items-center">
                 <div className="col-2">
                   <img
-                    src={item?.productDetails?.logo}
+                    src={item?.productDetails?.logo?.url}
                     alt="Product"
                     className="img-fluid rounded"
                     style={{ objectFit: "cover", maxHeight: "70px" }}
