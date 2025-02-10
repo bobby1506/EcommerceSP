@@ -1,5 +1,4 @@
-
-import { BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,7 +10,6 @@ import axios from "axios";
 import { socket } from "./socket";
 import RenderRoutes from "./components/routes/RenderRoutes";
 import { routeConfig } from "./components/routes/routeConfig";
-
 
 const App = () => {
   // const { userData } = useSelector((state) => state?.user);
@@ -60,6 +58,7 @@ const App = () => {
 
   useEffect(() => {
     let token = Cookies.get("authToken");
+    console.log("token app", token);
     if (token) {
       dispatch(getUserStatus());
     }
