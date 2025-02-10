@@ -26,14 +26,14 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
         ? Cookies.set("authToken", token, {
             httpOnly: false,
             expires: 7,
-            secure: true,
+            secure: false,
             sameSite: "none",
             path: "/",
           })
         : Cookies.set("authToken", loginToken, {
             httpOnly: false,
             expires: 7,
-            secure: true,
+            secure: false,
             sameSite: "none",
             path: "/",
           });
