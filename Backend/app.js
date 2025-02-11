@@ -30,7 +30,6 @@ const app = new koa();
 const router = new Router();
 
 // app.use(dbMiddleware);
-app.set("trust proxy", 1);
 app.use(koaHelmet());
 app.use(
   koaBody({
