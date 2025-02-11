@@ -4,12 +4,8 @@
   "builds": [{ "src": "app.js", "use": "@vercel/node" }],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "app.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://ecommerce-sp-3ua8.vercel.app",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "src": "/(.*)",
+      "dest": "app.js"
     }
   ]
 }
