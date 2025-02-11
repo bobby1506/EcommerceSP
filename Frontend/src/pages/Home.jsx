@@ -26,12 +26,10 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
       token
         ? Cookies.set("authToken", token, {
             expires: 7,
-            sameSite: "none",
             path: "/",
           })
         : Cookies.set("authToken", token, {
             expires: 7,
-            sameSite: "none", // Required for cross-origin
             path: "/",
           });
     }
