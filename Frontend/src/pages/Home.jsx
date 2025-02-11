@@ -23,16 +23,18 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
   useEffect(() => {
     if (token || loginToken)
       token
-        ? Cookies.set("authToken", token || loginToken, {
+        ? Cookies.set("authToken", token, {
+            httpOnly: false,
             expires: 7,
-            secure: true, // Required for cross-origin cookies
-            sameSite: "None", // Ensures cookies work across different domains
+            secure: false,
+            sameSite: "none",
             path: "/",
           })
         : Cookies.set("authToken", loginToken, {
+            httpOnly: false,
             expires: 7,
             secure: false,
-            sameSite: "None",
+            sameSite: "none",
             path: "/",
           });
 
