@@ -26,14 +26,12 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
       token
         ? Cookies.set("authToken", token, {
             expires: 7,
-            sameSite: "none", // Required for cross-origin
-            domain: ".vercel.app", // Adjust based on your domain
+            sameSite: "none",
             path: "/",
           })
         : Cookies.set("authToken", token, {
             expires: 7,
             sameSite: "none", // Required for cross-origin
-            domain: ".vercel.app", // Adjust based on your domain
             path: "/",
           });
     }
