@@ -11,21 +11,10 @@ export const createStore = (storeData) => async (dispatch) => {
   });
 };
 
-// changes
 export const getStores = () => async (dispatch) => {
   dispatch({
     type: "GETSTORES",
-    payload: axios.get(`${url}listStore`, {
-      withCredentials: true,
-      headers: {
-        Cookie: `authToken=${
-          document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("authToken="))
-            ?.split("=")[1] || ""
-        }`,
-      },
-    }),
+    payload: axios.get(`${url + "listStore"}`, { withCredentials: true }),
   });
 };
 
