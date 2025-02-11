@@ -48,9 +48,6 @@ app.use(
   cors({
     origin: "https://ecommerce-sp-3ua8.vercel.app", // Your frontend URL exactly
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-    exposedHeaders: ["set-cookie"],
   })
 );
 
