@@ -20,15 +20,20 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
     }
   }, [flag]);
 
-  //change
   useEffect(() => {
     if (token || loginToken) {
       token
         ? Cookies.set("authToken", token, {
+            // httpOnly: false,
             expires: 7,
+            secure: false,
+            path: "/",
           })
-        : Cookies.set("authToken", token, {
+        : Cookies.set("authToken", loginToken, {
+            // httpOnly: false,
             expires: 7,
+            secure: false,
+            path: "/",
           });
     }
 
