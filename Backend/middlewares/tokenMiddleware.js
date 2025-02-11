@@ -5,6 +5,8 @@ const { findUser } = require("../queries/userQueries");
 
 const verifyToken = async (ctx, next) => {
   try {
+    //change backend
+    console.log("cookie header check backend ", ctx.request.header);
     const token = ctx.cookies.get("authToken");
     console.log("token", token);
     if (!token) {

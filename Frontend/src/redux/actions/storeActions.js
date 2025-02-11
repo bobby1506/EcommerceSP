@@ -1,7 +1,6 @@
 import axios from "axios";
 import { url } from "../../apiConfig";
-import Cookies from "js-cookie";
-const cookieValue = Cookies.get("authToken");
+
 export const createStore = (storeData) => async (dispatch) => {
   dispatch({
     type: "CREATESTORE",
@@ -12,13 +11,20 @@ export const createStore = (storeData) => async (dispatch) => {
   });
 };
 
-// change
+// changes
 export const getStores = () => async (dispatch) => {
   dispatch({
     type: "GETSTORES",
-    payload: axios.get(`${url + "listStore"}`, {
-      headers: { "Content-Type": "multipart/form-data", Cookie: cookieValue },
+    payload: axios.get(`${url}listStore`, {
       withCredentials: true,
+      headers: {
+        Cookie: `authToken=${
+          document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("authToken="))
+            ?.split("=")[1] || ""
+        }`,
+      },
     }),
   });
 };
