@@ -21,22 +21,21 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
   }, [flag]);
 
   useEffect(() => {
-    if (token || loginToken)
+    if (token || loginToken) {
       token
         ? Cookies.set("authToken", token, {
-            httpOnly: false,
+            // httpOnly: false,
             expires: 7,
             secure: false,
-            sameSite: "none",
             path: "/",
           })
         : Cookies.set("authToken", loginToken, {
-            httpOnly: false,
+            // httpOnly: false,
             expires: 7,
             secure: false,
-            sameSite: "none",
             path: "/",
           });
+    }
 
     const usertoken = Cookies.get("authToken");
     console.log(usertoken, "userToken");

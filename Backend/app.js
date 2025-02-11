@@ -43,7 +43,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: "https://ecommerce-sp-3ua8.vercel.app",
+    origin: "*",
     credentials: true,
   })
 );

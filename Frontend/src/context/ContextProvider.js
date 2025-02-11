@@ -1,3 +1,4 @@
+/* eslint-disable default-case */
 import { createContext, useReducer } from "react";
 
 export const loginContext = createContext();
@@ -35,7 +36,7 @@ const ContextProvider = ({ children }) => {
           isLoading: false,
           userData: { ...action.payload.data.data.data },
           isSeller: action.payload.data.data.data.isSeller,
-          storeId:action.payload.data.data.data.storeId,
+          storeId: action.payload.data.data.data.storeId,
         };
       case "LOGIN_REJECTED":
         console.log("fail", action.payload);
@@ -51,21 +52,20 @@ const ContextProvider = ({ children }) => {
           isSeller: action.payload.data.data.user.isSeller,
           userData: { ...action.payload.data.data.user },
         };
-        case 'USERLOGOUT':
-          // alert("hello")
-          return {
-            ...state,
-            userData:{},
-            isAuthenticated:false,
-            message:"logout Sucessfully",
-            token:""
-  
-          }
-         case 'emptyMsg':
-          return {
-            ...state,
-            message:""
-          } 
+      case "USERLOGOUT":
+        // alert("hello")
+        return {
+          ...state,
+          userData: {},
+          isAuthenticated: false,
+          message: "logout Sucessfully",
+          token: "",
+        };
+      case "emptyMsg":
+        return {
+          ...state,
+          message: "",
+        };
     }
   };
   const [contextUserData, loginDispatch] = useReducer(
