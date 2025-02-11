@@ -23,19 +23,19 @@ const Home = ({ getStores, emptyOrderMsg, user, order }) => {
   useEffect(() => {
     if (token || loginToken)
       token
-        ? Cookies.set("authToken", token, {
-            httpOnly: false,
+        ? Cookies.set("authToken", token || loginToken, {
             expires: 7,
-            secure: false,
-            sameSite: "none",
+            secure: true, // Required for cross-origin cookies
+            sameSite: "None", // Ensures cookies work across different domains
             path: "/",
+            domain: ".vercel.app",
           })
         : Cookies.set("authToken", loginToken, {
-            httpOnly: false,
             expires: 7,
             secure: false,
-            sameSite: "none",
+            sameSite: "None",
             path: "/",
+            domain: ".vercel.app",
           });
 
     const usertoken = Cookies.get("authToken");
