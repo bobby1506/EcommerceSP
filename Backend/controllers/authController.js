@@ -65,6 +65,7 @@ const login = async (ctx) => {
     const ismatchPassword = await bcrypt.compare(password, user.password);
     if (!ismatchPassword) {
       resHandler(ctx, false, "Invalid details", 400);
+      return;
     }
     const token = generateToken(user);
     // ctx.cookies.set("authToken", token, {
